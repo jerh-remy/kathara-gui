@@ -1,18 +1,12 @@
 /* eslint global-require: off, no-console: off */
 
-/**
- * This module executes inside of electron's main process. You can start
- * electron renderer process from here and communicate with the other processes
- * through IPC.
- *
- * When running `yarn build` or `yarn build:main`, this file is compiled to
- * `./src/main.prod.js` using webpack. This gives us some performance wins.
- */
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 import path from 'path';
-import { app, BrowserWindow, shell } from 'electron';
+import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
+import { exec, spawn } from 'child_process';
+// import { writeFileSync, readFileSync } from 'fs';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 
@@ -94,6 +88,9 @@ const createWindow = async () => {
     }
   });
 
+  const baseFolder = app.getPath('userData');
+  console.log(baseFolder);
+
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
@@ -130,4 +127,73 @@ app.on('activate', () => {
   // On macOS it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (mainWindow === null) createWindow();
+});
+
+/* ---------------------------------------------------------- */
+/* ------------------------- EVENTS ------------------------- */
+/* ---------------------------------------------------------- */
+
+// let _baseFolder = app.getPath('userData');
+
+function _runKatharaCommand(command: string, event: Electron.IpcMainEvent) {
+  /* ---------------------------------------------------------- */
+  /* ------------------------- kathara spawn ------------------------- */
+  /* ---------------------------------------------------------- */
+
+  let output;
+  const child = spawn(`kathara ${command}`, {
+    // stdio: 'inherit',
+    shell: true,
+  });
+
+  child.stdout.on('data', (data) => {
+    console.log(`stdout:${data}`);
+    output = data.toString();
+    event.reply('script:execute-reply', output);
+  });
+
+  child.stderr.on('data', (data) => {
+    console.error(`stderr: ${data}`);
+    output = data.toString();
+    event.reply('script:execute-reply', output);
+  });
+
+  child.on('error', (error) => {
+    console.error(`error: ${error.message}`);
+    // output = error;
+  });
+
+  child.on('close', (code) => {
+    console.log(`child process exited with code ${code}`);
+    // output = code;
+  });
+}
+
+/* ------------------------- SCRIPT ------------------------- */
+
+// ipcMain.on('script:copy', function (_, script, filename) {
+//   let pathTemp = path.join(_baseFolder, filename);
+//   console.log('Saving script to ' + pathTemp);
+
+//   writeFileSync(pathTemp, script);
+
+//   console.log('Running ' + pathTemp);
+//   exec('bash "' + pathTemp + '"');
+// });
+
+ipcMain.on('script:execute', (event, arg) => {
+  // let pathTemp = path.join(_baseFolder, 'lab');
+  console.log(`Running LStart on ${arg}`);
+  _runKatharaCommand(`lstart -d "${arg}"`, event);
+});
+
+ipcMain.on('script:clean', (event, arg) => {
+  // let pathTemp = path.join(_baseFolder, 'lab');
+  console.log(`Running LClean on ${arg}`);
+  _runKatharaCommand(`lclean -d "${arg}"`, event);
+});
+
+ipcMain.on('anything-asynchronous', (_, arg) => {
+  //execute tasks on behalf of renderer process
+  console.log(arg);
 });
