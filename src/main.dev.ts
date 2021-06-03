@@ -5,7 +5,7 @@ import 'regenerator-runtime/runtime';
 import path from 'path';
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
-import { exec, spawn } from 'child_process';
+import { spawn } from 'child_process';
 // import { writeFileSync, readFileSync } from 'fs';
 import log from 'electron-log';
 import MenuBuilder from './menu';
@@ -135,7 +135,7 @@ app.on('activate', () => {
 
 // let _baseFolder = app.getPath('userData');
 
-function _runKatharaCommand(command: string, event: Electron.IpcMainEvent) {
+function runKatharaCommand(command: string, event: Electron.IpcMainEvent) {
   /* ---------------------------------------------------------- */
   /* ------------------------- kathara spawn ------------------------- */
   /* ---------------------------------------------------------- */
@@ -184,16 +184,16 @@ function _runKatharaCommand(command: string, event: Electron.IpcMainEvent) {
 ipcMain.on('script:execute', (event, arg) => {
   // let pathTemp = path.join(_baseFolder, 'lab');
   console.log(`Running LStart on ${arg}`);
-  _runKatharaCommand(`lstart -d "${arg}"`, event);
+  runKatharaCommand(`lstart -d "${arg}"`, event);
 });
 
 ipcMain.on('script:clean', (event, arg) => {
   // let pathTemp = path.join(_baseFolder, 'lab');
   console.log(`Running LClean on ${arg}`);
-  _runKatharaCommand(`lclean -d "${arg}"`, event);
+  runKatharaCommand(`lclean -d "${arg}"`, event);
 });
 
 ipcMain.on('anything-asynchronous', (_, arg) => {
-  //execute tasks on behalf of renderer process
+  // execute tasks on behalf of renderer process
   console.log(arg);
 });
