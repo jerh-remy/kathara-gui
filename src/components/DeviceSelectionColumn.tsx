@@ -1,35 +1,18 @@
-import React, { DragEvent } from 'react';
-
-const onDragStart = (event: DragEvent, nodeType: string) => {
-  event.dataTransfer.setData('application/reactflow', nodeType);
-  event.dataTransfer.effectAllowed = 'move';
-};
+import React from 'react';
+import { Device } from './Device';
 
 export const DeviceSelectionColumn = () => {
   return (
-    <div className=" bg-gray-800 shadow-2xl w-80 text-white p-8">
+    <div className=" bg-[#2E3748] shadow-2xl w-72 text-white px-5 py-4">
       <aside>
-        <div className="text-gray-400">Components</div>
-        <div
-          className="cursor-move mt-2 rounded-sm border border-gray-200 flex justify-center items-center p-3"
-          onDragStart={(event: DragEvent) => onDragStart(event, 'input')}
-          draggable
-        >
-          Input Node
-        </div>
-        <div
-          className="dndnode mt-2 rounded-sm border border-gray-200 flex justify-center items-center p-3"
-          onDragStart={(event: DragEvent) => onDragStart(event, 'default')}
-          draggable
-        >
-          Default Node
-        </div>
-        <div
-          className="dndnode output mt-2 rounded-sm border border-gray-200 flex justify-center items-center p-3"
-          onDragStart={(event: DragEvent) => onDragStart(event, 'output')}
-          draggable
-        >
-          Output Node
+        <div className="text-gray-50 text-base">Components</div>
+        <div className="mt-4 grid grid-cols-2 gap-y-10 justify-end  justify-items-center">
+          <Device deviceType="Terminal" />
+          <Device deviceType="Router" />
+          <Device deviceType="Name Server" />
+          <Device deviceType="Web Server" />
+          <Device deviceType="Other" />
+          {/* <Device deviceType="OpenFlow Ryu Controller" /> */}
         </div>
       </aside>
     </div>

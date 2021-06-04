@@ -18,19 +18,29 @@ import ReactFlow, {
   Connection,
 } from 'react-flow-renderer';
 
+import { nodeTypes } from '../custom_nodes';
+
+// console.log({ nodeTypes });
+
 const initialElements = [
   {
     id: '1',
-    type: 'input',
-    data: { label: 'input node' },
+    type: 'custom',
+    data: { deviceType: 'Router' },
     position: { x: 250, y: 5 },
   },
-  // {
-  //   id: '1',
-  //   type: 'input', // input node
-  //   data: { label: 'Input Node' },
-  //   position: { x: 250, y: 25 },
-  // },
+  {
+    id: '2',
+    type: 'input', // input node
+    data: { label: 'Input Node' },
+    position: { x: 850, y: 25 },
+  },
+  {
+    id: '22',
+    type: 'special', // input node
+    data: { label: 'Color Node' },
+    position: { x: 350, y: 25 },
+  },
   // // default node
   // {
   //   id: '2',
@@ -56,36 +66,79 @@ const onDragOver = (event) => {
   event.dataTransfer.dropEffect = 'move';
 };
 
+const onNodeDragStop = (event, node) => {
+  console.log({ event });
+  console.log('drag stop', node);
+};
+const onElementClick = (event, element) => console.log('click', element);
+
 let id = 0;
 const getId = () => `dndnode_${id++}`;
 
 export const EditorCanvasColumn = () => {
   const [elements, setElements] = useState(initialElements);
-  const [reactFlowInstance, setReactFlowInstance] = useState();
+  const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const reactFlowWrapper = useRef(null);
 
-  const onConnect = (params) => setElements((els) => addEdge(params, els));
+  const onConnect = useCallback(
+    (params) => setElements((els) => addEdge(params, els)),
+    []
+  );
 
-  const onElementsRemove = (elementsToRemove) =>
-    setElements((els) => removeElements(elementsToRemove, els));
+  // const onConnect = (params) =>
+  //   setElements((els) =>
+  //     addEdge({ ...params, animated: true, style: { stroke: '#fff' } }, els)
+  //   );
 
-  const onLoad = (_reactFlowInstance) =>
-    setReactFlowInstance(_reactFlowInstance);
+  // const onElementsRemove = (elementsToRemove) =>
+  //   setElements((els) => removeElements(elementsToRemove, els));
+
+  // useEffect(() => {
+  //   if (reactFlowInstance && elements.length > 0) {
+  //     reactFlowInstance.fitView();
+  //   }
+  // }, [reactFlowInstance, elements.length]);
+
+  const onElementsRemove = useCallback(
+    (elementsToRemove) =>
+      setElements((els) => removeElements(elementsToRemove, els)),
+    []
+  );
+
+  const onLoad = useCallback(
+    (rfi) => {
+      if (!reactFlowInstance) {
+        setReactFlowInstance(rfi);
+        console.log('flow loaded:', rfi);
+      }
+    },
+    [reactFlowInstance]
+  );
+
+  // const onLoad = (reactFlowInstance) => {
+  //   console.log('onLoad called');
+  //   setReactFlowInstance(reactFlowInstance);
+  //   console.log({ reactFlowInstance });
+  // };
 
   const onDrop = (event) => {
     event.preventDefault();
+    console.log({ event });
 
     if (reactFlowInstance) {
-      const type = event.dataTransfer.getData('application/reactflow');
+      const data = event.dataTransfer.getData('application/reactflow');
+      console.log({ data });
+      const type = data.split('|')[0];
+      const deviceType = data.split('|')[1];
       const position = reactFlowInstance.project({
-        x: event.clientX + 100,
+        x: event.clientX,
         y: event.clientY - 40,
       });
       const newNode = {
         id: getId(),
         type,
         position,
-        data: { label: `${type} node` },
+        data: { label: `${deviceType}`, deviceType: deviceType },
       };
 
       console.log({ newNode });
@@ -108,12 +161,14 @@ export const EditorCanvasColumn = () => {
         onLoad={onLoad}
         onDrop={onDrop}
         onDragOver={onDragOver}
+        nodeTypes={nodeTypes}
+        nodesDraggable={true}
+        onNodeDragStop={onNodeDragStop}
         // onPaneClick={onPaneClick}
         // onPaneScroll={onPaneScroll}
         // onPaneContextMenu={onPaneContextMenu}
         // onNodeDragStart={onNodeDragStart}
         // onNodeDrag={onNodeDrag}
-        // onNodeDragStop={onNodeDragStop}
         // onNodeDoubleClick={onNodeDoubleClick}
         // onSelectionDragStart={onSelectionDragStart}
         // onSelectionDrag={onSelectionDrag}

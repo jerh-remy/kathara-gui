@@ -110,3 +110,38 @@ a:hover {
     max-width: 250px;
   }
 }
+
+/*
+  This bunch of css is from the react-flow examples src
+
+.overview-example__add {
+  display: none;
+}
+
+.react-flow__node a {
+  font-weight: 700;
+  color: #111;
+}
+
+.react-flow__node.dark-node {
+  background: #0041d0;
+  color: #f8f8f8;
+}
+
+.react-flow__node.dark {
+  background: #557;
+  color: #f8f8f8;
+}
+
+.react-flow__node-selectorNode {
+  font-size: 12px;
+  background: #f0f2f3;
+  border: 1px solid 555;
+  padding: 8px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.react-flow__node-selectorNode .react-flow__handle {
+  border-color: #f0f2f3;
+} */
