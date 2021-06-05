@@ -10,7 +10,7 @@ import Sidebar from './Sidebar/Sidebar';
 export const Home = () => {
   return (
     <>
-      <div className="flex flex-col h-screen">
+      <div className="flex flex-col h-screen overflow-y-hidden">
         <Navbar />
         <div className="flex flex-1">
           <ReactFlowProvider>

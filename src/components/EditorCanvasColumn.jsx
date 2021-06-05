@@ -6,6 +6,7 @@ import ReactFlow, {
   addEdge,
   Elements,
   removeElements,
+  updateEdge,
   SnapGrid,
   MiniMap,
   Controls,
@@ -16,31 +17,31 @@ import ReactFlow, {
   OnLoadParams,
   FlowTransform,
   Connection,
+  ReactFlowProps,
+  ConnectionMode,
 } from 'react-flow-renderer';
 
 import { nodeTypes } from '../custom_nodes';
 
-// console.log({ nodeTypes });
-
 const initialElements = [
-  {
-    id: '1',
-    type: 'custom',
-    data: { deviceType: 'Router' },
-    position: { x: 250, y: 5 },
-  },
-  {
-    id: '2',
-    type: 'input', // input node
-    data: { label: 'Input Node' },
-    position: { x: 850, y: 25 },
-  },
-  {
-    id: '22',
-    type: 'special', // input node
-    data: { label: 'Color Node' },
-    position: { x: 350, y: 25 },
-  },
+  // {
+  //   id: '1',
+  //   type: 'custom',
+  //   data: { deviceType: 'Router' },
+  //   position: { x: 250, y: 5 },
+  // },
+  // {
+  //   id: '2',
+  //   type: 'input', // input node
+  //   data: { label: 'Input Node' },
+  //   position: { x: 850, y: 25 },
+  // },
+  // {
+  //   id: '22',
+  //   type: 'special', // input node
+  //   data: { label: 'Color Node' },
+  //   position: { x: 350, y: 25 },
+  // },
   // // default node
   // {
   //   id: '2',
@@ -67,21 +68,27 @@ const onDragOver = (event) => {
 };
 
 const onNodeDragStop = (event, node) => {
-  console.log({ event });
+  // console.log({ event });
   console.log('drag stop', node);
 };
 const onElementClick = (event, element) => console.log('click', element);
 
 let id = 0;
-const getId = () => `dndnode_${id++}`;
+const getId = () => `node_${id++}`;
 
 export const EditorCanvasColumn = () => {
   const [elements, setElements] = useState(initialElements);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const reactFlowWrapper = useRef(null);
 
-  const onConnect = useCallback(
-    (params) => setElements((els) => addEdge(params, els)),
+  const onConnect = useCallback((params) => {
+    console.log({ params });
+    setElements((els) => addEdge(params, els));
+  }, []);
+
+  const onEdgeUpdate = useCallback(
+    (oldEdge, newConnection) =>
+      setElements((els) => updateEdge(oldEdge, newConnection, els)),
     []
   );
 
@@ -93,11 +100,12 @@ export const EditorCanvasColumn = () => {
   // const onElementsRemove = (elementsToRemove) =>
   //   setElements((els) => removeElements(elementsToRemove, els));
 
-  // useEffect(() => {
-  //   if (reactFlowInstance && elements.length > 0) {
-  //     reactFlowInstance.fitView();
-  //   }
-  // }, [reactFlowInstance, elements.length]);
+  useEffect(() => {
+    if (reactFlowInstance && elements.length > 0) {
+      // reactFlowInstance.fitView();
+      console.table(elements);
+    }
+  }, [reactFlowInstance, elements.length]);
 
   const onElementsRemove = useCallback(
     (elementsToRemove) =>
@@ -123,16 +131,19 @@ export const EditorCanvasColumn = () => {
 
   const onDrop = (event) => {
     event.preventDefault();
-    console.log({ event });
+    console.log({ id });
+
+    // console.log({ event });
 
     if (reactFlowInstance) {
       const data = event.dataTransfer.getData('application/reactflow');
       console.log({ data });
       const type = data.split('|')[0];
       const deviceType = data.split('|')[1];
+      const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
       const position = reactFlowInstance.project({
-        x: event.clientX,
-        y: event.clientY - 40,
+        x: event.clientX - reactFlowBounds.left,
+        y: event.clientY - reactFlowBounds.top,
       });
       const newNode = {
         id: getId(),
@@ -164,6 +175,8 @@ export const EditorCanvasColumn = () => {
         nodeTypes={nodeTypes}
         nodesDraggable={true}
         onNodeDragStop={onNodeDragStop}
+        connectionMode={ConnectionMode.Loose}
+        onEdgeUpdate={onEdgeUpdate}
         // onPaneClick={onPaneClick}
         // onPaneScroll={onPaneScroll}
         // onPaneContextMenu={onPaneContextMenu}
@@ -186,7 +199,7 @@ export const EditorCanvasColumn = () => {
         // onEdgeDoubleClick={onEdgeDoubleClick}
       >
         <Controls />
-        <Background color="#aaa" gap={16} />
+        <Background color="#aaaaaae2" gap={16} />
       </ReactFlow>
     </div>
   );

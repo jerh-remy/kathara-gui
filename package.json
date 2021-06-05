@@ -251,6 +251,7 @@
     "yarn-deduplicate": "^3.1.0"
   },
   "dependencies": {
+    "@tailwindcss/forms": "^0.3.3",
     "electron-debug": "^3.1.0",
     "electron-log": "^4.2.4",
     "electron-updater": "^4.3.4",
@@ -294,7 +295,5 @@
       "next"
     ]
   },
-  "husky": {
-
-  }
+  "husky": {}
 }

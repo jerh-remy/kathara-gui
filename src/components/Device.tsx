@@ -15,16 +15,18 @@ export const Device: React.FC<Props> = ({ deviceType }) => {
 
   return (
     <div
-      className="cursor-move  flex flex-col justify-center items-center "
+      className="group h-[85px] w-[85px] cursor-pointer hover:bg-[#596272] hover:rounded-md  flex flex-col justify-center items-center "
       onDragStart={(event: DragEvent) => onDragStart(event, `custom|${dt}`)}
       draggable
     >
       <img
-        className="h-[60px] w-[60px] object-scale-down"
+        className="h-[50px] w-[50px] object-scale-down"
         src={getImage(deviceType)}
         alt="The type of network device"
       />
-      <div className="text-sm text-gray-300 mt-1">{deviceType}</div>
+      <div className="group-hover:text-white text-sm text-gray-300 mt-1">
+        {deviceType}
+      </div>
     </div>
   );
 };

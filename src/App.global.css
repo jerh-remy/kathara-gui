@@ -2,6 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  [type='text'],
+  [type='email'],
+  [type='url'],
+  [type='password'],
+  [type='number'],
+  [type='date'],
+  [type='datetime-local'],
+  [type='month'],
+  [type='search'],
+  [type='tel'],
+  [type='time'],
+  [type='week'],
+  [multiple],
+  textarea,
+  select {
+    @apply w-full border-gray-300 bg-gray-100 rounded-lg shadow-sm text-gray-700 py-1 focus:border-teal-500 focus:ring-2 focus:ring-teal-400;
+  }
+}
+
 body {
   /* position: relative; */
   height: 100vh;
@@ -13,7 +33,7 @@ body {
 }
 
 .full-screen {
-  max-height: calc(100vh - 160px);
+  max-height: calc(100vh - 50px);
   /* height: calc(100vh - 160px); */
 }
 

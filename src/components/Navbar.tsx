@@ -3,7 +3,7 @@ import logo from '../../assets/logo_kathara_white.png';
 
 export const Navbar = () => {
   return (
-    <nav className="flex justify-between px-4 py-2 bg-gray-800 shadow-2xl align-center">
+    <nav className="flex justify-between px-4 py-2 bg-gray-800 shadow-lg align-center">
       {/* <a className="focus:outline-none focus:ring-2 focus:ring-emerald-400 flex items-center"> */}
 
       <div className="">
