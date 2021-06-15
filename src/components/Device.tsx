@@ -16,7 +16,9 @@ export const Device: React.FC<Props> = ({ deviceType }) => {
   return (
     <div
       className="group h-[85px] w-[85px] cursor-pointer hover:bg-[#596272] hover:rounded-md  flex flex-col justify-center items-center "
-      onDragStart={(event: DragEvent) => onDragStart(event, `custom|${dt}`)}
+      onDragStart={(event: DragEvent) =>
+        onDragStart(event, `custom|${dt}|${deviceType}`)
+      }
       draggable
     >
       <img

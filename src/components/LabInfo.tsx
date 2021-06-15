@@ -9,7 +9,12 @@ export const LabInfo = () => {
             Description
           </label>
           <div className="mt-1">
-            <input type="text" id="description" name="description" />
+            <input
+              type="text"
+              id="description"
+              name="description"
+              placeholder="Exam 2021"
+            />
           </div>
         </div>
         <div>
@@ -17,7 +22,7 @@ export const LabInfo = () => {
             Version
           </label>
           <div className="mt-1">
-            <input type="text" id="version" name="version" />
+            <input type="text" id="version" name="version" placeholder="1.0" />
           </div>
         </div>
         <div>
@@ -25,7 +30,12 @@ export const LabInfo = () => {
             Author(s)
           </label>
           <div className="mt-1">
-            <input type="text" id="author" name="author" />
+            <input
+              type="text"
+              id="author"
+              name="author"
+              placeholder="Jeremy Offori"
+            />
           </div>
         </div>
         <div>
@@ -33,7 +43,12 @@ export const LabInfo = () => {
             Email
           </label>
           <div className="mt-1">
-            <input type="email" id="email" name="email" />
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="jeremy.offori@gmail.com"
+            />
           </div>
         </div>
         <div>
@@ -41,7 +56,12 @@ export const LabInfo = () => {
             Website
           </label>
           <div className="mt-1">
-            <input type="text" id="website" name="website" />
+            <input
+              type="text"
+              id="website"
+              name="website"
+              placeholder="http://lboro.ac.uk"
+            />
           </div>
         </div>
       </form>

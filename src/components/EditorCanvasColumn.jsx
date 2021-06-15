@@ -62,6 +62,10 @@ const initialElements = [
 
 const snapGrid = [16, 16];
 
+const onEdgeContextMenu = (event, edge) => {
+  console.log({ event, edge });
+};
+
 const onDragOver = (event) => {
   event.preventDefault();
   event.dataTransfer.dropEffect = 'move';
@@ -71,19 +75,48 @@ const onNodeDragStop = (event, node) => {
   // console.log({ event });
   console.log('drag stop', node);
 };
-const onElementClick = (event, element) => console.log('click', element);
 
 let id = 0;
 const getId = () => `node_${id++}`;
 
-export const EditorCanvasColumn = () => {
+export const EditorCanvasColumn = ({
+  openConfigurationPanel,
+  onDeviceClicked,
+}) => {
   const [elements, setElements] = useState(initialElements);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const reactFlowWrapper = useRef(null);
 
+  const onConnectStart = useCallback((event, { nodeId, handleType }) => {
+    console.log({ nodeId, handleType });
+  }, []);
+
+  const onElementClick = (event, element) => {
+    // console.log('click', element);
+    onDeviceClicked(element);
+    openConfigurationPanel(true);
+  };
+
   const onConnect = useCallback((params) => {
-    console.log({ params });
-    setElements((els) => addEdge(params, els));
+    // console.log({
+    //   ...params,
+    //   label: 'styled label',
+    //   labelStyle: { fill: 'red', fontWeight: 700 },
+    //   animated: true,
+    //   type: 'straight',
+    // });
+    setElements((els) =>
+      addEdge(
+        {
+          ...params,
+          // label: 'styled label',
+          // labelStyle: { fill: 'red', fontWeight: 700 },
+          // animated: true,
+          type: 'default',
+        },
+        els
+      )
+    );
   }, []);
 
   const onEdgeUpdate = useCallback(
@@ -131,7 +164,6 @@ export const EditorCanvasColumn = () => {
 
   const onDrop = (event) => {
     event.preventDefault();
-    console.log({ id });
 
     // console.log({ event });
 
@@ -139,7 +171,8 @@ export const EditorCanvasColumn = () => {
       const data = event.dataTransfer.getData('application/reactflow');
       console.log({ data });
       const type = data.split('|')[0];
-      const deviceType = data.split('|')[1];
+      const dt = data.split('|')[1];
+      const deviceType = data.split('|')[2];
       const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
       const position = reactFlowInstance.project({
         x: event.clientX - reactFlowBounds.left,
@@ -149,7 +182,7 @@ export const EditorCanvasColumn = () => {
         id: getId(),
         type,
         position,
-        data: { label: `${deviceType}`, deviceType: deviceType },
+        data: { label: `${deviceType}`, deviceType: dt },
       };
 
       console.log({ newNode });
@@ -159,13 +192,11 @@ export const EditorCanvasColumn = () => {
   };
 
   return (
-    <div
-      className="flex-1 bg-gray-50 p-1 reactflow-wrapper"
-      ref={reactFlowWrapper}
-    >
+    <div className="flex-1 bg-gray-50 p-1" ref={reactFlowWrapper}>
       <ReactFlow
         elements={elements}
         snapGrid={snapGrid}
+        onElementClick={onElementClick}
         onElementsRemove={onElementsRemove}
         onConnect={onConnect}
         deleteKeyCode={46}
@@ -177,6 +208,7 @@ export const EditorCanvasColumn = () => {
         onNodeDragStop={onNodeDragStop}
         connectionMode={ConnectionMode.Loose}
         onEdgeUpdate={onEdgeUpdate}
+        onConnectStart={onConnectStart}
         // onPaneClick={onPaneClick}
         // onPaneScroll={onPaneScroll}
         // onPaneContextMenu={onPaneContextMenu}
@@ -192,7 +224,7 @@ export const EditorCanvasColumn = () => {
         // connectionLineStyle={connectionLineStyle}
         // snapToGrid={true}
         // snapGrid={snapGrid}
-        // onEdgeContextMenu={onEdgeContextMenu}
+        onEdgeContextMenu={onEdgeContextMenu}
         // onEdgeMouseEnter={onEdgeMouseEnter}
         // onEdgeMouseMove={onEdgeMouseMove}
         // onEdgeMouseLeave={onEdgeMouseLeave}

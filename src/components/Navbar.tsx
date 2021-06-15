@@ -16,7 +16,7 @@ export const Navbar = () => {
         onClick={() => {
           console.log('clicked');
         }}
-        className="relative inline-flex items-center px-4 py-1 text-sm font-bold tracking-wide text-white border border-transparent rounded-lg shadow-sm bg-green-500 hover:bg-green-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-emerald-500"
+        className="relative inline-flex items-center px-4 py-1 text-sm font-bold tracking-wide text-white border border-transparent rounded-lg shadow-sm bg-emerald-500 hover:bg-emerald-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-emerald-500"
       >
         {/* <img className="w-auto h-6 mr-2 cursor-pointer" src="download.svg" /> */}
         <span>Run lab</span>

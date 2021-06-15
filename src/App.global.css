@@ -18,7 +18,12 @@
   [multiple],
   textarea,
   select {
-    @apply w-full border-gray-300 bg-gray-100 rounded-lg shadow-sm text-gray-700 py-1 focus:border-teal-500 focus:ring-2 focus:ring-teal-400;
+    @apply w-full placeholder-gray-400 border-gray-300 bg-gray-100 rounded-lg shadow-sm text-gray-700 py-1 focus:border-teal-500 focus:ring-2 focus:ring-teal-400;
+  }
+
+  [type='checkbox'],
+  [type='radio'] {
+    @apply rounded border-gray-300 text-teal-400 focus:ring-teal-500;
   }
 }
 
@@ -35,6 +40,12 @@ body {
 .full-screen {
   max-height: calc(100vh - 50px);
   /* height: calc(100vh - 160px); */
+}
+
+path.react-flow__edge-path:hover {
+  stroke-width: 3;
+  /* stroke: #b5f3fc; */
+  cursor: pointer;
 }
 
 /*
