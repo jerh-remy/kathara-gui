@@ -1,6 +1,15 @@
-import React from 'react';
+import React, { FC, useState } from 'react';
 
-export const NameServerConfigurationInfo = () => {
+type Props = {
+  device: any;
+};
+export const NameServerConfigurationInfo: FC<Props> = ({ device }) => {
+  const [deviceName, setDeviceName] = useState<string>(device.data.label);
+  // console.log(device.data.label);
+  function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
+    setDeviceName(event.target.value);
+  }
+
   return (
     <div className="mt-4 mb-4">
       <form className="space-y-8">
@@ -17,8 +26,8 @@ export const NameServerConfigurationInfo = () => {
               type="text"
               id="device-name"
               name="device-name"
-              // value={deviceName}
-              // onChange={handleChange}
+              value={deviceName}
+              onChange={handleChange}
               placeholder="pc1"
             />
           </div>

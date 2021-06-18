@@ -1,15 +1,63 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
+import {
+  useStoreState,
+  useStoreActions,
+  ReactFlowProps,
+  Elements,
+} from 'react-flow-renderer';
 
-type Props = {
-  device: any;
-};
-export const TerminalConfigurationInfo: FC<Props> = ({ device }) => {
-  const [deviceName, setDeviceName] = useState<string>(device.data.label);
+export const RouterConfigurationInfoTry = ({ device }) => {
+  const nodes = useStoreState((store) => store.nodes);
+  const setElements = useStoreActions((actions) => actions.setElements);
+  // const setSelectedElements = useStoreActions(
+  //   (actions) => actions.setSelectedElements
+  // );
+
+  // const selectAll = () => {
+  //   setSelectedElements(
+  //     nodes.map((node) => ({ id: node.id, type: node.type }))
+  //   );
+  // };
+
+  console.log({ nodes });
+
+  const [deviceName, setDeviceName] = useState(device.data.label);
   // console.log(device.data.label);
-  function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
+  const handleChange = (event) => {
     setDeviceName(event.target.value);
-  }
+    // console.log(nodes.find((node) => node.id === device.id)?.data.label);
+  };
 
+  useEffect(() => {
+    setElements((els) =>
+      els.map((el) => {
+        if (el.id === device.id) {
+          // it's important that you create a new object here
+          // in order to notify react flow about the change
+          el.data = {
+            ...el.data,
+            label: deviceName,
+          };
+        }
+
+        return el;
+      })
+    );
+  }, [deviceName, setElements]);
+
+  // const tryThis = () => {
+  //   setElements((els: Elements<any>) => {
+  //     const newNode = {
+  //       id: '222',
+  //       type: 'router',
+  //       position: { x: 250, y: 5 },
+  //       data: { label: deviceName },
+  //     };
+  //     els.concat(newNode);
+  //     // els.find((node) => node.id === device.id).data.label = event.target.value;
+  //     // console.log(router);
+  //   });
+  // };
   return (
     <div className="mt-4 mb-4">
       <form className="space-y-8">
@@ -38,7 +86,7 @@ export const TerminalConfigurationInfo: FC<Props> = ({ device }) => {
             htmlFor="collision-domain"
             className="mt-1 block text-sm text-gray-800"
           >
-            Eth0
+            Eth0 collision domain
           </label>
           <div className="mt-1 mb-2">
             <input
@@ -128,15 +176,21 @@ export const TerminalConfigurationInfo: FC<Props> = ({ device }) => {
         <div>
           <span className="text-teal-600">Additional functions</span>
           <label htmlFor="ref-ns" className="mt-1 block text-sm text-gray-800">
-            Reference DNS
+            Dynamic routing
           </label>
-          <div className="mt-1">
-            <input
-              type="text"
-              id="ref-ns"
-              name="ref-ns"
-              placeholder="resolv.conf nameserver"
-            />
+          <div className="mt-1 flex justify-between">
+            <div>
+              <input type="checkbox" id="rip" name="rip" className="mr-2" />
+              <span className="text-sm text-gray-800">rip</span>
+            </div>
+            <div>
+              <input type="checkbox" id="ospf" name="ospf" className="mr-2" />
+              <span className="text-sm text-gray-800">ospf</span>
+            </div>
+            <div>
+              <input type="checkbox" id="bgp" name="bgp" className="mr-2" />
+              <span className="text-sm text-gray-800">bgp</span>
+            </div>
           </div>
         </div>
         <div className="invisible">

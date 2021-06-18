@@ -8,6 +8,7 @@ import nameServer from '../assets/images/nameserver.png';
 
 const getImage = (deviceType) => {
   const dt = getDeviceTypeString(deviceType);
+  // console.log(`The deviceType str is ${dt}`);
   let img;
   switch (dt) {
     case 'terminal':

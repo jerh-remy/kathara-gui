@@ -1,19 +1,23 @@
 import React from 'react';
+import { useKatharaConfig } from '../contexts/katharaConfigContext';
 
 export const LabInfo = () => {
+  const [katharaConfig, setKatharaConfig] = useKatharaConfig();
+
   return (
     <div className="mt-4 mb-4">
       <form className="mb-0 space-y-3" action="#" method="post">
         <div>
           <label htmlFor="description" className="block text-sm text-gray-300">
             Description
+            {/* {katharaConfig.labInfo.author} */}
           </label>
           <div className="mt-1">
             <input
               type="text"
               id="description"
               name="description"
-              placeholder="Exam 2021"
+              placeholder={`Exam ${new Date().getFullYear()}`}
             />
           </div>
         </div>

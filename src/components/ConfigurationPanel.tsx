@@ -9,12 +9,14 @@ type Props = {
   isOpen: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   activeDevice: any;
+  setActiveDevice: React.Dispatch<React.SetStateAction<any>>;
 };
 
 export const ConfigurationPanel: FC<Props> = ({
   isOpen,
   setOpen,
   activeDevice,
+  setActiveDevice,
 }) => {
   // const setOpen = () => {
   //   console.log('clicked');
@@ -27,7 +29,10 @@ export const ConfigurationPanel: FC<Props> = ({
         static
         className="fixed inset-0 z-10 overflow-hidden"
         open={isOpen}
-        onClose={() => setOpen(false)}
+        onClose={() => {
+          setOpen(false);
+          setActiveDevice(null);
+        }}
       >
         <div className="absolute inset-0 overflow-hidden ">
           <Transition.Child
@@ -79,12 +84,10 @@ export const ConfigurationPanel: FC<Props> = ({
                   </div>
                   <div className="relative flex-1 px-4 sm:px-6">
                     <div className="absolute inset-0 px-4 sm:px-6">
-                      <div
-                        // className="h-full border-2 border-dashed border-gray-200 "
-                        className="h-full"
-                        aria-hidden="true"
-                      >
+                      <div className="h-full" aria-hidden="true">
                         <ConfigurationInfo device={activeDevice} />
+                        {/* // className="h-full border-2 border-dashed
+                        border-gray-200 " */}
                       </div>
                     </div>
                   </div>

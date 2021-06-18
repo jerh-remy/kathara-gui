@@ -14,14 +14,15 @@ const onConnect = (params: Connection | Edge) =>
   console.log('handle onConnect', params);
 
 const CustomNode: FC<NodeProps> = ({ data }) => {
-  const deviceType = data.label;
+  const deviceLabel = data.label;
+  const deviceType = data.deviceType;
   // console.log({ deviceType, data });
 
   return (
     <div className="space-y-2">
       <div className="flex flex-col justify-center items-center p-[2px] ">
         <Handle
-          id="a"
+          id="eth0"
           type="source"
           position={Position.Left}
           style={{ top: 35, background: '#555' }}
@@ -33,21 +34,21 @@ const CustomNode: FC<NodeProps> = ({ data }) => {
           // }
         />
         <Handle
-          id="b"
+          id="eth1"
           type="source"
           position={Position.Right}
           style={{ top: 35, background: '#555' }}
           onConnect={onConnect}
         />
         <Handle
-          id="c"
+          id="eth2"
           type="source"
           position={Position.Top}
           style={{ top: 0, background: '#555' }}
           onConnect={onConnect}
         />
         <Handle
-          id="d"
+          id="eth3"
           type="source"
           position={Position.Bottom}
           style={{ bottom: 25, background: '#555' }}
@@ -62,10 +63,10 @@ const CustomNode: FC<NodeProps> = ({ data }) => {
         />
       </div>
       <div className="flex justify-center items-center text-sm text-gray-800">
-        {deviceType}
+        {deviceLabel}
       </div>
     </div>
   );
 };
 
-export default memo(CustomNode);
+export default CustomNode;
