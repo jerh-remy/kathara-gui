@@ -17,12 +17,18 @@ export const TerminalConfigurationInfo: FC<Props> = ({ device }) => {
         Reference DNS
       </label>
       <div className="mt-1">
-        <input
+        {/* <input
           type="text"
           id="ref-ns"
           name="ref-ns"
           placeholder="resolv.conf nameserver"
-        />
+        /> */}
+        <select>
+          <option>eth0</option>
+          <option>eth1</option>
+          <option>eth2</option>
+          <option>eth3</option>
+        </select>
       </div>
     </div>
   );

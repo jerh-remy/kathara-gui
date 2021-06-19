@@ -58,8 +58,14 @@ export const DefaultConfigurationInfo: FC<Props> = ({ device }) => {
         break;
       case 'startup':
         setActiveDevice((device: any) => {
-          const newDevice = { ...device };
-          newDevice.interfaces.free = value;
+          const newDevice = {
+            ...device,
+            interfaces: {
+              ...device.interfaces,
+              ['free']: value,
+            },
+          };
+          // newDevice.interfaces.free = value;
           return newDevice;
         });
         break;
@@ -102,6 +108,17 @@ export const DefaultConfigurationInfo: FC<Props> = ({ device }) => {
         return el;
       })
     );
+
+    setKatharaConfig((config: any) => {
+      let filteredMachines = config.machines.filter((machine: any) => {
+        return machine.id !== activeDevice.id;
+      });
+
+      return {
+        ...config,
+        machines: [...filteredMachines, activeDevice],
+      };
+    });
 
     //   // setKatharaConfig({
     //   //   ...katharaConfig,
@@ -238,27 +255,8 @@ export const DefaultConfigurationInfo: FC<Props> = ({ device }) => {
             </div>
           </div>
         </div>
-        <AdditionalFunctions device={device} />
-        {/* <div>
-          <span className="text-teal-600">Additional functions</span>
-          <label htmlFor="ref-ns" className="mt-1 block text-sm text-gray-800">
-            Dynamic routing
-          </label>
-          <div className="mt-1 flex justify-between">
-            <div>
-              <input type="checkbox" id="rip" name="rip" className="mr-2" />
-              <span className="text-sm text-gray-800">rip</span>
-            </div>
-            <div>
-              <input type="checkbox" id="ospf" name="ospf" className="mr-2" />
-              <span className="text-sm text-gray-800">ospf</span>
-            </div>
-            <div>
-              <input type="checkbox" id="bgp" name="bgp" className="mr-2" />
-              <span className="text-sm text-gray-800">bgp</span>
-            </div>
-          </div>
-        </div> */}
+        <AdditionalFunctions device={device} activeDevice={activeDevice} />
+
         <button
           className="rounded-sm border px-2 border-gray-500"
           onClick={(event: React.MouseEvent<HTMLButtonElement>) =>

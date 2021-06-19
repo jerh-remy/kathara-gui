@@ -167,17 +167,20 @@ export const EditorCanvasColumn = ({
         return newArr;
       });
 
-      setKatharaConfig((config) => ({
-        ...config,
-        machines: [
-          ...config.machines,
-          {
-            ...device,
-            id: newNode.id,
-            type: dt,
-          },
-        ],
-      }));
+      setKatharaConfig((config) => {
+        const machine = { ...device };
+        return {
+          ...config,
+          machines: [
+            ...config.machines,
+            {
+              ...machine,
+              id: newNode.id,
+              type: dt,
+            },
+          ],
+        };
+      });
     }
   };
 

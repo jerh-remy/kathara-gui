@@ -6,8 +6,9 @@ import { WebServerConfigurationInfo } from './WebServerConfigurationInfo';
 
 type Props = {
   device: any;
+  activeDevice: any;
 };
-export const AdditionalFunctions: FC<Props> = ({ device }) => {
+export const AdditionalFunctions: FC<Props> = ({ device, activeDevice }) => {
   let component;
 
   switch (device.data.deviceType) {
@@ -18,10 +19,20 @@ export const AdditionalFunctions: FC<Props> = ({ device }) => {
       component = <TerminalConfigurationInfo device={device} />;
       break;
     case 'nameserver':
-      component = <NameServerConfigurationInfo device={device} />;
+      component = (
+        <NameServerConfigurationInfo
+          device={device}
+          activeDevice={activeDevice}
+        />
+      );
       break;
     case 'webserver':
-      component = <WebServerConfigurationInfo device={device} />;
+      component = (
+        <WebServerConfigurationInfo
+          device={device}
+          activeDevice={activeDevice}
+        />
+      );
       break;
     default:
       component = <div></div>;
