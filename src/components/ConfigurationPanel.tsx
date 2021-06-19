@@ -86,8 +86,6 @@ export const ConfigurationPanel: FC<Props> = ({
                     <div className="absolute inset-0 px-4 sm:px-6">
                       <div className="h-full" aria-hidden="true">
                         <ConfigurationInfo device={activeDevice} />
-                        {/* // className="h-full border-2 border-dashed
-                        border-gray-200 " */}
                       </div>
                     </div>
                   </div>

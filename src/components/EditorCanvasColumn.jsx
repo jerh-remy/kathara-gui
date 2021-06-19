@@ -104,23 +104,37 @@ export const EditorCanvasColumn = ({
   );
 
   useEffect(() => {
-    if (reactFlowInstance && elements.length > 0) {
+    if (reactFlowInstance) {
       // reactFlowInstance.fitView();
-      console.table(elements);
+      console.table({ elements });
       console.log({ katharaConfig });
     }
   }, [reactFlowInstance, elements.length]);
 
-  const onElementsRemove = useCallback((elementsToRemove) => {
-    elementsToRemove.map((el) => console.log(el.id));
-    setElements((els) => removeElements(elementsToRemove, els));
-  }, []);
+  const onElementsRemove = useCallback(
+    (elementsToRemove) => {
+      let ids = elementsToRemove.map((el) => el.id);
+      console.log({ ids });
+      // console.log(
+      //   katharaConfig.machines.filter((machine) => !ids.includes(machine.id))
+      // );
+      setElements((els) => removeElements(elementsToRemove, els));
+      setKatharaConfig((config) => ({
+        ...config,
+        machines: config.machines.filter(
+          (machine) => !ids.includes(machine.id)
+        ),
+      }));
+    },
+    [elements]
+  );
 
   const onLoad = useCallback(
     (rfi) => {
       if (!reactFlowInstance) {
         setReactFlowInstance(rfi);
         console.log('flow loaded:', rfi);
+        console.log('katharaConfig loaded:', katharaConfig);
       }
     },
     [reactFlowInstance]
@@ -148,7 +162,7 @@ export const EditorCanvasColumn = ({
       };
 
       setElements((es) => {
-        console.log({ es });
+        // console.log({ es });
         const newArr = es.concat(newNode);
         return newArr;
       });
@@ -166,7 +180,6 @@ export const EditorCanvasColumn = ({
       }));
     }
   };
-  // console.log(`Did elements change? ${elements.length}`);
 
   return (
     <ReactFlowProvider>
