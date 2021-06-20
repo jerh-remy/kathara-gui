@@ -8,11 +8,14 @@ import {
 import { useKatharaConfig } from '../../contexts/katharaConfigContext';
 import { AdditionalFunctions } from './AdditionalFunctions';
 import { GatewaySection } from './GatewaySection';
+import { NetworkInterfaceSection } from './NetworkInterfaceSection';
+import { sortInterfacesString } from '../../utilities/utilities';
 
 type Props = {
   device: any;
+  interfaces: [];
 };
-export const DefaultConfigurationInfo: FC<Props> = ({ device }) => {
+export const DefaultConfigurationInfo: FC<Props> = ({ device, interfaces }) => {
   const [katharaConfig, setKatharaConfig] = useKatharaConfig();
   const [activeDevice, setActiveDevice] = useState(
     katharaConfig.machines.find((machine: any) => machine.id === device.id)
@@ -20,6 +23,10 @@ export const DefaultConfigurationInfo: FC<Props> = ({ device }) => {
 
   // console.log(Object.keys(activeDevice));
   // console.log({ katharaConfig }, { activeDevice });
+  // sortInterfacesString(interfaces).forEach((element: any) => {
+  //   console.log(element);
+  // });
+
   console.log({ activeDevice });
 
   const nodes = useStoreState((store) => store.nodes);
@@ -95,20 +102,20 @@ export const DefaultConfigurationInfo: FC<Props> = ({ device }) => {
   };
 
   useEffect(() => {
-    setElements(
-      nodes.map((el) => {
-        if (el.id === device.id && activeDevice.name) {
-          // it's important that you create a new object here
-          // in order to notify react flow about the change
-          // console.log({ ...el.data });
-          el.data = {
-            ...el.data,
-            label: activeDevice.name,
-          };
-        }
-        return el;
-      })
-    );
+    // setElements(
+    //   nodes.map((el) => {
+    //     if (el.id === device.id && activeDevice.name) {
+    //       // it's important that you create a new object here
+    //       // in order to notify react flow about the change
+    //       // console.log({ ...el.data });
+    //       el.data = {
+    //         ...el.data,
+    //         label: activeDevice.name,
+    //       };
+    //     }
+    //     return el;
+    //   })
+    // );
 
     setKatharaConfig((config: any) => {
       let filteredMachines = config.machines.filter((machine: any) => {
@@ -162,56 +169,11 @@ export const DefaultConfigurationInfo: FC<Props> = ({ device }) => {
             />
           </div>
         </div>
-        <div className="px-4 sm:px-6">
-          <span className="text-teal-600">Network Interfaces</span>
-          <label htmlFor="domain" className="mt-1 block text-sm text-gray-800">
-            Eth0 collision domain
-          </label>
-          <div className="mt-1 mb-2">
-            <input
-              type="text"
-              id="domain"
-              name="domain"
-              value={activeDevice.interfaces.if[0].eth.domain}
-              onChange={handleChange}
-              placeholder="A"
-            />
-          </div>
-          <label htmlFor="ip-address" className="block text-sm text-gray-800">
-            IP address/Net
-          </label>
-          <div className="mt-1 mb-2">
-            <input
-              type="text"
-              id="ip-address"
-              name="ip-address"
-              placeholder="0.0.0.0/0"
-            />
-          </div>
-          <label htmlFor="dns" className="block text-sm text-gray-800">
-            Complete DNS name
-          </label>
-          <div className="mt-1 mb-2">
-            <input
-              type="text"
-              id="dns"
-              name="dns"
-              placeholder="www.x.y or ROOT-SERVER"
-            />
-          </div>
-          <label htmlFor="startup" className="block text-sm text-gray-800">
-            Directly in {activeDevice.name}.startup
-          </label>
-          <div className="mt-1 mb-2">
-            <textarea
-              className="resize-none"
-              id="startup"
-              name="startup"
-              value={activeDevice.interfaces.free}
-              onChange={handleChange}
-              rows={4}
-            />
-          </div>
+        <div>
+          <NetworkInterfaceSection
+            activeDevice={activeDevice}
+            interfaces={sortInterfacesString(interfaces)}
+          />
         </div>
         {/* <div>
           <span className="text-teal-600">Gateway (static) </span>

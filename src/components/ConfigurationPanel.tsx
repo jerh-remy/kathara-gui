@@ -9,6 +9,7 @@ type Props = {
   isOpen: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   activeDevice: any;
+  interfaces: [];
   setActiveDevice: React.Dispatch<React.SetStateAction<any>>;
 };
 
@@ -16,6 +17,7 @@ export const ConfigurationPanel: FC<Props> = ({
   isOpen,
   setOpen,
   activeDevice,
+  interfaces,
   setActiveDevice,
 }) => {
   // const setOpen = () => {
@@ -66,7 +68,10 @@ export const ConfigurationPanel: FC<Props> = ({
                   <div className="relative flex-1 ">
                     <div className="absolute inset-0 ">
                       <div className="h-full" aria-hidden="true">
-                        <ConfigurationInfo device={activeDevice} />
+                        <ConfigurationInfo
+                          device={activeDevice}
+                          interfaces={interfaces}
+                        />
                       </div>
                     </div>
                   </div>

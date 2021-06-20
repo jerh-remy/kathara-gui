@@ -6,6 +6,8 @@ import ReactFlow, {
   addEdge,
   Elements,
   removeElements,
+  getConnectedEdges,
+  getOutgoers,
   updateEdge,
   SnapGrid,
   MiniMap,
@@ -46,18 +48,16 @@ const onNodeDragStop = (event, node) => {
 let id = 0;
 const getId = () => `node_${+new Date()}`;
 
-export const EditorCanvasColumn = ({
+export const Workspace = ({
   openConfigurationPanel,
-  onDeviceClicked,
   isConfigurationPanelOpen,
-  activeDevice,
-  setActiveDevice,
 }) => {
   const [katharaConfig, setKatharaConfig] = useKatharaConfig();
-
   const [elements, setElements] = useState([]);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const reactFlowWrapper = useRef(null);
+  const [activeDevice, setActiveDevice] = useState();
+  const [activeDeviceInterfaces, setActiveDeviceInterfaces] = useState([]);
 
   const onConnectStart = useCallback((event, { nodeId, handleType }) => {
     console.log({ nodeId, handleType });
@@ -70,8 +70,22 @@ export const EditorCanvasColumn = ({
   // };
 
   const onNodeDoubleClick = (event, node) => {
-    // console.log('click', element);
-    onDeviceClicked(node);
+    const connectedEdges = getConnectedEdges(
+      [node],
+      elements.filter((element) => isEdge(element))
+    );
+    console.log({ connectedEdges });
+    const interfaces = [];
+    connectedEdges.forEach((edge) => {
+      if (node.id === edge.source) {
+        interfaces.push(edge.sourceHandle);
+      } else if (node.id === edge.target) {
+        interfaces.push(edge.targetHandle);
+      }
+    });
+    console.log({ interfaces });
+    setActiveDevice(node);
+    setActiveDeviceInterfaces(interfaces);
     openConfigurationPanel(true);
   };
 
@@ -231,6 +245,7 @@ export const EditorCanvasColumn = ({
           isOpen={isConfigurationPanelOpen}
           setOpen={openConfigurationPanel}
           activeDevice={activeDevice}
+          interfaces={activeDeviceInterfaces}
           setActiveDevice={setActiveDevice}
         />
       </div>

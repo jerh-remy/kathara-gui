@@ -1,5 +1,5 @@
 import React, { DragEvent } from 'react';
-import { getDeviceTypeString, getImage } from '../utilities';
+import { getDeviceTypeString, getImage } from '../utilities/utilities';
 
 const onDragStart = (event: DragEvent, nodeType: string) => {
   event.dataTransfer.setData('application/reactflow', nodeType);

@@ -8,7 +8,7 @@ import {
   HandleProps,
 } from 'react-flow-renderer';
 
-import { getImage } from '../../utilities';
+import { getImage } from '../../utilities/utilities';
 
 const onConnect = (params: Connection | Edge) =>
   console.log('handle onConnect', params);
