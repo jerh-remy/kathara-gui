@@ -38,5 +38,5 @@ export const AdditionalFunctions: FC<Props> = ({ device, activeDevice }) => {
       component = <div></div>;
       break;
   }
-  return component;
+  return <div className="px-4 sm:px-6">{component}</div>;
 };

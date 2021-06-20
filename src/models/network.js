@@ -1,8 +1,3 @@
-// var katharaConfig = {
-//   labInfo: {},
-//   machines: [{}],
-// };
-
 var labInfo = {
   description: '',
   version: '',
@@ -49,12 +44,6 @@ var device = {
     image: '',
     files: [],
     fileCounter: 0,
-  },
-  ryu: {
-    stp: false,
-    rest: true,
-    topology: true,
-    custom: '',
   },
   routing: {
     rip: {

@@ -7,6 +7,7 @@ import {
 } from 'react-flow-renderer';
 import { useKatharaConfig } from '../../contexts/katharaConfigContext';
 import { AdditionalFunctions } from './AdditionalFunctions';
+import { GatewaySection } from './GatewaySection';
 
 type Props = {
   device: any;
@@ -145,7 +146,7 @@ export const DefaultConfigurationInfo: FC<Props> = ({ device }) => {
   return (
     <div className="mt-4 mb-4">
       <form className="space-y-8">
-        <div>
+        <div className="px-4 sm:px-6">
           <span className="text-teal-600">Machine Information</span>
           <label htmlFor="name" className="mt-1 block text-sm text-gray-800">
             Device name
@@ -161,7 +162,7 @@ export const DefaultConfigurationInfo: FC<Props> = ({ device }) => {
             />
           </div>
         </div>
-        <div>
+        <div className="px-4 sm:px-6">
           <span className="text-teal-600">Network Interfaces</span>
           <label htmlFor="domain" className="mt-1 block text-sm text-gray-800">
             Eth0 collision domain
@@ -212,7 +213,7 @@ export const DefaultConfigurationInfo: FC<Props> = ({ device }) => {
             />
           </div>
         </div>
-        <div>
+        {/* <div>
           <span className="text-teal-600">Gateway (static) </span>
           <label
             htmlFor="static-route"
@@ -254,17 +255,21 @@ export const DefaultConfigurationInfo: FC<Props> = ({ device }) => {
               </select>
             </div>
           </div>
+        </div> */}
+        <div>
+          <GatewaySection />
         </div>
         <AdditionalFunctions device={device} activeDevice={activeDevice} />
-
-        <button
-          className="rounded-sm border px-2 border-gray-500"
-          onClick={(event: React.MouseEvent<HTMLButtonElement>) =>
-            addNode(event)
-          }
-        >
-          Add Node
-        </button>
+        <div className="px-4 sm:px-6">
+          <button
+            className="rounded-sm border px-2 border-gray-500"
+            onClick={(event: React.MouseEvent<HTMLButtonElement>) =>
+              addNode(event)
+            }
+          >
+            Add Node
+          </button>
+        </div>
         <div className="invisible">
           <p>Should not require this workaround</p>
         </div>
