@@ -1,5 +1,6 @@
 import React, { FC, useEffect, useState } from 'react';
 import { useKatharaConfig } from '../../contexts/katharaConfigContext';
+import { Heading2 } from '../Heading2';
 
 type Props = {
   device: any;
@@ -59,7 +60,7 @@ export const NameServerConfigurationInfo: FC<Props> = ({
 
   return (
     <div>
-      <span className="text-teal-600">Additional functions</span>
+      <Heading2 text="Additional functions" />
       <div className="mt-1 mb-3">
         <input
           className="mr-2"

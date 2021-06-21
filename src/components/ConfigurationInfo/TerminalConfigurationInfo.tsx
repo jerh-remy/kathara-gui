@@ -1,4 +1,5 @@
 import React, { FC, useState } from 'react';
+import { Heading2 } from '../Heading2';
 
 type Props = {
   device: any;
@@ -12,7 +13,7 @@ export const TerminalConfigurationInfo: FC<Props> = ({ device }) => {
 
   return (
     <div>
-      <span className="text-teal-600">Additional functions</span>
+      <Heading2 text="Additional functions" />
       <label htmlFor="ref-ns" className="mt-1 block text-sm text-gray-800">
         Reference DNS
       </label>

@@ -1,42 +1,68 @@
 import React, { FC, useState } from 'react';
 import { useStoreActions, useStoreState } from 'react-flow-renderer';
 import { toTitleCase } from '../../utilities/utilities';
+import { Heading2 } from '../Heading2';
 
 type Props = {
   activeDevice: any;
+  setActiveDevice: React.Dispatch<any>;
   interfaces: [];
 };
 
 export const NetworkInterfaceSection: FC<Props> = ({
   activeDevice,
+  setActiveDevice,
   interfaces,
 }) => {
-  const [intfs, setIntfs] = useState(interfaces);
-  const edges = useStoreState((store) => store.edges);
+  const [intfs] = useState(interfaces);
 
-  console.log({ edges });
+  const handleChange = (event: any) => {
+    console.log(event.target.name);
 
-  // edges.find((edge)=>)
+    const value =
+      event.target.type === 'checkbox'
+        ? event.target.checked
+        : event.target.value;
 
-  function handleChange(event: any) {
-    console.log(event.target.type);
-    // setIntfs((ns: any) => {
-    //   const newNameServer = {
-    //     ...ns,
-    //     [event.target.name]: event.target.checked,
-    //   };
-    //   return newNameServer;
-    // });
-  }
+    const propertyName = event.target.name;
+
+    switch (propertyName) {
+      case 'name':
+        setActiveDevice((device: any) => ({
+          ...device,
+          [propertyName]: value,
+        }));
+        break;
+      case 'startup':
+        setActiveDevice((device: any) => {
+          const newDevice = {
+            ...device,
+            interfaces: {
+              ...device.interfaces,
+              ['free']: value,
+            },
+          };
+          return newDevice;
+        });
+        break;
+
+      default:
+        break;
+    }
+  };
 
   return (
     <>
       <div className="px-4 sm:px-6">
-        <span className="text-teal-600">Network Interfaces</span>
+        <Heading2 text="Network Interfaces" />
       </div>
-      {intfs.map((intf) => (
-        <NetworkInterface key={intf} interfaceNo={intf} />
-      ))}
+      {intfs.length > 0 ? (
+        intfs.map((intf) => <NetworkInterface key={intf} interfaceNo={intf} />)
+      ) : (
+        <div className="mt-2 flex items-center justify-center text-center border-2 border-dashed rounded-md mx-4 px-2 py-4 text-sm text-gray-700 ">
+          Connect an interface to another device to get started
+        </div>
+      )}
       <div className="px-4 sm:px-6 mt-4">
         <label htmlFor="startup" className="block text-sm text-gray-800">
           Directly in <span className="font-semibold">{activeDevice.name}</span>
@@ -65,7 +91,7 @@ export const NetworkInterface: FC<NetworkInterfaceProps> = ({
   interfaceNo,
 }) => {
   return (
-    <div className="mt-4 border-2 border-dashed rounded-md mx-4 px-2 py-2">
+    <div className="mt-2  mb-4 border-2 border-dashed rounded-md mx-4 px-2 py-2">
       <label htmlFor="domain" className="mt-1 block text-sm text-gray-800">
         {`${toTitleCase(interfaceNo)} collision domain`}
       </label>

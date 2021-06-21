@@ -1,16 +1,22 @@
 import React, { FC, useState } from 'react';
 import { TrashIcon } from '@heroicons/react/outline';
+import { Heading2 } from '../Heading2';
 
 const generateKey = () => {
   return `gw_${new Date().getTime()}`;
 };
 
-export const GatewaySection = () => {
+type Props = {
+  interfaces: [];
+};
+export const GatewaySection: FC<Props> = ({ interfaces }) => {
+  console.log({ interfaces });
   const [gateways, setGateways] = useState<any>([
     <Gateway
       key={generateKey()}
       onDeleteClick={removeGateway}
       id={generateKey()}
+      interfaces={interfaces}
     />,
   ]);
 
@@ -24,6 +30,7 @@ export const GatewaySection = () => {
           key={generateKey()}
           onDeleteClick={removeGateway}
           id={generateKey()}
+          interfaces={interfaces}
         />,
       ];
       console.log({ newGateways });
@@ -48,40 +55,39 @@ export const GatewaySection = () => {
   return (
     <>
       <div className="flex justify-between items-center px-4 sm:px-6">
-        <span className="text-teal-600">Gateway (static) </span>
+        <Heading2 text="Gateway (static)" />
         <button
-          className="rounded-md bg-teal-600 hover:bg-teal-700 px-2 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
+          className="rounded-md bg-teal-600 hover:bg-teal-700 px-4 py-[6px] text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
           onClick={(e: React.MouseEvent<HTMLButtonElement>) => addNewGateway(e)}
         >
           Add Gateway
         </button>
-        {/* <button
-          className="rounded-md bg-teal-600  px-2 py-2 text-white text-sm"
-          onClick={(e: React.MouseEvent<HTMLButtonElement>) => removeGateway(e)}
-        >
-          Remove Gateway
-        </button> */}
       </div>
       {gateways.length > 0 ? (
         gateways
       ) : (
-        <div className="mt-4 flex items-center justify-center border-2 border-dashed rounded-md mx-4 px-2 py-4 text-sm text-gray-700 ">
-          Click the Add Gateway button to get started
+        <div className="mt-4 flex items-center justify-center text-center border-2 border-dashed rounded-md mx-4 px-2 py-4 text-sm text-gray-700 ">
+          Click the 'Add Gateway' button to get started
         </div>
       )}
     </>
   );
 };
 
-type Props = {
+type GatewayProps = {
   onDeleteClick: (
     event: React.MouseEvent<HTMLButtonElement>,
     id: string
   ) => void;
   id: string;
+  interfaces: [];
 };
 
-export const Gateway: FC<Props> = ({ onDeleteClick, id }) => {
+export const Gateway: FC<GatewayProps> = ({
+  onDeleteClick,
+  id,
+  interfaces,
+}) => {
   return (
     <div className="mt-4 border-2 border-dashed rounded-md mx-4 px-2 py-2">
       <label
@@ -116,11 +122,15 @@ export const Gateway: FC<Props> = ({ onDeleteClick, id }) => {
           Interface
         </label>
         <div className="mt-1 mb-2">
+          {/* <select name="version" onChange={handleChange} value={state.version}> */}
           <select>
-            <option>eth0</option>
-            <option>eth1</option>
-            <option>eth2</option>
-            <option>eth3</option>
+            {interfaces.map((intf) => {
+              return (
+                <option key={intf} value={intf}>
+                  {intf}
+                </option>
+              );
+            })}
           </select>
         </div>
       </div>

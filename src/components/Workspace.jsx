@@ -176,7 +176,6 @@ export const Workspace = ({
       };
 
       setElements((es) => {
-        // console.log({ es });
         const newArr = es.concat(newNode);
         return newArr;
       });
@@ -196,6 +195,25 @@ export const Workspace = ({
         };
       });
     }
+  };
+
+  const updateActiveDeviceLabel = () => {
+    const rfNodeId = activeDevice.id;
+    const updatedLabel = katharaConfig.machines.find(
+      (machine) => machine.id === rfNodeId
+    ).name;
+
+    setElements((oldElements) => {
+      const newArr = oldElements.filter((element) => {
+        return element.id !== rfNodeId;
+      });
+      const rfNode = oldElements.find((node) => {
+        return node.id === rfNodeId;
+      });
+      rfNode.data.label = updatedLabel;
+
+      return newArr.concat(rfNode);
+    });
   };
 
   return (
@@ -244,9 +262,9 @@ export const Workspace = ({
         <ConfigurationPanel
           isOpen={isConfigurationPanelOpen}
           setOpen={openConfigurationPanel}
+          onPanelClose={updateActiveDeviceLabel}
           activeDevice={activeDevice}
           interfaces={activeDeviceInterfaces}
-          setActiveDevice={setActiveDevice}
         />
       </div>
     </ReactFlowProvider>

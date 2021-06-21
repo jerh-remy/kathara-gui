@@ -8,17 +8,17 @@ import { Heading } from './Heading';
 type Props = {
   isOpen: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  onPanelClose: () => void;
   activeDevice: any;
   interfaces: [];
-  setActiveDevice: React.Dispatch<React.SetStateAction<any>>;
 };
 
 export const ConfigurationPanel: FC<Props> = ({
   isOpen,
   setOpen,
+  onPanelClose,
   activeDevice,
   interfaces,
-  setActiveDevice,
 }) => {
   // const setOpen = () => {
   //   console.log('clicked');
@@ -32,17 +32,17 @@ export const ConfigurationPanel: FC<Props> = ({
         className="fixed inset-0 z-10 overflow-hidden"
         open={isOpen}
         onClose={() => {
+          onPanelClose();
           setOpen(false);
-          setActiveDevice(null);
         }}
       >
         <div className="absolute inset-0 overflow-hidden ">
           <Transition.Child
             as={Fragment}
-            enter="ease-in-out duration-300"
+            enter="ease-in-out duration-200"
             enterFrom="opacity-0"
             enterTo="opacity-100"
-            leave="ease-in-out duration-300"
+            leave="ease-in-out duration-200"
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
@@ -51,10 +51,10 @@ export const ConfigurationPanel: FC<Props> = ({
           <div className="fixed inset-y-0 right-0 max-w-full flex ">
             <Transition.Child
               as={Fragment}
-              enter="transform transition ease-in-out duration-300 sm:duration-500"
+              enter="transform transition ease-in-out duration-200 sm:duration-500"
               enterFrom="translate-x-full"
               enterTo="translate-x-0"
-              leave="transform transition ease-in-out duration-300 sm:duration-500"
+              leave="transform transition ease-in-out duration-200 sm:duration-500"
               leaveFrom="translate-x-0"
               leaveTo="translate-x-full"
             >

@@ -6,7 +6,7 @@ export const Navbar = () => {
     <nav className="flex justify-between px-4 py-2 bg-gray-800 shadow-lg align-center">
       {/* <a className="focus:outline-none focus:ring-2 focus:ring-emerald-400 flex items-center"> */}
 
-      <div className="">
+      <div className="cursor-auto">
         <img className="w-auto h-8 mt-1" src={logo} alt="kathara logo" />
       </div>
       {/* </a> */}

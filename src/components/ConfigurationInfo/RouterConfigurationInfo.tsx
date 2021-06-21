@@ -6,6 +6,7 @@ import {
   Elements,
 } from 'react-flow-renderer';
 import { useKatharaConfig } from '../../contexts/katharaConfigContext';
+import { Heading2 } from '../Heading2';
 
 type Props = {
   device: any;
@@ -48,7 +49,7 @@ export const RouterConfigurationInfo: FC<Props> = ({ device }) => {
 
   return (
     <div>
-      <span className="text-teal-600">Additional functions</span>
+      <Heading2 text="Additional functions" />
       <label htmlFor="ref-ns" className="mt-1 block text-sm text-gray-800">
         Dynamic routing
       </label>

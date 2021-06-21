@@ -10,6 +10,7 @@ import { AdditionalFunctions } from './AdditionalFunctions';
 import { GatewaySection } from './GatewaySection';
 import { NetworkInterfaceSection } from './NetworkInterfaceSection';
 import { sortInterfacesString } from '../../utilities/utilities';
+import { Heading2 } from '../Heading2';
 
 type Props = {
   device: any;
@@ -31,16 +32,16 @@ export const DefaultConfigurationInfo: FC<Props> = ({ device, interfaces }) => {
 
   const nodes = useStoreState((store) => store.nodes);
   const edges = useStoreState((store) => store.edges);
-  const elements = [...nodes, ...edges];
+  // const elements = [...nodes, ...edges];
 
-  const setElements = useStoreActions((actions) => actions.setElements);
+  // const setElements = useStoreActions((actions) => actions.setElements);
 
   // console.log({ nodes });
 
   // console.log(
   //   katharaConfig.machines.find((machine: any) => machine.id === device.id)
   // );
-  // console.log(device.id);
+  // console.log({ device });
 
   // const handleInputChange = (event) => {
   //   event.persist();
@@ -132,29 +133,30 @@ export const DefaultConfigurationInfo: FC<Props> = ({ device, interfaces }) => {
     //   //   ...katharaConfig,
     //   //   machines: [...katharaConfig.machines, activeDevice],
     //   // });
-  }, [activeDevice, setElements]);
+  }, [activeDevice]);
 
-  const addNode = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    const newNode = {
-      id: `${Math.random() * 1000}`,
-      type: 'custom',
-      position: { x: 250, y: 500 },
-      data: { label: `node_${+new Date().getSeconds()}`, deviceType: 'router' },
-    };
-    console.log({ newNode });
-    setElements(
-      elements.concat(newNode)
+  // const addNode = (event: React.MouseEvent<HTMLButtonElement>) => {
+  //   event.preventDefault();
+  //   const newNode = {
+  //     id: `${Math.random() * 1000}`,
+  //     type: 'custom',
+  //     position: { x: 250, y: 500 },
+  //     data: { label: `node_${+new Date().getSeconds()}`, deviceType: 'router' },
+  //   };
+  //   console.log({ newNode });
+  //   setElements(
+  //     elements.concat(newNode)
 
-      // els.find((node) => node.id === device.id).data.label = event.target.value;
-      // console.log(router);
-    );
-  };
+  //     // els.find((node) => node.id === device.id).data.label = event.target.value;
+  //     // console.log(router);
+  //   );
+  // };
+
   return (
     <div className="mt-4 mb-4">
       <form className="space-y-8">
         <div className="px-4 sm:px-6">
-          <span className="text-teal-600">Machine Information</span>
+          <Heading2 text={`Machine Information (${device.data.label})`} />
           <label htmlFor="name" className="mt-1 block text-sm text-gray-800">
             Device name
           </label>
@@ -172,57 +174,15 @@ export const DefaultConfigurationInfo: FC<Props> = ({ device, interfaces }) => {
         <div>
           <NetworkInterfaceSection
             activeDevice={activeDevice}
+            setActiveDevice={setActiveDevice}
             interfaces={sortInterfacesString(interfaces)}
           />
         </div>
-        {/* <div>
-          <span className="text-teal-600">Gateway (static) </span>
-          <label
-            htmlFor="static-route"
-            className="mt-1 block text-sm text-gray-800"
-          >
-            Route (leave empty for default gateway)
-          </label>
-          <div className="mt-1 mb-2">
-            <input
-              type="text"
-              id="static-route"
-              name="static-route"
-              placeholder="0.0.0.0/0"
-            />
-          </div>
-          <div>
-            <label htmlFor="gateway" className="block text-sm text-gray-800">
-              Gateway (leave empty to generate nothing)
-            </label>
-            <div className="mt-1 mb-2">
-              <input
-                type="text"
-                id="gateway"
-                name="gateway"
-                placeholder="0.0.0.0"
-              />
-            </div>
-          </div>
-          <div>
-            <label htmlFor="interface" className="block text-sm text-gray-800">
-              Interface
-            </label>
-            <div className="mt-1 mb-2">
-              <select>
-                <option>eth0</option>
-                <option>eth1</option>
-                <option>eth2</option>
-                <option>eth3</option>
-              </select>
-            </div>
-          </div>
-        </div> */}
         <div>
-          <GatewaySection />
+          <GatewaySection interfaces={sortInterfacesString(interfaces)} />
         </div>
         <AdditionalFunctions device={device} activeDevice={activeDevice} />
-        <div className="px-4 sm:px-6">
+        {/* <div className="px-4 sm:px-6">
           <button
             className="rounded-sm border px-2 border-gray-500"
             onClick={(event: React.MouseEvent<HTMLButtonElement>) =>
@@ -231,7 +191,7 @@ export const DefaultConfigurationInfo: FC<Props> = ({ device, interfaces }) => {
           >
             Add Node
           </button>
-        </div>
+        </div> */}
         <div className="invisible">
           <p>Should not require this workaround</p>
         </div>
