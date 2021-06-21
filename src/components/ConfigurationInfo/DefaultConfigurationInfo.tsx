@@ -127,7 +127,7 @@ export const DefaultConfigurationInfo: FC<Props> = ({ device, interfaces }) => {
       };
     });
 
-    console.log({ activeDevice });
+    console.log({ activeDevice }, { katharaConfig });
 
     //   // setKatharaConfig({
     //   //   ...katharaConfig,

@@ -52,7 +52,7 @@ const CustomNode: FC<NodeProps> = ({ data }) => {
             id="eth3"
             type="source"
             position={Position.Bottom}
-            style={{ bottom: 0, background: '#555' }}
+            style={{ bottom: -2, background: '#555' }}
             onConnect={onConnect}
           />
           <img

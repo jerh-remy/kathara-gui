@@ -39,6 +39,37 @@ const getImage = (deviceType) => {
   return img;
 };
 
+const getDefaultDeviceLabel = (deviceType) => {
+  let label;
+  switch (deviceType) {
+    case 'terminal':
+      label = 'Terminal';
+      break;
+    case 'router':
+      label = 'Router';
+      break;
+    case 'switch':
+      label = 'Switch';
+      break;
+    case 'nameserver':
+      label = 'Name Server';
+      break;
+    case 'webserver':
+      label = 'Web Server';
+      break;
+    case 'other':
+      label = 'Other';
+      break;
+    case 'controller':
+      label = 'Controller';
+      break;
+    default:
+      label = 'Terminal';
+      break;
+  }
+  return label;
+};
+
 const getDeviceTypeString = (deviceType) =>
   deviceType.replace(/ /g, '').toLowerCase();
 
@@ -56,4 +87,10 @@ const toTitleCase = (str) => {
   });
 };
 
-export { getImage, getDeviceTypeString, sortInterfacesString, toTitleCase };
+export {
+  getImage,
+  getDeviceTypeString,
+  sortInterfacesString,
+  toTitleCase,
+  getDefaultDeviceLabel,
+};

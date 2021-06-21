@@ -28,6 +28,7 @@ import { nodeTypes } from '../custom_nodes';
 import { ConfigurationPanel } from './ConfigurationPanel';
 import { useKatharaConfig } from '../contexts/katharaConfigContext';
 import { labInfo, device } from '../models/network';
+import { getDefaultDeviceLabel } from '../utilities/utilities';
 
 const snapGrid = [16, 16];
 
@@ -210,7 +211,12 @@ export const Workspace = ({
       const rfNode = oldElements.find((node) => {
         return node.id === rfNodeId;
       });
-      rfNode.data.label = updatedLabel;
+      console.log({ rfNode });
+      if (updatedLabel) {
+        rfNode.data.label = updatedLabel;
+      } else {
+        rfNode.data.label = getDefaultDeviceLabel(rfNode.data.deviceType);
+      }
 
       return newArr.concat(rfNode);
     });

@@ -12,13 +12,14 @@ var device = {
   type: 'terminal',
   interfaces: {
     if: [
-      {
-        eth: {
-          number: 0,
-          domain: '',
-        },
-        ip: '',
-      },
+      // {
+      //   eth: {
+      //     number: 0,
+      //     domain: '',
+      //     ip: '',
+      //   },
+      //   dns: '',
+      // },
     ],
     free: '',
   },

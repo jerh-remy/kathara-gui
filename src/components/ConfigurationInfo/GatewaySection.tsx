@@ -10,7 +10,7 @@ type Props = {
   interfaces: [];
 };
 export const GatewaySection: FC<Props> = ({ interfaces }) => {
-  console.log({ interfaces });
+  // console.log({ interfaces });
   const [gateways, setGateways] = useState<any>([
     <Gateway
       key={generateKey()}
@@ -50,7 +50,7 @@ export const GatewaySection: FC<Props> = ({ interfaces }) => {
     });
   }
 
-  console.log({ gateways });
+  // console.log({ gateways });
 
   return (
     <>
