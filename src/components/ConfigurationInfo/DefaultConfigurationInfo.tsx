@@ -28,8 +28,6 @@ export const DefaultConfigurationInfo: FC<Props> = ({ device, interfaces }) => {
   //   console.log(element);
   // });
 
-  console.log({ activeDevice });
-
   const nodes = useStoreState((store) => store.nodes);
   const edges = useStoreState((store) => store.edges);
   // const elements = [...nodes, ...edges];
@@ -129,6 +127,8 @@ export const DefaultConfigurationInfo: FC<Props> = ({ device, interfaces }) => {
       };
     });
 
+    console.log({ activeDevice });
+
     //   // setKatharaConfig({
     //   //   ...katharaConfig,
     //   //   machines: [...katharaConfig.machines, activeDevice],
@@ -156,7 +156,7 @@ export const DefaultConfigurationInfo: FC<Props> = ({ device, interfaces }) => {
     <div className="mt-4 mb-4">
       <form className="space-y-8">
         <div className="px-4 sm:px-6">
-          <Heading2 text={`Machine Information (${device.data.label})`} />
+          <Heading2 text={`Machine Information (${device.data.deviceType})`} />
           <label htmlFor="name" className="mt-1 block text-sm text-gray-800">
             Device name
           </label>

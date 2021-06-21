@@ -16,7 +16,7 @@ export const NetworkInterfaceSection: FC<Props> = ({
 }) => {
   const [intfs] = useState(interfaces);
 
-  const handleChange = (event: any) => {
+  const handleChange = (event: any, interfaceNo?: any) => {
     console.log(event.target.name);
 
     const value =
@@ -27,11 +27,31 @@ export const NetworkInterfaceSection: FC<Props> = ({
     const propertyName = event.target.name;
 
     switch (propertyName) {
-      case 'name':
-        setActiveDevice((device: any) => ({
-          ...device,
-          [propertyName]: value,
-        }));
+      case 'domain':
+        setActiveDevice((device: any) => {
+          let filteredInterfaceArr = device.interfaces.if.filter(
+            (intf: any) => {
+              return intf.eth.number !== interfaceNo;
+            }
+          );
+          const newDevice = {
+            ...device,
+            interfaces: {
+              ...device.interfaces,
+              if: [
+                ...filteredInterfaceArr,
+                {
+                  eth: {
+                    number: interfaceNo,
+                    domain: value,
+                  },
+                  ip: '',
+                },
+              ],
+            },
+          };
+          return newDevice;
+        });
         break;
       case 'startup':
         setActiveDevice((device: any) => {
@@ -57,7 +77,14 @@ export const NetworkInterfaceSection: FC<Props> = ({
         <Heading2 text="Network Interfaces" />
       </div>
       {intfs.length > 0 ? (
-        intfs.map((intf) => <NetworkInterface key={intf} interfaceNo={intf} />)
+        intfs.map((intf) => (
+          <NetworkInterface
+            key={intf}
+            interfaceNo={intf}
+            activeDevice={activeDevice}
+            handleChange={handleChange}
+          />
+        ))
       ) : (
         <div className="mt-2 flex items-center justify-center text-center border-2 border-dashed rounded-md mx-4 px-2 py-4 text-sm text-gray-700 ">
           Connect an interface to another device to get started
@@ -85,11 +112,16 @@ export const NetworkInterfaceSection: FC<Props> = ({
 
 type NetworkInterfaceProps = {
   interfaceNo: any;
+  activeDevice: any;
+  handleChange: (event: any, interfaceNo?: any) => void;
 };
 
 export const NetworkInterface: FC<NetworkInterfaceProps> = ({
   interfaceNo,
+  activeDevice,
+  handleChange,
 }) => {
+  const interfaceNumberDigit = interfaceNo[interfaceNo.length - 1];
   return (
     <div className="mt-2  mb-4 border-2 border-dashed rounded-md mx-4 px-2 py-2">
       <label htmlFor="domain" className="mt-1 block text-sm text-gray-800">
@@ -100,8 +132,10 @@ export const NetworkInterface: FC<NetworkInterfaceProps> = ({
           type="text"
           id="domain"
           name="domain"
-          // value={activeDevice.interfaces.if[0].eth.domain}
-          // onChange={handleChange}
+          value={activeDevice.interfaces.if.find(
+            (intf: any) => intf.eth.number === interfaceNumberDigit
+          )}
+          onChange={(event) => handleChange(event, interfaceNumberDigit)}
           placeholder="A"
         />
       </div>
