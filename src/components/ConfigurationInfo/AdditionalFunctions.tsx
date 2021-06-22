@@ -7,13 +7,27 @@ import { WebServerConfigurationInfo } from './WebServerConfigurationInfo';
 type Props = {
   device: any;
   activeDevice: any;
+  setActiveDevice: React.Dispatch<any>;
+
+  interfaces: [];
 };
-export const AdditionalFunctions: FC<Props> = ({ device, activeDevice }) => {
+export const AdditionalFunctions: FC<Props> = ({
+  device,
+  activeDevice,
+  setActiveDevice,
+  interfaces,
+}) => {
   let component;
 
   switch (device.data.deviceType) {
     case 'router':
-      component = <RouterConfigurationInfo device={device} />;
+      component = (
+        <RouterConfigurationInfo
+          activeDevice={activeDevice}
+          interfaces={interfaces}
+          setActiveDevice={setActiveDevice}
+        />
+      );
       break;
     case 'terminal':
       component = <TerminalConfigurationInfo device={device} />;

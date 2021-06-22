@@ -58,7 +58,7 @@ export const ConfigurationPanel: FC<Props> = ({
               leaveFrom="translate-x-0"
               leaveTo="translate-x-full"
             >
-              <div className="relative w-screen max-w-sm">
+              <div className="relative w-screen max-w-[26rem]">
                 <div className="h-full flex flex-col py-4 bg-white shadow-xl overflow-y-scroll">
                   <div className="px-4 sm:px-6">
                     <Dialog.Title className="text-lg font-medium text-gray-900">

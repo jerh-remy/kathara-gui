@@ -23,7 +23,7 @@
 
   [type='checkbox'],
   [type='radio'] {
-    @apply rounded border-gray-300 text-teal-400 focus:ring-teal-500;
+    @apply rounded border-gray-300 text-teal-500 focus:ring-teal-600;
   }
 }
 

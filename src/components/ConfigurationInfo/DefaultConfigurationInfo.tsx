@@ -165,7 +165,12 @@ export const DefaultConfigurationInfo: FC<Props> = ({ device, interfaces }) => {
             interfaces={sortInterfacesString(interfaces)}
           />
         </div>
-        <AdditionalFunctions device={device} activeDevice={activeDevice} />
+        <AdditionalFunctions
+          device={device}
+          activeDevice={activeDevice}
+          setActiveDevice={setActiveDevice}
+          interfaces={sortInterfacesString(interfaces)}
+        />
         {/* <div className="px-4 sm:px-6">
           <button
             className="rounded-sm border px-2 border-gray-500"

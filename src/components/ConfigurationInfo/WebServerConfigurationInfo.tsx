@@ -57,8 +57,10 @@ export const WebServerConfigurationInfo: FC<Props> = ({
 
   return (
     <div>
-      <Heading2 text="Additional functions" />
-      <div className="mt-1 mb-3">
+      <div className="px-4 sm:px-6 mb-2">
+        <Heading2 text="Additional functions" />
+      </div>
+      <label className="px-4 sm:px-6 mt-1 mb-3">
         <input
           className="mr-2"
           type="checkbox"
@@ -72,7 +74,7 @@ export const WebServerConfigurationInfo: FC<Props> = ({
           <span className="text-sm text-gray-900 font-semibold"> userdir </span>
           module
         </p>
-      </div>
+      </label>
     </div>
   );
 };

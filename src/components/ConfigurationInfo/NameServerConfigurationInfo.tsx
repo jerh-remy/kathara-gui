@@ -60,8 +60,10 @@ export const NameServerConfigurationInfo: FC<Props> = ({
 
   return (
     <div>
-      <Heading2 text="Additional functions" />
-      <div className="mt-1 mb-3">
+      <div className="px-4 sm:px-6 mb-2">
+        <Heading2 text="Additional functions" />
+      </div>
+      <label className="px-4 sm:px-6 mb-1">
         <input
           className="mr-2"
           type="checkbox"
@@ -73,21 +75,21 @@ export const NameServerConfigurationInfo: FC<Props> = ({
         <span className="text-sm text-gray-800">
           I am a Nameserver Authority
         </span>
-      </div>
+      </label>
       {nameServer.authority && (
-        <div>
+        <div className="px-4 sm:px-6 mt-[5px]">
           <label
             htmlFor="static-route"
             className="mt-1 block text-sm text-gray-800"
           >
             Zone (root is .)
           </label>
-          <div className="mt-1 mb-1">
+          <div className="mt-1 mb-2">
             <input type="text" id="zone" name="zone" placeholder=".com." />
           </div>
         </div>
       )}
-      <div className="mb-2">
+      <label className="mb-2 mt-1 px-4 sm:px-6 block">
         <input
           className="mr-2"
           type="checkbox"
@@ -97,7 +99,7 @@ export const NameServerConfigurationInfo: FC<Props> = ({
           name="recursion"
         />
         <span className="text-sm text-gray-800">Enable recursive</span>
-      </div>
+      </label>
     </div>
   );
 };
