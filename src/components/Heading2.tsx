@@ -5,7 +5,7 @@ type Props = {
 };
 export const Heading2: FC<Props> = ({ text }) => {
   return (
-    <span className="text-teal-500 font-normal text-base tracking-tight">
+    <span className="text-teal-600 font-normal text-base tracking-tight">
       {text}
     </span>
   );

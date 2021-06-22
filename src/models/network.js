@@ -25,10 +25,12 @@ var device = {
   },
   gateways: {
     gw: [
-      {
-        route: '',
-        if: 0,
-      },
+      // {
+      //   id: '',
+      //   route: '',
+      //   if: 0,
+      //   gw: '',
+      // },
     ],
   },
   pc: {

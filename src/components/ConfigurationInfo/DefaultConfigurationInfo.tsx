@@ -101,21 +101,6 @@ export const DefaultConfigurationInfo: FC<Props> = ({ device, interfaces }) => {
   };
 
   useEffect(() => {
-    // setElements(
-    //   nodes.map((el) => {
-    //     if (el.id === device.id && activeDevice.name) {
-    //       // it's important that you create a new object here
-    //       // in order to notify react flow about the change
-    //       // console.log({ ...el.data });
-    //       el.data = {
-    //         ...el.data,
-    //         label: activeDevice.name,
-    //       };
-    //     }
-    //     return el;
-    //   })
-    // );
-
     setKatharaConfig((config: any) => {
       let filteredMachines = config.machines.filter((machine: any) => {
         return machine.id !== activeDevice.id;
@@ -128,11 +113,6 @@ export const DefaultConfigurationInfo: FC<Props> = ({ device, interfaces }) => {
     });
 
     console.log({ activeDevice }, { katharaConfig });
-
-    //   // setKatharaConfig({
-    //   //   ...katharaConfig,
-    //   //   machines: [...katharaConfig.machines, activeDevice],
-    //   // });
   }, [activeDevice]);
 
   // const addNode = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -179,7 +159,11 @@ export const DefaultConfigurationInfo: FC<Props> = ({ device, interfaces }) => {
           />
         </div>
         <div>
-          <GatewaySection interfaces={sortInterfacesString(interfaces)} />
+          <GatewaySection
+            activeDevice={activeDevice}
+            setActiveDevice={setActiveDevice}
+            interfaces={sortInterfacesString(interfaces)}
+          />
         </div>
         <AdditionalFunctions device={device} activeDevice={activeDevice} />
         {/* <div className="px-4 sm:px-6">
