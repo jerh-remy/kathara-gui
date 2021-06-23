@@ -89,7 +89,7 @@ export const GatewaySection: FC<Props> = ({
 
   return (
     <>
-      <div className="flex justify-between items-center px-4 sm:px-6">
+      <div className="flex justify-between items-center px-5 sm:px-7">
         <Heading2 text="Gateway (static)" />
         <button
           className="rounded-md bg-teal-600 hover:bg-teal-700 px-4 py-[6px] text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
@@ -127,7 +127,7 @@ export const Gateway: FC<GatewayProps> = ({
   activeDevice,
   setActiveDevice,
 }) => {
-  const handleChange = (event: any, interfaceNo?: any) => {
+  const handleChange = (event: any) => {
     console.log(event.target.name);
 
     const value =
@@ -308,26 +308,6 @@ export const Gateway: FC<GatewayProps> = ({
                       Delete
                     </span>
                   </button>
-
-                  {/* <Transition.Child
-                  as={Fragment}
-                  enter="ease-in-out duration-500"
-                  enterFrom="opacity-0"
-                  enterTo="opacity-100"
-                  leave="ease-in-out duration-500"
-                  leaveFrom="opacity-100"
-                  leaveTo="opacity-0"
-                >
-                  <div className="absolute top-0 left-0 -ml-8 pt-4 pr-2 flex sm:-ml-10 sm:pr-4">
-                    <button
-                      className="rounded-md text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white"
-                      onClick={() => setOpen(false)}
-                    >
-                      <span className="sr-only">Close panel</span>
-                      <XIcon className="h-6 w-6" aria-hidden="true" />
-                    </button>
-                  </div>
-                </Transition.Child> */}
                 </div>
               </Disclosure.Panel>
             </Transition>

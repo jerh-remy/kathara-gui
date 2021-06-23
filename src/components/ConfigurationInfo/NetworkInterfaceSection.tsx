@@ -99,7 +99,7 @@ export const NetworkInterfaceSection: FC<Props> = ({
       );
   } else {
     component = (
-      <div className="px-4 sm:px-6">
+      <div className="px-5 sm:px-7">
         <label htmlFor="startup" className="block text-sm text-gray-800">
           Directly in <span className="font-semibold">{activeDevice.name}</span>
           .startup
@@ -120,10 +120,10 @@ export const NetworkInterfaceSection: FC<Props> = ({
 
   return (
     <>
-      <div className="px-4 sm:px-6">
+      <div className="px-5 sm:px-7">
         <Heading2 text="Network Interfaces" />
       </div>
-      <div className="flex justify-between items-center px-4 sm:px-6 mt-2 mb-4">
+      <div className="flex justify-between items-center px-5 sm:px-7 mt-2 mb-4">
         <span className="text-sm text-gray-800">
           Configure directly in startup file?
         </span>

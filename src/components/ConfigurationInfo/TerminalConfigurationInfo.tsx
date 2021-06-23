@@ -13,11 +13,16 @@ export const TerminalConfigurationInfo: FC<Props> = ({ device }) => {
 
   return (
     <div>
-      <Heading2 text="Additional functions" />
-      <label htmlFor="ref-ns" className="mt-1 block text-sm text-gray-800">
+      <div className="px-5 sm:px-7 mb-2">
+        <Heading2 text="Additional functions" />
+      </div>{' '}
+      <label
+        htmlFor="ref-ns"
+        className="px-5 sm:px-7 mb-1 mt-1 block text-sm text-gray-800"
+      >
         Reference DNS
       </label>
-      <div className="mt-1">
+      <div className="px-5 sm:px-7 mt-1">
         {/* <input
           type="text"
           id="ref-ns"

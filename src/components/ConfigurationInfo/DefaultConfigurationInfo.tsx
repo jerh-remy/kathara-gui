@@ -135,7 +135,7 @@ export const DefaultConfigurationInfo: FC<Props> = ({ device, interfaces }) => {
   return (
     <div className="mt-4 mb-4">
       <form className="space-y-8">
-        <div className="px-4 sm:px-6">
+        <div className="px-5 sm:px-7">
           <Heading2 text={`Machine Information (${device.data.deviceType})`} />
           <label htmlFor="name" className="mt-1 block text-sm text-gray-800">
             Device name
@@ -171,7 +171,7 @@ export const DefaultConfigurationInfo: FC<Props> = ({ device, interfaces }) => {
           setActiveDevice={setActiveDevice}
           interfaces={sortInterfacesString(interfaces)}
         />
-        {/* <div className="px-4 sm:px-6">
+        {/* <div className="px-5 sm:px-7">
           <button
             className="rounded-sm border px-2 border-gray-500"
             onClick={(event: React.MouseEvent<HTMLButtonElement>) =>

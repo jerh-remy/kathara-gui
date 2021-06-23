@@ -78,13 +78,19 @@ var device = {
     bgp: {
       en: false,
       as: '',
-      network: [''],
+      network: [
+        // {
+        //   id: '',
+        //   ip: '',
+        // }
+      ],
       remote: [
-        {
-          neighbor: '',
-          as: '',
-          description: '',
-        },
+        // {
+        //   id:'',
+        //   neighbor: '',
+        //   as: '',
+        //   description: '',
+        // },
       ],
       free: '',
     },

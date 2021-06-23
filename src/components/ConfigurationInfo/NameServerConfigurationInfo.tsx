@@ -60,10 +60,10 @@ export const NameServerConfigurationInfo: FC<Props> = ({
 
   return (
     <div>
-      <div className="px-4 sm:px-6 mb-2">
+      <div className="px-5 sm:px-7 mb-2">
         <Heading2 text="Additional functions" />
       </div>
-      <label className="px-4 sm:px-6 mb-1">
+      <label className="px-5 sm:px-7 mb-1">
         <input
           className="mr-2"
           type="checkbox"
@@ -77,7 +77,7 @@ export const NameServerConfigurationInfo: FC<Props> = ({
         </span>
       </label>
       {nameServer.authority && (
-        <div className="px-4 sm:px-6 mt-[5px]">
+        <div className="px-5 sm:px-7 mt-[5px]">
           <label
             htmlFor="static-route"
             className="mt-1 block text-sm text-gray-800"
@@ -89,7 +89,7 @@ export const NameServerConfigurationInfo: FC<Props> = ({
           </div>
         </div>
       )}
-      <label className="mb-2 mt-1 px-4 sm:px-6 block">
+      <label className="mb-2 mt-1 px-5 sm:px-7 block">
         <input
           className="mr-2"
           type="checkbox"

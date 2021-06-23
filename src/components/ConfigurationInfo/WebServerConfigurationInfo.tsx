@@ -57,10 +57,10 @@ export const WebServerConfigurationInfo: FC<Props> = ({
 
   return (
     <div>
-      <div className="px-4 sm:px-6 mb-2">
+      <div className="px-5 sm:px-7 mb-2">
         <Heading2 text="Additional functions" />
       </div>
-      <label className="px-4 sm:px-6 mt-1 mb-3">
+      <label className="px-5 sm:px-7 mt-1 mb-3">
         <input
           className="mr-2"
           type="checkbox"
