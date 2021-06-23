@@ -19,8 +19,8 @@ export const RouterConfigurationInfo: FC<Props> = ({
   const [katharaConfig, setKatharaConfig] = useKatharaConfig();
 
   const [dynamicRouting, setDynamicRouting] = useState({
-    isis: false,
-    bgp: false,
+    isis: activeDevice.routing.isis.en,
+    bgp: activeDevice.routing.bgp.en,
   });
 
   const handleChange = (event: any) => {
@@ -128,7 +128,13 @@ export const RouterConfigurationInfo: FC<Props> = ({
         <MessageWithBorder message="Configure IS-IS and/or BGP on this router" />
       )}
 
-      {dynamicRouting.isis && <IsisConfiguration interfaces={interfaces} />}
+      {dynamicRouting.isis && (
+        <IsisConfiguration
+          interfaces={interfaces}
+          activeDevice={activeDevice}
+          setActiveDevice={setActiveDevice}
+        />
+      )}
       {dynamicRouting.bgp && (
         <BgpConfiguration
           interfaces={interfaces}
@@ -142,11 +148,17 @@ export const RouterConfigurationInfo: FC<Props> = ({
 
 type IsisProps = {
   interfaces: [];
-  // activeDevice: any;
-  // setActiveDevice: React.Dispatch<any>;
+  activeDevice: any;
+  setActiveDevice: React.Dispatch<any>;
 };
 
-export const IsisConfiguration: FC<IsisProps> = ({ interfaces }) => {
+export const IsisConfiguration: FC<IsisProps> = ({
+  interfaces,
+  activeDevice,
+  setActiveDevice,
+}) => {
+  const isisConfig = activeDevice.routing.isis;
+
   let interfaceSelectionSection;
 
   if (interfaces.length > 0) {
@@ -160,7 +172,7 @@ export const IsisConfiguration: FC<IsisProps> = ({ interfaces }) => {
         </label>
         <div className="flex flex-wrap">
           {interfaces.map((intf) => {
-            console.log({ intf });
+            // console.log({ intf });
             return (
               <label
                 key={intf}
@@ -169,10 +181,9 @@ export const IsisConfiguration: FC<IsisProps> = ({ interfaces }) => {
                 <input
                   className="mr-[5px] mt-[1.5px]"
                   type="checkbox"
-                  value={intf}
-                  // onChange={handleChange}
-                  // checked={directInStartup === 'yes'}
-                  name="direct-startup"
+                  onChange={(e) => handleChange(e, intf)}
+                  checked={isisConfig.interfaces.includes(intf)}
+                  name="intf"
                 />
                 <span className="text-sm text-gray-800">{intf}</span>
               </label>
@@ -187,35 +198,150 @@ export const IsisConfiguration: FC<IsisProps> = ({ interfaces }) => {
     );
   }
 
+  const handleChange = (event: any, intf?: any) => {
+    console.log(event.target.name);
+
+    const value =
+      event.target.type === 'checkbox'
+        ? event.target.checked
+        : event.target.value;
+
+    const propertyName = event.target.name;
+
+    switch (propertyName) {
+      case 'loopback':
+        setActiveDevice((device: any) => {
+          const newDevice = {
+            ...device,
+            routing: {
+              ...device.routing,
+              isis: {
+                ...device.routing.isis,
+                loopback: value,
+              },
+            },
+          };
+          return newDevice;
+        });
+        break;
+      case 'afi':
+        setActiveDevice((device: any) => {
+          const newDevice = {
+            ...device,
+            routing: {
+              ...device.routing,
+              isis: {
+                ...device.routing.isis,
+                afi: value,
+              },
+            },
+          };
+          return newDevice;
+        });
+        break;
+      case 'area-id':
+        setActiveDevice((device: any) => {
+          const newDevice = {
+            ...device,
+            routing: {
+              ...device.routing,
+              isis: {
+                ...device.routing.isis,
+                areaId: value,
+              },
+            },
+          };
+          return newDevice;
+        });
+        break;
+      case 'intf':
+        console.log(`${intf} ${value}`);
+        if (value) {
+          setActiveDevice((device: any) => {
+            const newIntfArr = device.routing.isis.interfaces.concat([intf]);
+            const newDevice = {
+              ...device,
+              routing: {
+                ...device.routing,
+                isis: {
+                  ...device.routing.isis,
+                  interfaces: newIntfArr,
+                },
+              },
+            };
+            return newDevice;
+          });
+        } else {
+          setActiveDevice((device: any) => {
+            const filteredIntfArr = device.routing.isis.interfaces.filter(
+              (el: any) => {
+                return el !== intf;
+              }
+            );
+            const newDevice = {
+              ...device,
+              routing: {
+                ...device.routing,
+                isis: {
+                  ...device.routing.isis,
+                  interfaces: filteredIntfArr,
+                },
+              },
+            };
+            return newDevice;
+          });
+        }
+        break;
+
+      default:
+        break;
+    }
+  };
+
   return (
     <>
       <div className="mt-6 mx-4 px-2 py-2 bg-teal-50 rounded-md flex justify-center items-center">
         <span className="text-teal-600 text-">IS-IS Configuration</span>
       </div>
       <div className="mt-2 mb-4 mx-4 px-2 border-2 border-dashed rounded-md py-2">
-        <label htmlFor="as" className="block text-sm text-gray-800">
+        <label htmlFor="loopback" className="block text-sm text-gray-800">
           Loopback address
         </label>
         <div className="mt-1 mb-2">
           <input
             type="text"
-            id="as"
-            name="as"
+            id="loopback"
+            name="loopback"
             placeholder="0.0.0.0/0"
-            // pattern="(^$)|(((^|\.)((25[0-5])|(2[0-4]\d)|(1\d\d)|([1-9]?\d))){4}/[0-9]+$)"
+            value={typeof isisConfig !== 'undefined' ? isisConfig.loopback : ''}
+            onChange={handleChange}
           />
         </div>
         <label htmlFor="afi" className="block text-sm text-gray-800">
           Authority and Format ID (AFI)
         </label>
         <div className="mt-1 mb-2">
-          <input type="text" id="afi" name="afi" placeholder="49" />
+          <input
+            type="text"
+            id="afi"
+            name="afi"
+            placeholder="49"
+            value={typeof isisConfig !== 'undefined' ? isisConfig.afi : ''}
+            onChange={handleChange}
+          />
         </div>
-        <label htmlFor="domain" className="mt-2 block text-sm text-gray-800">
+        <label htmlFor="area-id" className="mt-2 block text-sm text-gray-800">
           Area ID
         </label>
         <div className="mt-1 mb-2">
-          <input type="text" id="domain" name="domain" placeholder="0001" />
+          <input
+            type="text"
+            id="area-id"
+            name="area-id"
+            placeholder="0001"
+            value={typeof isisConfig !== 'undefined' ? isisConfig.areaId : ''}
+            onChange={handleChange}
+          />
         </div>
         {interfaceSelectionSection}
       </div>
@@ -255,7 +381,7 @@ export const BgpConfiguration: FC<BgpProps> = ({
     })
   );
   const [neighbors, setNeighbors] = useState<any>(
-    activeDevice.gateways.gw.map((elem: any) => {
+    activeDevice.routing.bgp.remote.map((elem: any) => {
       return (
         <Neighbor
           key={elem.id}
@@ -352,7 +478,7 @@ export const BgpConfiguration: FC<BgpProps> = ({
       bgpNeighborArr.push({
         id: uniqueId,
       });
-      console.log({ gatewayArr: bgpNeighborArr });
+      console.log({ bgpNeighborArr });
       const newDevice = {
         ...activeDevice,
         routing: {
