@@ -129,56 +129,56 @@ export const Workspace = ({
   const onElementsRemove = useCallback(
     (elementsToRemove) => {
       let idsOfElementsToRemove = elementsToRemove.map((el) => el.id);
-      console.log({ ids: idsOfElementsToRemove });
+      console.log({ idsOfElementsToRemove });
       console.log({ elementsToRemove });
       // console.log(
       //   katharaConfig.machines.filter((machine) => !ids.includes(machine.id))
       // );
       setElements((els) => removeElements(elementsToRemove, els));
 
-      // elementsToRemove.forEach((elem) => {
-      //   if (isEdge(elem)) {
-      //     const listOfNodeIdsAndCorrespondingNodeInterfaces = [
-      //       {
-      //         nodeId: elem.source,
-      //         nodeIntf: elem.sourceHandle[elem.sourceHandle - 1],
-      //       },
-      //       {
-      //         nodeId: elem.target,
-      //         nodeIntf: elem.targetHandle[elem.targetHandle - 1],
-      //       },
-      //     ];
-      //     // const listOfCorrespondingNodeInterfaces = [
-      //     //   elem.sourceHandle[elem.sourceHandle - 1],
-      //     //   elem.targetHandle[elem.targetHandle - 1],
-      //     // ];
+      elementsToRemove.forEach((elem) => {
+        if (isEdge(elem)) {
+          const listOfNodeIdsAndCorrespondingNodeInterfaces = [
+            {
+              nodeId: elem.source,
+              nodeIntf: elem.sourceHandle[elem.sourceHandle - 1],
+            },
+            {
+              nodeId: elem.target,
+              nodeIntf: elem.targetHandle[elem.targetHandle - 1],
+            },
+          ];
+          // const listOfCorrespondingNodeInterfaces = [
+          //   elem.sourceHandle[elem.sourceHandle - 1],
+          //   elem.targetHandle[elem.targetHandle - 1],
+          // ];
 
-      //     const filteredMachines = katharaConfig.machines.filter((machine) => {
-      //       return listOfNodeIdsAndCorrespondingNodeInterfaces.some(
-      //         (e) => e.nodeId === machine.id
-      //       );
-      //     });
+          const filteredMachines = katharaConfig.machines.filter((machine) => {
+            return listOfNodeIdsAndCorrespondingNodeInterfaces.some(
+              (e) => e.nodeId === machine.id
+            );
+          });
 
-      //     console.log({ filteredMachines });
+          console.log({ filteredMachines });
 
-      //     filteredMachines.forEach((machine) => {
-      //       return listOfNodeIdsAndCorrespondingNodeInterfaces.forEach(
-      //         (elem) => {
-      //           if (elem.nodeId == machine.id) {
-      //             const newInterfacesArr = machine.interfaces.if.filter((e) => {
-      //               return elem.nodeIntf !== e.eth.number;
-      //             });
+          // filteredMachines.forEach((machine) => {
+          //   return listOfNodeIdsAndCorrespondingNodeInterfaces.forEach(
+          //     (elem) => {
+          //       if (elem.nodeId == machine.id) {
+          //         const newInterfacesArr = machine.interfaces.if.filter((e) => {
+          //           return elem.nodeIntf !== e.eth.number;
+          //         });
 
-      //             console.log({ newInterfacesArr });
-      //           }
-      //         }
-      //       );
-      //       // if (listOfNodeIds.includes(machine.id)) {
-      //       //   machine.interfaces.if.forEach((intf) => {});
-      //       // }
-      //     });
-      //   }
-      // });
+          //         console.log({ newInterfacesArr });
+          //       }
+          //     }
+          //   );
+          //   // if (listOfNodeIds.includes(machine.id)) {
+          //   //   machine.interfaces.if.forEach((intf) => {});
+          //   // }
+          // });
+        }
+      });
 
       setKatharaConfig((config) => ({
         ...config,

@@ -83,9 +83,24 @@ export const GatewaySection: FC<Props> = ({
       const newGw = gw.filter((elem: any) => elem.props.id !== id);
       return [...newGw];
     });
-  }
 
-  // console.log({ gateways });
+    setActiveDevice((activeDevice: any) => {
+      let gatewayArr = activeDevice.gateways.gw;
+      const filteredGatewayArr = gatewayArr.filter((elem: any) => {
+        return elem.id !== id;
+      });
+
+      console.log({ filteredGatewayArr });
+      const newDevice = {
+        ...activeDevice,
+        gateways: {
+          gw: [...filteredGatewayArr],
+        },
+      };
+      console.log({ newDevice });
+      return newDevice;
+    });
+  }
 
   return (
     <>
