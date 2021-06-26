@@ -414,22 +414,18 @@ export const BgpConfiguration: FC<BgpProps> = ({
     });
 
     setActiveDevice((activeDevice: any) => {
-      console.log(`The active device in bgp network section is: `, {
-        activeDevice,
-      });
-
       let bgpNetworkArr = activeDevice.routing.bgp.network;
       bgpNetworkArr.push({
         id: uniqueId,
       });
-      console.log({ gatewayArr: bgpNetworkArr });
+      console.log({ bgpNetworkArr });
       const newDevice = {
         ...activeDevice,
         routing: {
           ...activeDevice.routing,
           bgp: {
             ...activeDevice.routing.bgp,
-            network: bgpNetworkArr,
+            network: [...bgpNetworkArr],
           },
         },
       };
@@ -447,6 +443,27 @@ export const BgpConfiguration: FC<BgpProps> = ({
       const newNetworks = net.filter((elem: any) => elem.props.id !== id);
       console.log({ newNetworks });
       return [...newNetworks];
+    });
+
+    setActiveDevice((activeDevice: any) => {
+      let bgpNetworkArr = activeDevice.routing.bgp.network;
+      const filteredBgpNetworkArr = bgpNetworkArr.filter((elem: any) => {
+        return elem.id !== id;
+      });
+      console.log({ filteredBgpNetworkArr });
+
+      const newDevice = {
+        ...activeDevice,
+        routing: {
+          ...activeDevice.routing,
+          bgp: {
+            ...activeDevice.routing.bgp,
+            network: filteredBgpNetworkArr,
+          },
+        },
+      };
+      console.log({ newDevice });
+      return newDevice;
     });
   }
 
@@ -485,7 +502,7 @@ export const BgpConfiguration: FC<BgpProps> = ({
           ...activeDevice.routing,
           bgp: {
             ...activeDevice.routing.bgp,
-            remote: bgpNeighborArr,
+            remote: [...bgpNeighborArr],
           },
         },
       };
@@ -742,6 +759,13 @@ export const Network: FC<NetworkProps> = ({
     (elem: any) => elem.id === id
   );
 
+  console.log(activeDevice);
+
+  // console.log(
+  //   activeDevice.routing.bgp.network.find((elem: any) => elem.id === id),
+  //   { id }
+  // );
+
   return (
     <div className="mt-3 border-2 border-dashed rounded-md mx-4 px-2 py-2">
       <Disclosure>
@@ -778,10 +802,11 @@ export const Network: FC<NetworkProps> = ({
                     id="network"
                     name="network"
                     placeholder="0.0.0.0/0"
+                    // value={bgpNetwork.ip}
                     value={
                       typeof bgpNetwork !== 'undefined' ? bgpNetwork.ip : ''
                     }
-                    onChange={handleChange}
+                    onChange={(event) => handleChange(event)}
                   />
                 </div>
                 <div className="mt-4 mb-1.5">

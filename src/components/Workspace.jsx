@@ -1,4 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
+// import {deepCopy} from 'lodash';
+import _ from 'lodash';
 import ReactFlow, {
   ElementId,
   isNode,
@@ -228,8 +230,9 @@ export const Workspace = ({
       });
 
       setKatharaConfig((config) => {
-        const machine = { ...device };
-        return {
+        const machine = _.cloneDeep(device);
+        console.log({ machine });
+        const lab = {
           ...config,
           machines: [
             ...config.machines,
@@ -237,12 +240,14 @@ export const Workspace = ({
               ...machine,
               id: newNode.id,
               type: dt,
-              gateways: {
-                gw: [],
-              },
+              // gateways: {
+              //   gw: [],
+              // },
             },
           ],
         };
+        console.log({ lab });
+        return lab;
       });
     }
   };
