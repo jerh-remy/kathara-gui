@@ -1,7 +1,7 @@
 import React from 'react';
 import logo from '../../assets/logo_kathara_white.png';
 import { useKatharaConfig } from '../contexts/katharaConfigContext';
-import { createFilesStructure } from '../utilities/createNetworkLab';
+import { createFilesStructure, createZip } from '../utilities/createNetworkLab';
 
 export const Navbar = () => {
   const [katharaConfig] = useKatharaConfig();
@@ -19,7 +19,9 @@ export const Navbar = () => {
         aria-label="Run Lab"
         onClick={() => {
           console.log('clicked');
-          createFilesStructure(katharaConfig.machines, katharaConfig.labInfo);
+          createZip(
+            createFilesStructure(katharaConfig.machines, katharaConfig.labInfo)
+          );
         }}
         className="relative inline-flex items-center px-4 py-1 text-sm font-bold tracking-wide text-white border border-transparent rounded-lg shadow-sm bg-emerald-500 hover:bg-emerald-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-emerald-500"
       >

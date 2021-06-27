@@ -1,3 +1,6 @@
+// import * as JSZip from 'jszip';
+import { saveAs } from 'file-saver';
+
 function createMachineFolders(kathara, lab) {
   for (let machine of kathara) lab.folders.push(machine.name);
 }
@@ -46,12 +49,6 @@ function createLabConfFile(kathara, lab) {
 /* --------------------------------------------------- */
 /* ------------------ STARTUP FILES ------------------ */
 /* --------------------------------------------------- */
-
-// TODO: Metti a fattor comune:
-/*
-	for (let machine of kathara) {
-		if (machine.name && machine.name != "" && .....
-*/
 
 function createTerminal(kathara, lab) {
   for (let machine of kathara) {
@@ -293,75 +290,11 @@ function createRouter(kathara, lab) {
           'hostname zebra\n' +
           'password zebra\n' +
           'enable password zebra\n' +
-          '\nlog file /var/log/zebra/zebra.log\n';
+          '\nlog file /var/log/quagga/zebra.log\n';
       }
 
-      // if (machine.routing.rip.en) {
-      //   lab.file[machine.name + '/etc/zebra/daemons'] += 'ripd=yes\n';
-
-      //   lab.file[machine.name + '/etc/zebra/ripd.conf'] =
-      //     'hostname ripd\n' +
-      //     'password zebra\n' +
-      //     'enable password zebra\n' +
-      //     '\n' +
-      //     'router rip\n';
-
-      //   for (let network of machine.routing.rip.network)
-      //     lab.file[machine.name + '/etc/zebra/ripd.conf'] +=
-      //       'network ' + network + '\n';
-
-      //   for (let route of machine.routing.rip.route) {
-      //     if (route && route != '')
-      //       lab.file[machine.name + '/etc/zebra/ripd.conf'] +=
-      //         'route ' + route + '\n';
-      //   }
-      //   lab.file[machine.name + '/etc/zebra/ripd.conf'] += '\n';
-      // }
-
-      // if (machine.routing.ospf.en) {
-      //   lab.file[machine.name + '/etc/zebra/daemons'] += 'ospfd=yes\n';
-
-      //   lab.file[machine.name + '/etc/zebra/ospfd.conf'] =
-      //     'hostname ospfd\n' +
-      //     'password zebra\n' +
-      //     'enable password zebra\n' +
-      //     '\n' +
-      //     'router ospf\n';
-
-      //   for (let m /* non trasformare in un for... of */ in machine.routing.ospf
-      //     .network) {
-      //     lab.file[machine.name + '/etc/zebra/ospfd.conf'] +=
-      //       'network ' +
-      //       machine.routing.ospf.network[m] +
-      //       ' area ' +
-      //       machine.routing.ospf.area[m] +
-      //       '\n';
-      //     if (machine.routing.ospf.stub[m])
-      //       lab.file[machine.name + '/etc/zebra/ospfd.conf'] +=
-      //         'area ' + machine.routing.ospf.area[m] + ' stub\n';
-      //   }
-      //   lab.file[machine.name + '/etc/zebra/ospfd.conf'] += '\n';
-      // }
-
-      if (machine.routing.isis.en) createIsisConf(machine, lab);
+      // if (machine.routing.isis.en) createIsisConf(machine, lab);
       if (machine.routing.bgp.en) createBgpConf(machine, lab);
-
-      //Free conf
-      if (machine.routing.bgp.en) {
-        if (machine.routing.bgp.free && machine.routing.bgp.free != '') {
-          lab.file[machine.name + '/etc/quagga/bgpd.conf'] +=
-            '\n' + machine.routing.bgp.free + '\n';
-        }
-      }
-      //nb: e infine i log
-      if (machine.routing.isis.en) {
-        lab.file[machine.name + '/etc/quagga/isisd.conf'] +=
-          '\nlog file /var/log/quagga/ripd.log\n';
-      }
-      if (machine.routing.bgp.en) {
-        lab.file[machine.name + '/etc/quagga/bgpd.conf'] +=
-          '\nlog file /var/log/quagga/ospfd.log\n';
-      }
     }
   }
 }
@@ -387,11 +320,11 @@ function createStaticRouting(kathara, lab) {
         if (
           intf.eth.domain &&
           intf.eth.domain != '' &&
-          intf.ip &&
-          intf.ip != ''
+          intf.eth.ip &&
+          intf.eth.ip != ''
         ) {
           lab.file[machine.name + '.startup'] +=
-            'ifconfig eth' + intf.eth.number + ' ' + intf.ip + ' up\n';
+            'ifconfig eth' + intf.eth.number + ' ' + intf.eth.ip + ' up\n';
         }
       }
 
@@ -428,18 +361,10 @@ function createStaticRouting(kathara, lab) {
 }
 
 function createIsisConf(router, lab) {
-  lab.file[router.name + '/etc/zebra/daemons'] += 'bgpd=yes\n';
+  lab.file[router.name + '/etc/quagga/daemons'] += 'isisd=yes\n';
 
-  lab.file[router.name + '/etc/zebra/bgpd.conf'] =
-    '' +
-    'hostname bgpd\n' +
-    'password zebra\n' +
-    'enable password zebra\n' +
-    '\n' +
-    // Inserimento nome AS
-    'router bgp ' +
-    router.routing.bgp.as +
-    '\n\n';
+  lab.file[router.name + '/etc/quagga/isisd.conf'] =
+    '' + 'hostname isisd\n' + 'password zebra\n' + 'enable password zebra\n';
 
   // Inserimento tutte le Network su cui annunciare BGP
   for (let network of router.routing.bgp.network) {
@@ -478,39 +403,40 @@ function createIsisConf(router, lab) {
     '\nlog file /var/log/zebra/bgpd.log\n\n' +
     'debug bgp\ndebug bgp events\ndebug bgp filters\ndebug bgp fsm\ndebug bgp keepalives\ndebug bgp updates\n';
 }
-function createBgpConf(router, lab) {
-  lab.file[router.name + '/etc/zebra/daemons'] += 'bgpd=yes\n';
 
-  lab.file[router.name + '/etc/zebra/bgpd.conf'] =
+function createBgpConf(router, lab) {
+  lab.file[router.name + '/etc/quagga/daemons'] += 'bgpd=yes\n';
+
+  lab.file[router.name + '/etc/quagga/bgpd.conf'] =
     '' +
     'hostname bgpd\n' +
     'password zebra\n' +
     'enable password zebra\n' +
     '\n' +
-    // Inserimento nome AS
+    // Insert the name of the AS
     'router bgp ' +
     router.routing.bgp.as +
     '\n\n';
 
-  // Inserimento tutte le Network su cui annunciare BGP
+  // Insert all the Networks on which to advertise BGP
   for (let network of router.routing.bgp.network) {
-    if (network && network != '') {
-      lab.file[router.name + '/etc/zebra/bgpd.conf'] +=
-        'network ' + network + '\n';
+    if (network && network.ip != '') {
+      lab.file[router.name + '/etc/quagga/bgpd.conf'] +=
+        'network ' + network.ip + '\n';
     }
   }
 
-  lab.file[router.name + '/etc/zebra/bgpd.conf'] += '\n';
+  lab.file[router.name + '/etc/quagga/bgpd.conf'] += '\n';
 
   router.routing.bgp.remote.forEach(function (remote) {
     if (remote && remote.neighbor != '' && remote.as != '') {
-      //Aggiungo il remote-as
-      lab.file[router.name + '/etc/zebra/bgpd.conf'] +=
+      // add the remote-as
+      lab.file[router.name + '/etc/quagga/bgpd.conf'] +=
         'neighbor ' + remote.neighbor + ' remote-as ' + remote.as + '\n';
 
-      //Aggiungo la descrizione
+      // add the description if applicable
       if (remote.description && remote.description != '') {
-        lab.file[router.name + '/etc/zebra/bgpd.conf'] +=
+        lab.file[router.name + '/etc/quagga/bgpd.conf'] +=
           'neighbor ' +
           remote.neighbor +
           ' description ' +
@@ -522,11 +448,11 @@ function createBgpConf(router, lab) {
 
   //Free conf
   if (router.routing.bgp.free && router.routing.bgp.free != '')
-    lab.file[router.name + '/etc/zebra/bgpd.conf'] +=
+    lab.file[router.name + '/etc/quagga/bgpd.conf'] +=
       '\n' + router.routing.bgp.free + '\n';
 
-  lab.file[router.name + '/etc/zebra/bgpd.conf'] +=
-    '\nlog file /var/log/zebra/bgpd.log\n\n' +
+  lab.file[router.name + '/etc/quagga/bgpd.conf'] +=
+    '\nlog file /var/log/quagga/bgpd.log\n\n' +
     'debug bgp\ndebug bgp events\ndebug bgp filters\ndebug bgp fsm\ndebug bgp keepalives\ndebug bgp updates\n';
 }
 
@@ -583,8 +509,8 @@ function createScript(lab) {
   return text;
 }
 
-function createZip(lab) {
-  let zip = new JSZip();
+export function createZip(lab) {
+  const zip = require('jszip')();
 
   for (let folderName of lab.folders) {
     zip.folder(folderName);
@@ -592,6 +518,7 @@ function createZip(lab) {
   for (let fileName in lab.file) {
     zip.file(fileName, lab.file[fileName]);
   }
-  let content = zip.generate({ type: 'blob' });
-  saveAs(content, 'lab.zip');
+  zip.generateAsync({ type: 'blob' }).then((content) => {
+    saveAs(content, 'lab.zip');
+  });
 }
