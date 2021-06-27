@@ -520,6 +520,27 @@ export const BgpConfiguration: FC<BgpProps> = ({
       const newNb = nb.filter((elem: any) => elem.props.id !== id);
       return [...newNb];
     });
+
+    setActiveDevice((activeDevice: any) => {
+      let bgpNeighborArr = activeDevice.routing.bgp.remote;
+      const filteredBgpNeighborArr = bgpNeighborArr.filter((elem: any) => {
+        return elem.id !== id;
+      });
+      console.log({ filteredBgpNeighborArr });
+
+      const newDevice = {
+        ...activeDevice,
+        routing: {
+          ...activeDevice.routing,
+          bgp: {
+            ...activeDevice.routing.bgp,
+            remote: filteredBgpNeighborArr,
+          },
+        },
+      };
+      console.log({ newDevice });
+      return newDevice;
+    });
   }
 
   const handleChange = (event: any) => {
