@@ -78,28 +78,30 @@ export const GatewaySection: FC<Props> = ({
     id: string
   ) {
     event.preventDefault();
-    setGateways((gw: any) => {
-      console.log({ id });
-      const newGw = gw.filter((elem: any) => elem.props.id !== id);
-      return [...newGw];
-    });
-
-    setActiveDevice((activeDevice: any) => {
-      let gatewayArr = activeDevice.gateways.gw;
-      const filteredGatewayArr = gatewayArr.filter((elem: any) => {
-        return elem.id !== id;
+    if (confirm('Are you sure you want to remove this gateway?')) {
+      setGateways((gw: any) => {
+        console.log({ id });
+        const newGw = gw.filter((elem: any) => elem.props.id !== id);
+        return [...newGw];
       });
 
-      console.log({ filteredGatewayArr });
-      const newDevice = {
-        ...activeDevice,
-        gateways: {
-          gw: [...filteredGatewayArr],
-        },
-      };
-      console.log({ newDevice });
-      return newDevice;
-    });
+      setActiveDevice((activeDevice: any) => {
+        let gatewayArr = activeDevice.gateways.gw;
+        const filteredGatewayArr = gatewayArr.filter((elem: any) => {
+          return elem.id !== id;
+        });
+
+        console.log({ filteredGatewayArr });
+        const newDevice = {
+          ...activeDevice,
+          gateways: {
+            gw: [...filteredGatewayArr],
+          },
+        };
+        console.log({ newDevice });
+        return newDevice;
+      });
+    }
   }
 
   return (

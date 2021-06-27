@@ -10,18 +10,18 @@ export const Home = () => {
 
   return (
     <>
-      <div className="flex flex-col h-screen overflow-y-hidden">
-        <Navbar />
-        <div className="flex flex-1">
-          <KatharaConfigProvider>
+      <KatharaConfigProvider>
+        <div className="flex flex-col h-screen overflow-y-hidden">
+          <Navbar />
+          <div className="flex flex-1">
             <DeviceSelectionColumn />
             <Workspace
               openConfigurationPanel={setOpen}
               isConfigurationPanelOpen={open}
             />
-          </KatharaConfigProvider>
+          </div>
         </div>
-      </div>
+      </KatharaConfigProvider>
     </>
   );
 };

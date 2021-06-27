@@ -438,33 +438,35 @@ export const BgpConfiguration: FC<BgpProps> = ({
     id: string
   ) {
     event.preventDefault();
-    setNetworks((net: any) => {
-      console.log({ id });
-      const newNetworks = net.filter((elem: any) => elem.props.id !== id);
-      console.log({ newNetworks });
-      return [...newNetworks];
-    });
-
-    setActiveDevice((activeDevice: any) => {
-      let bgpNetworkArr = activeDevice.routing.bgp.network;
-      const filteredBgpNetworkArr = bgpNetworkArr.filter((elem: any) => {
-        return elem.id !== id;
+    if (confirm('Are you sure you want to remove this network?')) {
+      setNetworks((net: any) => {
+        console.log({ id });
+        const newNetworks = net.filter((elem: any) => elem.props.id !== id);
+        console.log({ newNetworks });
+        return [...newNetworks];
       });
-      console.log({ filteredBgpNetworkArr });
 
-      const newDevice = {
-        ...activeDevice,
-        routing: {
-          ...activeDevice.routing,
-          bgp: {
-            ...activeDevice.routing.bgp,
-            network: filteredBgpNetworkArr,
+      setActiveDevice((activeDevice: any) => {
+        let bgpNetworkArr = activeDevice.routing.bgp.network;
+        const filteredBgpNetworkArr = bgpNetworkArr.filter((elem: any) => {
+          return elem.id !== id;
+        });
+        console.log({ filteredBgpNetworkArr });
+
+        const newDevice = {
+          ...activeDevice,
+          routing: {
+            ...activeDevice.routing,
+            bgp: {
+              ...activeDevice.routing.bgp,
+              network: filteredBgpNetworkArr,
+            },
           },
-        },
-      };
-      console.log({ newDevice });
-      return newDevice;
-    });
+        };
+        console.log({ newDevice });
+        return newDevice;
+      });
+    }
   }
 
   const addNewNeighbor = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -515,32 +517,34 @@ export const BgpConfiguration: FC<BgpProps> = ({
     id: string
   ) {
     event.preventDefault();
-    setNeighbors((nb: any) => {
-      console.log({ id });
-      const newNb = nb.filter((elem: any) => elem.props.id !== id);
-      return [...newNb];
-    });
-
-    setActiveDevice((activeDevice: any) => {
-      let bgpNeighborArr = activeDevice.routing.bgp.remote;
-      const filteredBgpNeighborArr = bgpNeighborArr.filter((elem: any) => {
-        return elem.id !== id;
+    if (confirm('Are you sure you want to remove this neighbor?')) {
+      setNeighbors((nb: any) => {
+        console.log({ id });
+        const newNb = nb.filter((elem: any) => elem.props.id !== id);
+        return [...newNb];
       });
-      console.log({ filteredBgpNeighborArr });
 
-      const newDevice = {
-        ...activeDevice,
-        routing: {
-          ...activeDevice.routing,
-          bgp: {
-            ...activeDevice.routing.bgp,
-            remote: filteredBgpNeighborArr,
+      setActiveDevice((activeDevice: any) => {
+        let bgpNeighborArr = activeDevice.routing.bgp.remote;
+        const filteredBgpNeighborArr = bgpNeighborArr.filter((elem: any) => {
+          return elem.id !== id;
+        });
+        console.log({ filteredBgpNeighborArr });
+
+        const newDevice = {
+          ...activeDevice,
+          routing: {
+            ...activeDevice.routing,
+            bgp: {
+              ...activeDevice.routing.bgp,
+              remote: filteredBgpNeighborArr,
+            },
           },
-        },
-      };
-      console.log({ newDevice });
-      return newDevice;
-    });
+        };
+        console.log({ newDevice });
+        return newDevice;
+      });
+    }
   }
 
   const handleChange = (event: any) => {
