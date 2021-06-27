@@ -131,11 +131,8 @@ export const Workspace = ({
   const onElementsRemove = useCallback(
     (elementsToRemove) => {
       let idsOfElementsToRemove = elementsToRemove.map((el) => el.id);
-      console.log({ idsOfElementsToRemove });
-      console.log({ elementsToRemove });
-      // console.log(
-      //   katharaConfig.machines.filter((machine) => !ids.includes(machine.id))
-      // );
+      console.log({ idsOfElementsToRemove }, { elementsToRemove });
+
       setElements((els) => removeElements(elementsToRemove, els));
 
       elementsToRemove.forEach((elem) => {
@@ -143,18 +140,15 @@ export const Workspace = ({
           const listOfNodeIdsAndCorrespondingNodeInterfaces = [
             {
               nodeId: elem.source,
-              nodeIntf: elem.sourceHandle[elem.sourceHandle - 1],
+              nodeIntf: elem.sourceHandle[elem.sourceHandle.length - 1],
             },
             {
               nodeId: elem.target,
-              nodeIntf: elem.targetHandle[elem.targetHandle - 1],
+              nodeIntf: elem.targetHandle[elem.targetHandle.length - 1],
             },
           ];
-          // const listOfCorrespondingNodeInterfaces = [
-          //   elem.sourceHandle[elem.sourceHandle - 1],
-          //   elem.targetHandle[elem.targetHandle - 1],
-          // ];
 
+          // filter out those machines connected together by the now deleted edge
           const filteredMachines = katharaConfig.machines.filter((machine) => {
             return listOfNodeIdsAndCorrespondingNodeInterfaces.some(
               (e) => e.nodeId === machine.id
@@ -163,25 +157,113 @@ export const Workspace = ({
 
           console.log({ filteredMachines });
 
-          // filteredMachines.forEach((machine) => {
-          //   return listOfNodeIdsAndCorrespondingNodeInterfaces.forEach(
-          //     (elem) => {
-          //       if (elem.nodeId == machine.id) {
-          //         const newInterfacesArr = machine.interfaces.if.filter((e) => {
-          //           return elem.nodeIntf !== e.eth.number;
-          //         });
+          filteredMachines.forEach((machine) => {
+            return listOfNodeIdsAndCorrespondingNodeInterfaces.forEach(
+              (elem) => {
+                if (elem.nodeId === machine.id) {
+                  const newInterfacesArr = machine.interfaces.if.filter((e) => {
+                    return parseInt(elem.nodeIntf) !== e.eth.number;
+                  });
 
-          //         console.log({ newInterfacesArr });
-          //       }
-          //     }
-          //   );
-          //   // if (listOfNodeIds.includes(machine.id)) {
-          //   //   machine.interfaces.if.forEach((intf) => {});
-          //   // }
-          // });
+                  console.log({ newInterfacesArr });
+
+                  // mutate the interfaces array of the device
+                  machine.interfaces.if = newInterfacesArr;
+
+                  setKatharaConfig((config) => {
+                    // filter out the machine from the original array
+                    // and add the modified version back
+                    const filteredMachinesArr = config.machines.filter(
+                      (elem) => {
+                        return elem.id !== machine.id;
+                      }
+                    );
+
+                    const newConfig = {
+                      ...config,
+                      machines: [...filteredMachinesArr, machine],
+                    };
+                    return newConfig;
+                  });
+                }
+              }
+            );
+          });
+        } else {
+          const connectedEdges = getConnectedEdges(
+            [elem],
+            elements.filter((element) => isEdge(element))
+          );
+          // console.log({ connectedEdges });
+          const interfacesToDeleteInConnectedDeviceConfig = [];
+          connectedEdges.forEach((edge) => {
+            if (elem.id === edge.source) {
+              interfacesToDeleteInConnectedDeviceConfig.push({
+                node: edge.target,
+                interface: edge.targetHandle,
+              });
+            } else if (elem.id === edge.target) {
+              interfacesToDeleteInConnectedDeviceConfig.push({
+                node: edge.source,
+                interface: edge.sourceHandle,
+              });
+            }
+
+            // console.log({ interfacesToDeleteInConnectedDeviceConfig });
+
+            // remove the appropriate interfaces from the connected node.
+            // the deleted device in question will be removed entirely from kathara
+            // config so no need to filter out the interfaces specifically
+            setKatharaConfig((config) => {
+              const machineToRemoveInterfaceFrom = config.machines.find(
+                (elem) => {
+                  return (
+                    elem.id ===
+                    interfacesToDeleteInConnectedDeviceConfig[0].node
+                  );
+                }
+              );
+              // console.log({ machineToRemoveInterfaceFrom });
+
+              const newIntfArr = machineToRemoveInterfaceFrom.interfaces.if.filter(
+                (intf) => {
+                  const interfaceName =
+                    interfacesToDeleteInConnectedDeviceConfig[0].interface;
+                  const interfaceNo = parseInt(
+                    interfaceName[interfaceName.length - 1]
+                  );
+                  // console.log({ interfaceName }, { interfaceNo }, { intf });
+                  return intf.eth.number !== interfaceNo;
+                }
+              );
+
+              // console.log({ newIntfArr });
+
+              // filter out the machine from the original array
+              // and add the modified version back
+              const filteredMachinesArr = config.machines.filter((elem) => {
+                return (
+                  elem.id !== interfacesToDeleteInConnectedDeviceConfig[0].node
+                );
+              });
+
+              // mutate the interfaces array of the connected device
+              machineToRemoveInterfaceFrom.interfaces.if = newIntfArr;
+
+              const newConfig = {
+                ...config,
+                machines: [
+                  ...filteredMachinesArr,
+                  machineToRemoveInterfaceFrom,
+                ],
+              };
+              return newConfig;
+            });
+          });
         }
       });
 
+      // this deletes the selected device in question entirely from kathara config
       setKatharaConfig((config) => ({
         ...config,
         machines: config.machines.filter(
@@ -240,13 +322,10 @@ export const Workspace = ({
               ...machine,
               id: newNode.id,
               type: dt,
-              // gateways: {
-              //   gw: [],
-              // },
             },
           ],
         };
-        console.log({ lab });
+        // console.log({ lab });
         return lab;
       });
     }
