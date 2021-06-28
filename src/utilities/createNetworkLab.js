@@ -484,7 +484,7 @@ export function createFilesStructure(kathara, labInfo) {
   return lab;
 }
 
-function createScript(lab) {
+export function createScript(lab) {
   let text =
     '#! /bin/sh\n' +
     "# Remember to use 'chmod +x' (o 'chmod 500') on the .sh file. The script will self-destruct\n" +

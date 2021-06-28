@@ -5,10 +5,11 @@ import 'regenerator-runtime/runtime';
 import path from 'path';
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
-import { spawn } from 'child_process';
+import { exec, spawn } from 'child_process';
 // import { writeFileSync, readFileSync } from 'fs';
 import log from 'electron-log';
 import MenuBuilder from './menu';
+import { writeFileSync } from 'fs';
 
 export default class AppUpdater {
   constructor() {
@@ -109,6 +110,12 @@ const createWindow = async () => {
   new AppUpdater();
 };
 
+// App name workaround
+const appName = 'Kathara GUI';
+app.setName(appName);
+const appData = app.getPath('appData');
+app.setPath('userData', path.join(appData, appName));
+
 /**
  * Add event listeners...
  */
@@ -133,7 +140,8 @@ app.on('activate', () => {
 /* ------------------------- EVENTS ------------------------- */
 /* ---------------------------------------------------------- */
 
-// let _baseFolder = app.getPath('userData');
+let baseFolder = app.getPath('userData');
+console.log({ baseFolder });
 
 function runKatharaCommand(command: string, event: Electron.IpcMainEvent) {
   /* ---------------------------------------------------------- */
@@ -155,7 +163,7 @@ function runKatharaCommand(command: string, event: Electron.IpcMainEvent) {
   child.stderr.on('data', (data) => {
     console.error(`stderr: ${data}`);
     output = data.toString();
-    event.reply('script:execute-reply', output);
+    event.reply('script:execute-reply-error', output);
   });
 
   child.on('error', (error) => {
@@ -171,26 +179,46 @@ function runKatharaCommand(command: string, event: Electron.IpcMainEvent) {
 
 /* ------------------------- SCRIPT ------------------------- */
 
-// ipcMain.on('script:copy', function (_, script, filename) {
-//   let pathTemp = path.join(_baseFolder, filename);
-//   console.log('Saving script to ' + pathTemp);
+ipcMain.on('script:copy', function (event, script, filename) {
+  console.log({ filename });
+  console.log(app.getName());
+  console.log({ baseFolder });
+  let pathTemp = path.join(baseFolder, filename);
+  console.log('Saving script to ' + pathTemp);
+  writeFileSync(pathTemp, script);
 
-//   writeFileSync(pathTemp, script);
-
-//   console.log('Running ' + pathTemp);
-//   exec('bash "' + pathTemp + '"');
-// });
+  console.log('Running ' + pathTemp);
+  exec(
+    `bash ${filename}`,
+    {
+      cwd: baseFolder,
+    },
+    (error, stdout, stderr) => {
+      if (error) {
+        console.log(`error: ${error.message}`);
+        return;
+      }
+      if (stderr) {
+        console.log(`stderr: ${stderr}`);
+        return;
+      }
+      console.log(`stdout: ${stdout}`);
+    }
+  );
+});
 
 ipcMain.on('script:execute', (event, arg) => {
-  // let pathTemp = path.join(_baseFolder, 'lab');
-  console.log(`Running LStart on ${arg}`);
-  runKatharaCommand(`lstart -d "${arg}"`, event);
+  let pathTemp = path.join(baseFolder, 'lab');
+  // console.log(`Running LStart on ${arg}`);
+  console.log(`Running LStart on ${pathTemp}`);
+  runKatharaCommand(`lstart -d "${pathTemp}"`, event);
 });
 
 ipcMain.on('script:clean', (event, arg) => {
-  // let pathTemp = path.join(_baseFolder, 'lab');
-  console.log(`Running LClean on ${arg}`);
-  runKatharaCommand(`lclean -d "${arg}"`, event);
+  let pathTemp = path.join(baseFolder, 'lab');
+  // console.log(`Running LClean on ${arg}`);
+  console.log(`Running LClean on ${pathTemp}`);
+  runKatharaCommand(`lclean -d "${pathTemp}"`, event);
 });
 
 ipcMain.on('anything-asynchronous', (_, arg) => {
