@@ -7,6 +7,7 @@ import {
   createScript,
 } from '../utilities/createNetworkLab';
 import { ipcRenderer, remote, shell } from 'electron';
+import { data } from 'autoprefixer';
 const { dialog } = remote;
 
 export const Navbar = () => {
@@ -14,13 +15,19 @@ export const Navbar = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    ipcRenderer.on('script:execute-reply-error', (_, data) => {
-      console.log({ data });
-      setError(data);
+    ipcRenderer.on('script:execute-reply-error', (_, katharaData) => {
+      console.log({ katharaData });
+      setError((_) => katharaData.trim());
     });
-    if (error !== '') alert(error);
+    if (
+      error !== '' &&
+      !error.includes('Deploying') &&
+      !error.includes('Deleting')
+    ) {
+      alert(error);
+    }
     return () => {
-      setError('');
+      // setError('');
       ipcRenderer.removeAllListeners('script:execute-reply-error');
     };
   }, [error]);
@@ -28,7 +35,6 @@ export const Navbar = () => {
   // console.log({ error });
 
   function createLabFolderOnFileSystem(script: string) {
-    console.log({ script });
     ipcRenderer.send('script:copy', script, 'script.sh');
   }
 
@@ -46,7 +52,7 @@ export const Navbar = () => {
   }
 
   return (
-    <nav className="flex justify-between px-4 py-2 bg-gray-800 shadow-lg align-center">
+    <nav className="flex flex-shrink-0 justify-between px-4 py-2 bg-gray-800 shadow-lg align-center">
       {/* <a className="focus:outline-none focus:ring-2 focus:ring-emerald-400 flex items-center"> */}
 
       <div className="cursor-auto">
@@ -61,14 +67,9 @@ export const Navbar = () => {
             onClick={(e) => {
               e.preventDefault();
               console.log('generate lab zip file');
-              createZip(
-                createFilesStructure(
-                  katharaConfig.machines,
-                  katharaConfig.labInfo
-                )
-              );
+              createZip(katharaConfig);
             }}
-            className="relative inline-flex items-center px-4 py-1 mr-3 text-sm font-bold tracking-wide text-gray-100 rounded-md border-[1.6px] border-gray-100 bg-transparent hover:border-transparent hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-emerald-500 focus:border-transparent"
+            className="relative inline-flex items-center px-4 py-1 mr-3 text-sm font-bold tracking-wide text-gray-300 rounded-md border-[1.6px] border-gray-300 bg-transparent hover:border-transparent hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-emerald-500 focus:border-transparent"
           >
             <span>Generate lab files</span>
           </button>
@@ -86,14 +87,26 @@ export const Navbar = () => {
                 katharaConfig.labInfo
               )
             );
-            // console.log({ script });
-            // createLabFolderOnFileSystem(script);
+            console.log({ script });
             executeStart(script);
           }}
-          className="relative inline-flex items-center px-4 py-1 text-sm font-bold tracking-wide text-white border border-transparent rounded-md shadow-sm bg-emerald-500 hover:bg-emerald-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-emerald-500"
+          className="relative inline-flex items-center px-4 py-1 mr-3 text-sm font-bold tracking-wide text-white border border-transparent rounded-md shadow-sm bg-emerald-500 hover:bg-emerald-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-emerald-500"
+        >
+          <span>Run lab</span>
+        </button>
+        <button
+          type="button"
+          aria-label="Stop Lab"
+          disabled={katharaConfig.machines.length === 0}
+          onClick={(e) => {
+            e.preventDefault();
+            console.log('stop lab');
+            executeClean();
+          }}
+          className="relative inline-flex items-center px-4 py-1 text-sm font-bold tracking-wide text-white border border-transparent rounded-md shadow-sm bg-red-500 hover:bg-red-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-red-500"
         >
           {/* <img className="w-auto h-6 mr-2 cursor-pointer" src="download.svg" /> */}
-          <span>Run lab</span>
+          <span>Stop lab</span>
         </button>
       </div>
     </nav>

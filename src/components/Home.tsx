@@ -4,6 +4,7 @@ import { KatharaConfigProvider } from '../contexts/katharaConfigContext';
 import { DeviceSelectionColumn } from './DeviceSelectionColumn';
 import { Workspace } from './Workspace';
 import { Navbar } from './Navbar';
+import { Statusbar } from './Statusbar';
 
 export const Home = () => {
   const [open, setOpen] = useState(false);
@@ -11,7 +12,7 @@ export const Home = () => {
   return (
     <>
       <KatharaConfigProvider>
-        <div className="flex flex-col h-screen overflow-y-hidden">
+        <div className="flex flex-col min-h-screen">
           <Navbar />
           <div className="flex flex-1">
             <DeviceSelectionColumn />
@@ -20,6 +21,7 @@ export const Home = () => {
               isConfigurationPanelOpen={open}
             />
           </div>
+          <Statusbar />
         </div>
       </KatharaConfigProvider>
     </>

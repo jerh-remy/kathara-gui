@@ -38,7 +38,7 @@ body {
 }
 
 .full-screen {
-  max-height: calc(100vh - 50px);
+  max-height: calc(100vh - 84px);
   /* height: calc(100vh - 160px); */
 }
 

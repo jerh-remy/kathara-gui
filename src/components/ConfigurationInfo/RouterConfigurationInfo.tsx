@@ -224,6 +224,21 @@ export const IsisConfiguration: FC<IsisProps> = ({
           return newDevice;
         });
         break;
+      case 'word':
+        setActiveDevice((device: any) => {
+          const newDevice = {
+            ...device,
+            routing: {
+              ...device.routing,
+              isis: {
+                ...device.routing.isis,
+                word: value,
+              },
+            },
+          };
+          return newDevice;
+        });
+        break;
       case 'afi':
         setActiveDevice((device: any) => {
           const newDevice = {
@@ -314,6 +329,19 @@ export const IsisConfiguration: FC<IsisProps> = ({
             name="loopback"
             placeholder="0.0.0.0/0"
             value={typeof isisConfig !== 'undefined' ? isisConfig.loopback : ''}
+            onChange={handleChange}
+          />
+        </div>
+        <label htmlFor="word" className="block text-sm text-gray-800">
+          IS-IS word
+        </label>
+        <div className="mt-1 mb-2">
+          <input
+            type="text"
+            id="word"
+            name="word"
+            placeholder="WORD"
+            value={typeof isisConfig !== 'undefined' ? isisConfig.word : ''}
             onChange={handleChange}
           />
         </div>

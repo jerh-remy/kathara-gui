@@ -71,6 +71,7 @@ var device = {
     isis: {
       en: false,
       loopback: '',
+      word: '',
       afi: '',
       areaId: '',
       interfaces: [],

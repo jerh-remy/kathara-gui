@@ -1,5 +1,6 @@
 // import * as JSZip from 'jszip';
 import { saveAs } from 'file-saver';
+import dayjs from 'dayjs';
 
 function createMachineFolders(kathara, lab) {
   for (let machine of kathara) lab.folders.push(machine.name);
@@ -293,7 +294,7 @@ function createRouter(kathara, lab) {
           '\nlog file /var/log/quagga/zebra.log\n';
       }
 
-      // if (machine.routing.isis.en) createIsisConf(machine, lab);
+      if (machine.routing.isis.en) createIsisConf(machine, lab);
       if (machine.routing.bgp.en) createBgpConf(machine, lab);
     }
   }
@@ -360,48 +361,73 @@ function createStaticRouting(kathara, lab) {
   }
 }
 
+function createNSAP(router) {
+  if (!router || !router.routing.isis.loopback) {
+    return '';
+  }
+  const loopbackAddress = router.routing.isis.loopback;
+  const afi = router.routing.isis.afi;
+  const areaId = router.routing.isis.areaId;
+
+  try {
+    const arr = loopbackAddress.split('/')[0].split('.');
+
+    const newArr = arr.map((el) => {
+      const newEl = el.padStart(3, '0');
+      return newEl;
+    });
+
+    const muskedLoopback = newArr.join('');
+
+    const newMuskedLoopback = muskedLoopback.match(/.{4}/g).join('.');
+    console.log({ newMuskedLoopback });
+
+    const nsap = `${afi}.${areaId}.${newMuskedLoopback}.00`;
+    return nsap;
+  } catch (error) {
+    return '';
+  }
+}
+
 function createIsisConf(router, lab) {
   lab.file[router.name + '/etc/quagga/daemons'] += 'isisd=yes\n';
 
   lab.file[router.name + '/etc/quagga/isisd.conf'] =
-    '' + 'hostname isisd\n' + 'password zebra\n' + 'enable password zebra\n';
+    '' + 'hostname isisd\n' + 'password zebra\n' + 'enable password zebra\n\n';
 
-  // Inserimento tutte le Network su cui annunciare BGP
-  for (let network of router.routing.bgp.network) {
-    if (network && network != '') {
-      lab.file[router.name + '/etc/zebra/bgpd.conf'] +=
-        'network ' + network + '\n';
-    }
+  // create loopback interface in router.startup
+  lab.file[router.name + '.startup'] +=
+    'ifconfig lo' + ' ' + router.routing.isis.loopback + ' up\n';
+
+  // configure all the interfaces taking part in IS-IS
+
+  for (let intf of router.routing.isis.interfaces) {
+    lab.file[router.name + '/etc/quagga/isisd.conf'] +=
+      'interface ' + intf + '\n';
+    lab.file[router.name + '/etc/quagga/isisd.conf'] +=
+      ' ip router isis ' + router.routing.isis.word + '\n';
+    // lab.file[router.name + '/etc/quagga/isisd.conf'] +=
+    //   ' ipv6 router isis ' + router.routing.isis.word + '\n';
+    lab.file[router.name + '/etc/quagga/isisd.conf'] +=
+      ' isis circuit-type level-1' + '\n';
   }
 
-  lab.file[router.name + '/etc/zebra/bgpd.conf'] += '\n';
+  lab.file[router.name + '/etc/quagga/isisd.conf'] += '\n';
 
-  router.routing.bgp.remote.forEach(function (remote) {
-    if (remote && remote.neighbor != '' && remote.as != '') {
-      //Aggiungo il remote-as
-      lab.file[router.name + '/etc/zebra/bgpd.conf'] +=
-        'neighbor ' + remote.neighbor + ' remote-as ' + remote.as + '\n';
+  // Create the network service access point (NSAP).
+  const nsap = createNSAP(router);
 
-      //Aggiungo la descrizione
-      if (remote.description && remote.description != '') {
-        lab.file[router.name + '/etc/zebra/bgpd.conf'] +=
-          'neighbor ' +
-          remote.neighbor +
-          ' description ' +
-          remote.description +
-          '\n';
-      }
-    }
-  });
+  if (!nsap || nsap !== '') {
+    lab.file[router.name + '/etc/quagga/isisd.conf'] +=
+      'router isis ' + router.routing.isis.word + '\n';
+    lab.file[router.name + '/etc/quagga/isisd.conf'] += ' net ' + nsap + '\n';
+    lab.file[router.name + '/etc/quagga/isisd.conf'] +=
+      ' metric-style wide' + '\n';
+    lab.file[router.name + '/etc/quagga/isisd.conf'] +=
+      ' is-type level-1' + '\n';
+  }
 
-  //Free conf
-  if (router.routing.bgp.free && router.routing.bgp.free != '')
-    lab.file[router.name + '/etc/zebra/bgpd.conf'] +=
-      '\n' + router.routing.bgp.free + '\n';
-
-  lab.file[router.name + '/etc/zebra/bgpd.conf'] +=
-    '\nlog file /var/log/zebra/bgpd.log\n\n' +
-    'debug bgp\ndebug bgp events\ndebug bgp filters\ndebug bgp fsm\ndebug bgp keepalives\ndebug bgp updates\n';
+  lab.file[router.name + '/etc/quagga/isisd.conf'] += '\n';
 }
 
 function createBgpConf(router, lab) {
@@ -505,11 +531,15 @@ export function createScript(lab) {
     }
   }
 
-  text += '\nrm "../$0"\n';
+  // text += '\nrm "../$0"\n';
   return text;
 }
 
-export function createZip(lab) {
+export function createZip(katharaConfig) {
+  const lab = createFilesStructure(
+    katharaConfig.machines,
+    katharaConfig.labInfo
+  );
   const zip = require('jszip')();
 
   for (let folderName of lab.folders) {
@@ -519,6 +549,8 @@ export function createZip(lab) {
     zip.file(fileName, lab.file[fileName]);
   }
   zip.generateAsync({ type: 'blob' }).then((content) => {
-    saveAs(content, 'lab.zip');
+    const zipName =
+      katharaConfig.labInfo.description || dayjs().format('DD/MM/YYYY');
+    saveAs(content, `${zipName} (Lab).zip`);
   });
 }
