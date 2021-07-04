@@ -554,3 +554,12 @@ export function createZip(katharaConfig) {
     saveAs(content, `${zipName} (Lab).zip`);
   });
 }
+
+export function createConfig(katharaConfig) {
+  var all = {
+    labInfo: katharaConfig.labInfo,
+    machines: katharaConfig.machines,
+    elements: katharaConfig.elements,
+  };
+  return JSON.stringify(all, undefined, 2);
+}

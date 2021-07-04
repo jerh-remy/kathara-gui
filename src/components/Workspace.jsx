@@ -72,6 +72,15 @@ export const Workspace = ({
   //   openConfigurationPanel(true);
   // };
 
+  useEffect(() => {
+    setKatharaConfig((config) => {
+      return {
+        ...config,
+        elements,
+      };
+    });
+  }, [elements]);
+
   const onNodeDoubleClick = (event, node) => {
     const connectedEdges = getConnectedEdges(
       [node],
@@ -134,6 +143,18 @@ export const Workspace = ({
       console.log({ idsOfElementsToRemove }, { elementsToRemove });
 
       setElements((els) => removeElements(elementsToRemove, els));
+
+      // remove the element from the elements array in katharaConfig object
+      setKatharaConfig((config) => {
+        let filteredeElements = config.elements.filter((element) => {
+          return !idsOfElementsToRemove.includes(element.id);
+        });
+
+        return {
+          ...config,
+          elements: [...filteredeElements],
+        };
+      });
 
       elementsToRemove.forEach((elem) => {
         if (isEdge(elem)) {
@@ -331,6 +352,7 @@ export const Workspace = ({
               type: dt,
             },
           ],
+          elements: elements.concat(newNode),
         };
         // console.log({ lab });
         return lab;
@@ -360,6 +382,24 @@ export const Workspace = ({
 
       return newArr.concat(rfNode);
     });
+
+    // // update the label on the corresponding element as well
+    // setKatharaConfig((config) => {
+    //   const existingElement = katharaConfig.elements.find(
+    //     (element) => element.id === rfNodeId
+    //   );
+
+    //   existingElement.data.label = updatedLabel;
+
+    //   const filteredElementList = config.elements.filter((element) => {
+    //     return element.id !== rfNodeId;
+    //   });
+
+    //   return {
+    //     ...config,
+    //     elements: [...filteredeElements, existingElement],
+    //   };
+    // });
   };
 
   return (

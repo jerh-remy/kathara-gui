@@ -6,6 +6,7 @@ const KatharaConfigContext = createContext();
 function KatharaConfigProvider({ children }) {
   const [katharaConfig, setKatharaConfig] = React.useState({
     labInfo,
+    elements: [],
     machines: [],
   });
 

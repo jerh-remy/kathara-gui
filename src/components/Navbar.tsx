@@ -5,6 +5,7 @@ import {
   createFilesStructure,
   createZip,
   createScript,
+  createConfig,
 } from '../utilities/createNetworkLab';
 import { ipcRenderer, remote, shell } from 'electron';
 import { data } from 'autoprefixer';
@@ -67,7 +68,8 @@ export const Navbar = () => {
             onClick={(e) => {
               e.preventDefault();
               console.log('generate lab zip file');
-              createZip(katharaConfig);
+              // createZip(katharaConfig);
+              console.log(createConfig(katharaConfig));
             }}
             className="relative inline-flex items-center px-4 py-1 mr-3 text-sm font-bold tracking-wide text-gray-300 rounded-md border-[1.6px] border-gray-300 bg-transparent hover:border-transparent hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-emerald-500 focus:border-transparent"
           >
