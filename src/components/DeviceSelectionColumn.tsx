@@ -18,7 +18,6 @@ export const DeviceSelectionColumn = () => {
 
             {/* <Device deviceType="OpenFlow Ryu Controller" /> */}
           </div>
-          <Heading text="Lab Information" />
           <LabInfo />
         </aside>
       </div>

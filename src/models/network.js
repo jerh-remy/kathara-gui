@@ -1,4 +1,6 @@
 var labInfo = {
+  labDirPath: '',
+  autosaveEnabled: false,
   description: '',
   version: '',
   author: '',

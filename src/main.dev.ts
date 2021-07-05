@@ -9,7 +9,7 @@ import { exec, spawn } from 'child_process';
 // import { writeFileSync, readFileSync } from 'fs';
 import log from 'electron-log';
 import MenuBuilder from './menu';
-import { writeFileSync } from 'fs';
+import { writeFileSync, existsSync, mkdirSync } from 'fs';
 
 export default class AppUpdater {
   constructor() {
@@ -115,6 +115,18 @@ const appName = 'Kathara GUI';
 app.setName(appName);
 const appData = app.getPath('appData');
 app.setPath('userData', path.join(appData, appName));
+
+// Set default storage location of Kathara labs
+const preferredPath = path.join(app.getPath('documents'), 'Kathara Labs');
+try {
+  if (!existsSync(preferredPath)) {
+    mkdirSync(preferredPath);
+  }
+  app.setPath('documents', preferredPath);
+  console.log(app.getPath('documents'));
+} catch (err) {
+  console.error(err);
+}
 
 /**
  * Add event listeners...
