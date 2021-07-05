@@ -28,11 +28,11 @@ const CustomNode: FC<NodeProps> = ({ data }) => {
             position={Position.Left}
             style={{ top: 35, background: '#555' }}
             onConnect={onConnect}
-            // children={
-            //   <div className="text-lightBlue-600">
-            //     Heelloo
-            //   </div>
-            // }
+            children={
+              <div className="inline-flex whitespace-nowrap bg-gray-200 rounded-lg px-1 py-[2px] text-[8px] text-gray-500 absolute right-2 -top-2">
+                eth0
+              </div>
+            }
           />
           <Handle
             id="eth1"
@@ -40,6 +40,11 @@ const CustomNode: FC<NodeProps> = ({ data }) => {
             position={Position.Right}
             style={{ top: 35, background: '#555' }}
             onConnect={onConnect}
+            children={
+              <div className="inline-flex whitespace-nowrap bg-gray-200 rounded-lg px-1 py-[2px] text-[8px] text-gray-500 absolute left-2 -top-2">
+                eth1
+              </div>
+            }
           />
           <Handle
             id="eth2"
@@ -47,6 +52,11 @@ const CustomNode: FC<NodeProps> = ({ data }) => {
             position={Position.Top}
             style={{ top: 0, background: '#555' }}
             onConnect={onConnect}
+            children={
+              <div className="inline-flex whitespace-nowrap bg-gray-200 rounded-lg px-1 py-[2px] text-[8px] text-gray-500 absolute -left-2 bottom-2">
+                eth2
+              </div>
+            }
           />
           <Handle
             id="eth3"
@@ -54,6 +64,11 @@ const CustomNode: FC<NodeProps> = ({ data }) => {
             position={Position.Bottom}
             style={{ bottom: -2, background: '#555' }}
             onConnect={onConnect}
+            children={
+              <div className="inline-flex whitespace-nowrap bg-gray-200 rounded-lg px-1 py-[2px] text-[8px] text-gray-500 absolute -left-2 top-2">
+                eth3
+              </div>
+            }
           />
           <img
             // draggable="false"
@@ -63,7 +78,7 @@ const CustomNode: FC<NodeProps> = ({ data }) => {
             alt="The type of network device"
           />
         </div>
-        <div className="absolute flex justify-center items-center whitespace-nowrap -bottom-6 left-0 right-0 text-sm text-center text-gray-500">
+        <div className="absolute flex justify-center items-center whitespace-nowrap -bottom-12 left-0 right-0 text-sm text-center text-gray-500">
           {deviceLabel}
         </div>
       </div>

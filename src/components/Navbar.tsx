@@ -1,6 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { FC, Fragment, useEffect, useState } from 'react';
 import logo from '../../assets/logo_kathara_white.png';
-import { FolderAddIcon } from '@heroicons/react/outline';
+import {
+  FolderAddIcon,
+  DownloadIcon,
+  UploadIcon,
+  ChevronDownIcon,
+} from '@heroicons/react/outline';
 import { useKatharaConfig } from '../contexts/katharaConfigContext';
 import {
   createFilesStructure,
@@ -11,7 +16,13 @@ import { ipcRenderer, remote, shell } from 'electron';
 import path from 'path';
 
 import dayjs from 'dayjs';
-import { existsSync, mkdirSync, writeFile, writeFileSync } from 'fs';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  writeFile,
+  writeFileSync,
+} from 'fs';
 const { dialog } = remote;
 
 export const Navbar = () => {
@@ -47,7 +58,7 @@ export const Navbar = () => {
     _executeGeneric('execute');
   }
 
-  const createProjectFolder = async () => {
+  const createNewProjectFolder = async () => {
     if (confirm('Are you sure you want to create a new project?')) {
       const defaultPath = remote.app.getPath('documents');
 
@@ -95,6 +106,29 @@ export const Navbar = () => {
       });
     }
   };
+  const importExistingProject = async () => {
+    const defaultPath = remote.app.getPath('documents');
+
+    console.log({ defaultPath });
+    const directory = await dialog.showOpenDialog({
+      defaultPath: defaultPath,
+    });
+    console.log({ directory });
+
+    if (directory.filePaths.length > 0) {
+      const configFromFile = JSON.parse(
+        readFileSync(directory.filePaths[0], 'utf8')
+      );
+
+      console.log({ configFromFile });
+
+      setKatharaConfig((_: any) => {
+        return {
+          ...configFromFile,
+        };
+      });
+    }
+  };
 
   function executeClean() {
     _executeGeneric('clean');
@@ -105,26 +139,45 @@ export const Navbar = () => {
   }
 
   return (
-    <nav className="flex flex-shrink-0 justify-between px-4 py-2 bg-gray-800 shadow-lg align-center">
+    <nav className="flex justify-between px-4 py-2 bg-gray-800 shadow-lg align-center">
       {/* <a className="focus:outline-none focus:ring-2 focus:ring-emerald-400 flex items-center"> */}
 
       <div className="cursor-auto">
         <img className="w-auto h-8 mt-1" src={logo} alt="kathara logo" />
       </div>
       {/* </a> */}
-      <div>
-        <button
-          type="button"
-          aria-label="Create Lab"
-          onClick={(e) => {
-            e.preventDefault();
-            createProjectFolder();
-          }}
-          className="relative flex items-center justify-center px-4 py-1 mr-3 text-sm font-bold tracking-wide text-gray-300 rounded-md border-[1.6px] border-gray-300 bg-transparent hover:border-transparent hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-emerald-500 focus:border-transparent"
-        >
-          <FolderAddIcon className="text-white w-5 h-5 mr-[5px] mt-[1.2px]" />
-          <span>Create new lab</span>
-        </button>
+      <div className="flex items-center justify-center">
+        <MyPopover
+          children={
+            <>
+              <button
+                type="button"
+                aria-label="Create Lab"
+                onClick={(e) => {
+                  e.preventDefault();
+                  createNewProjectFolder();
+                }}
+                className="w-full flex whitespace-nowrap px-2 py-2 text-sm font-normal tracking-normal rounded-sm text-gray-900 hover:border-transparent hover:bg-gray-100 focus:outline-none focus:ring-1  focus:ring-gray-200"
+              >
+                <FolderAddIcon className="text-gray-900 w-5 h-5 mr-[5px] mt-[1.2px]" />
+                <span>Create new lab</span>
+              </button>
+              <button
+                type="button"
+                aria-label="Import Lab"
+                onClick={(e) => {
+                  e.preventDefault();
+                  importExistingProject();
+                }}
+                className="w-full flex whitespace-nowrap px-2 py-2 text-sm font-normal tracking-normal rounded-sm text-gray-900 hover:border-transparent hover:bg-gray-100 focus:outline-none focus:ring-1  focus:ring-gray-200"
+              >
+                <UploadIcon className="text-gray-900 w-5 h-5 mr-[5px] mt-[1.2px]" />
+                <span>Import existing lab</span>
+              </button>
+            </>
+          }
+        />
+
         {katharaConfig.machines.length > 0 && (
           <>
             <button
@@ -134,11 +187,11 @@ export const Navbar = () => {
                 e.preventDefault();
                 console.log('generate lab zip file');
                 // createZip(katharaConfig);
-                console.log(createConfig(katharaConfig));
               }}
               className="relative inline-flex items-center px-4 py-1 mr-3 text-sm font-bold tracking-wide text-gray-300 rounded-md border-[1.6px] border-gray-300 bg-transparent hover:border-transparent hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-emerald-500 focus:border-transparent"
             >
-              <span>Generate lab files</span>
+              <DownloadIcon className="text-white w-5 h-5 mr-[5px] mt-[1.2px]" />
+              <span>Generate zip</span>
             </button>
             <button
               type="button"
@@ -178,5 +231,51 @@ export const Navbar = () => {
         )}
       </div>
     </nav>
+  );
+};
+
+import { Popover, Transition } from '@headlessui/react';
+
+type Props = {
+  children: React.ReactNode;
+};
+
+const MyPopover: FC<Props> = ({ children }) => {
+  return (
+    <Popover className="relative mr-3">
+      {({ open }) => (
+        <>
+          <Popover.Button>
+            <div className="w-max flex px-4 py-1 text-sm  font-bold tracking-wide text-gray-300 rounded-md bg-gray-700 hover:bg-gray-600">
+              <span className="text-white">Save / Import</span>
+              <ChevronDownIcon
+                className={`${
+                  open ? 'transform rotate-180' : ''
+                } w-5 h-5 text-white ml-2 -mr-1 mt-[1px]`}
+              />
+            </div>
+          </Popover.Button>
+
+          <Transition
+            // show={open}
+            // as={Fragment}
+            enter="transition duration-200 ease-in-out"
+            enterFrom="transform scale-95 opacity-70"
+            enterTo="transform scale-100 opacity-100"
+            leave="transition duration-150 ease-out"
+            leaveFrom="transform scale-100 opacity-100"
+            leaveTo="transform scale-95 opacity-70"
+          >
+            <Popover.Panel className="absolute z-10 origin-top-right right-0 mt-[5px]">
+              <div className="flex flex-col bg-white rounded-md px-3 py-3 shadow-xl w-auto h-auto">
+                {children}
+              </div>
+
+              {/* <img src="/solutions.jpg" alt ="" /> */}
+            </Popover.Panel>
+          </Transition>
+        </>
+      )}
+    </Popover>
   );
 };

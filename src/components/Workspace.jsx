@@ -32,6 +32,9 @@ import { useKatharaConfig } from '../contexts/katharaConfigContext';
 import { labInfo, device } from '../models/network';
 import { getDefaultDeviceLabel } from '../utilities/utilities';
 
+import { ErrorFallback } from '../components/Home';
+import { ErrorBoundary } from 'react-error-boundary';
+
 const snapGrid = [16, 16];
 
 const onEdgeContextMenu = (event, edge) => {
@@ -403,56 +406,58 @@ export const Workspace = ({
   };
 
   return (
-    <ReactFlowProvider>
-      <div className="flex-1 bg-gray-50 p-1" ref={reactFlowWrapper}>
-        <ReactFlow
-          elements={elements}
-          snapGrid={snapGrid}
-          // onElementClick={onElementClick}
-          onElementsRemove={onElementsRemove}
-          onConnect={onConnect}
-          deleteKeyCode={46}
-          onLoad={onLoad}
-          onDrop={onDrop}
-          onDragOver={onDragOver}
-          nodeTypes={nodeTypes}
-          nodesDraggable={true}
-          onNodeDragStop={onNodeDragStop}
-          connectionMode={ConnectionMode.Loose}
-          onEdgeUpdate={onEdgeUpdate}
-          onConnectStart={onConnectStart}
-          // onPaneClick={onPaneClick}
-          // onPaneScroll={onPaneScroll}
-          // onPaneContextMenu={onPaneContextMenu}
-          // onNodeDragStart={onNodeDragStart}
-          // onNodeDrag={onNodeDrag}
-          onNodeDoubleClick={onNodeDoubleClick}
-          // onSelectionDragStart={onSelectionDragStart}
-          // onSelectionDrag={onSelectionDrag}
-          // onSelectionDragStop={onSelectionDragStop}
-          // onSelectionContextMenu={onSelectionContextMenu}
-          // onSelectionChange={onSelectionChange}
-          // onMoveEnd={onMoveEnd}
-          // connectionLineStyle={connectionLineStyle}
-          // snapToGrid={true}
-          // snapGrid={snapGrid}
-          onEdgeContextMenu={onEdgeContextMenu}
-          // onEdgeMouseEnter={onEdgeMouseEnter}
-          // onEdgeMouseMove={onEdgeMouseMove}
-          // onEdgeMouseLeave={onEdgeMouseLeave}
-          // onEdgeDoubleClick={onEdgeDoubleClick}
-        >
-          <Controls />
-          <Background color="#aaaaaae2" gap={16} />
-        </ReactFlow>
-        <ConfigurationPanel
-          isOpen={isConfigurationPanelOpen}
-          setOpen={openConfigurationPanel}
-          onPanelClose={updateActiveDeviceLabel}
-          activeDevice={activeDevice}
-          interfaces={activeDeviceInterfaces}
-        />
-      </div>
-    </ReactFlowProvider>
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
+      <ReactFlowProvider>
+        <div className="flex-1 bg-gray-50 p-1" ref={reactFlowWrapper}>
+          <ReactFlow
+            elements={katharaConfig.elements || elements}
+            snapGrid={snapGrid}
+            // onElementClick={onElementClick}
+            onElementsRemove={onElementsRemove}
+            onConnect={onConnect}
+            deleteKeyCode={46}
+            onLoad={onLoad}
+            onDrop={onDrop}
+            onDragOver={onDragOver}
+            nodeTypes={nodeTypes}
+            nodesDraggable={true}
+            onNodeDragStop={onNodeDragStop}
+            connectionMode={ConnectionMode.Loose}
+            onEdgeUpdate={onEdgeUpdate}
+            onConnectStart={onConnectStart}
+            // onPaneClick={onPaneClick}
+            // onPaneScroll={onPaneScroll}
+            // onPaneContextMenu={onPaneContextMenu}
+            // onNodeDragStart={onNodeDragStart}
+            // onNodeDrag={onNodeDrag}
+            onNodeDoubleClick={onNodeDoubleClick}
+            // onSelectionDragStart={onSelectionDragStart}
+            // onSelectionDrag={onSelectionDrag}
+            // onSelectionDragStop={onSelectionDragStop}
+            // onSelectionContextMenu={onSelectionContextMenu}
+            // onSelectionChange={onSelectionChange}
+            // onMoveEnd={onMoveEnd}
+            // connectionLineStyle={connectionLineStyle}
+            // snapToGrid={true}
+            // snapGrid={snapGrid}
+            onEdgeContextMenu={onEdgeContextMenu}
+            // onEdgeMouseEnter={onEdgeMouseEnter}
+            // onEdgeMouseMove={onEdgeMouseMove}
+            // onEdgeMouseLeave={onEdgeMouseLeave}
+            // onEdgeDoubleClick={onEdgeDoubleClick}
+          >
+            <Controls />
+            <Background color="#aaaaaae2" gap={16} />
+          </ReactFlow>
+          <ConfigurationPanel
+            isOpen={isConfigurationPanelOpen}
+            setOpen={openConfigurationPanel}
+            onPanelClose={updateActiveDeviceLabel}
+            activeDevice={activeDevice}
+            interfaces={activeDeviceInterfaces}
+          />
+        </div>
+      </ReactFlowProvider>
+    </ErrorBoundary>
   );
 };

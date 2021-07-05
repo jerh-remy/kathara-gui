@@ -7,7 +7,7 @@ import { Heading } from './Heading';
 export const LabInfo = () => {
   const [katharaConfig, setKatharaConfig] = useKatharaConfig();
   const { labInfo } = katharaConfig;
-  const [lab, setLab] = useState(labInfo);
+  // const [lab, setLab] = useState(labInfo);
 
   const handleChange = (event: any) => {
     console.log(event.target.name);
@@ -19,22 +19,25 @@ export const LabInfo = () => {
 
     const propertyName = event.target.name;
 
-    setLab((config: any) => ({
+    setKatharaConfig((config: any) => ({
       ...config,
-      [propertyName]: value,
+      labInfo: {
+        ...config.labInfo,
+        [propertyName]: value,
+      },
     }));
   };
 
-  useEffect(() => {
-    setKatharaConfig((config: any) => {
-      const { labInfo: oldLabInfo, ...rest } = config;
-      let labInfo = lab;
-      return {
-        ...rest,
-        labInfo,
-      };
-    });
-  }, [lab]);
+  // useEffect(() => {
+  //   setKatharaConfig((config: any) => {
+  //     const { labInfo: oldLabInfo, ...rest } = config;
+  //     let labInfo = lab;
+  //     return {
+  //       ...rest,
+  //       labInfo,
+  //     };
+  //   });
+  // }, [lab]);
 
   // console.log({ lab }, { katharaConfig });
 
@@ -76,7 +79,7 @@ export const LabInfo = () => {
                         id="description"
                         name="description"
                         onChange={handleChange}
-                        value={lab.description}
+                        value={labInfo.description}
                         placeholder={`Exam ${new Date().getFullYear()}`}
                       />
                     </div>
@@ -94,7 +97,7 @@ export const LabInfo = () => {
                         id="version"
                         name="version"
                         onChange={handleChange}
-                        value={lab.version}
+                        value={labInfo.version}
                         placeholder="1.0"
                       />
                     </div>
@@ -112,7 +115,7 @@ export const LabInfo = () => {
                         id="author"
                         name="author"
                         onChange={handleChange}
-                        value={lab.author}
+                        value={labInfo.author}
                         placeholder="Jeremy Offori"
                       />
                     </div>
@@ -130,7 +133,7 @@ export const LabInfo = () => {
                         id="email"
                         name="email"
                         onChange={handleChange}
-                        value={lab.email}
+                        value={labInfo.email}
                         placeholder="jeremy.offori@gmail.com"
                       />
                     </div>
@@ -148,7 +151,7 @@ export const LabInfo = () => {
                         id="web"
                         name="web"
                         onChange={handleChange}
-                        value={lab.web}
+                        value={labInfo.web}
                         placeholder="http://lboro.ac.uk"
                       />
                     </div>
