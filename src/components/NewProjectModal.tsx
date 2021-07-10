@@ -5,6 +5,8 @@ import { remote } from 'electron';
 import { existsSync, mkdirSync, writeFile } from 'fs';
 import path, { dirname } from 'path';
 import { useKatharaConfig } from '../contexts/katharaConfigContext';
+import { labInfo } from '../models/network';
+import _ from 'lodash';
 
 type Props = {
   setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
@@ -29,18 +31,21 @@ export const NewProjectModal: FC<Props> = ({
     setProjectDir(path.join(projectDefaultPath, projectName));
   }, [projectName, projectDefaultPath]);
 
-  useEffect(() => {
-    setKatharaConfig((config: any) => {
-      return {
-        ...config,
-        labInfo: {
-          ...config.labInfo,
-          labDirPath: projectDir,
-          description: projectName,
-        },
-      };
-    });
-  }, [projectDir]);
+  // useEffect(() => {
+  //   setKatharaConfig((config: any) => {
+  //     return {
+  //       machines: [],
+  //       elements: [],
+  //       position: [],
+  //       zoom: 1,
+  //       labInfo: {
+  //         ...config.labInfo,
+  //         labDirPath: projectDir,
+  //         description: projectName,
+  //       },
+  //     };
+  //   });
+  // }, [projectDir]);
 
   const selectProjectFolder = async () => {
     try {
@@ -158,6 +163,20 @@ export const NewProjectModal: FC<Props> = ({
                   'Project directory cannot be left empty'
                 );
               } else {
+                setKatharaConfig((config: any) => {
+                  const clonedLabInfo = _.cloneDeep(labInfo);
+                  return {
+                    machines: [],
+                    elements: [],
+                    position: [],
+                    zoom: 1,
+                    labInfo: {
+                      ...clonedLabInfo,
+                      labDirPath: projectDir,
+                      description: projectName,
+                    },
+                  };
+                });
                 setShowModal(false);
                 onSaveClicked();
               }

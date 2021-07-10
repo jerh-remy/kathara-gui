@@ -81,7 +81,7 @@ export const Navbar = () => {
         JSON.stringify(katharaConfig, undefined, 2),
         (err) => {
           console.log({ err });
-          if (err === null) {
+          if (!err) {
             // after first time project has been saved, enable autosave
             setKatharaConfig((config: any) => {
               return {
@@ -106,6 +106,7 @@ export const Navbar = () => {
     console.log({ defaultPath });
     const directory = await dialog.showOpenDialog({
       defaultPath: defaultPath,
+      filters: [{ name: 'Kathara configuration', extensions: ['json'] }],
     });
     console.log({ directory });
 

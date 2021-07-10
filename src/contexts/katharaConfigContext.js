@@ -12,8 +12,10 @@ const KatharaConfigContext = createContext();
 function KatharaConfigProvider({ children }) {
   const [katharaConfig, setKatharaConfig] = React.useState({
     labInfo,
-    elements: [],
     machines: [],
+    elements: [],
+    position: [],
+    zoom: 1,
   });
 
   // This is the side effect we want to run on users' changes.
@@ -24,11 +26,14 @@ function KatharaConfigProvider({ children }) {
     console.log({ labPath });
     setKatharaConfig(newKatharaConfig);
     try {
-      writeFileSync(labPath, JSON.stringify(newKatharaConfig, undefined, 2));
+      writeFileSync(
+        path.join(labPath, 'katharaConfig.json'),
+        JSON.stringify(newKatharaConfig, undefined, 2)
+      );
+      console.log('Saved successfully!');
     } catch (error) {
       console.log({ error });
     }
-    console.log('Saved successfully!');
   }, []);
 
   const debouncedSave = useCallback(

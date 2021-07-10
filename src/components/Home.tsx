@@ -20,7 +20,7 @@ export const ErrorFallback: FC<Props> = ({ error }) => {
 };
 
 export const Home = () => {
-  const [open, setOpen] = useState(false);
+  const [openConfigPanel, setOpenConfigPanel] = useState(false);
 
   return (
     <>
@@ -30,10 +30,12 @@ export const Home = () => {
             <Navbar />
             <div className="flex flex-1">
               <DeviceSelectionColumn />
-              <Workspace
-                openConfigurationPanel={setOpen}
-                isConfigurationPanelOpen={open}
-              />
+              <ReactFlowProvider>
+                <Workspace
+                  openConfigurationPanel={setOpenConfigPanel}
+                  isConfigurationPanelOpen={openConfigPanel}
+                />
+              </ReactFlowProvider>
             </div>
             <Statusbar />
           </div>
