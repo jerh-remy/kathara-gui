@@ -209,7 +209,7 @@ ipcMain.on('script:copy', function (event, script, filename, dirPath) {
   exec(
     `bash ${filename}`,
     {
-      cwd: baseFolder,
+      cwd: dirPath,
     },
     (error, stdout, stderr) => {
       if (error) {
@@ -225,21 +225,14 @@ ipcMain.on('script:copy', function (event, script, filename, dirPath) {
   );
 });
 
-ipcMain.on('script:execute', (event, arg) => {
-  let pathTemp = path.join(baseFolder, 'lab');
-  // console.log(`Running LStart on ${arg}`);
+ipcMain.on('script:execute', (event, dirPath) => {
+  let pathTemp = path.join(dirPath, 'lab');
   console.log(`Running LStart on ${pathTemp}`);
   runKatharaCommand(`lstart -d "${pathTemp}"`, event);
 });
 
-ipcMain.on('script:clean', (event, arg) => {
-  let pathTemp = path.join(baseFolder, 'lab');
-  // console.log(`Running LClean on ${arg}`);
+ipcMain.on('script:clean', (event, dirPath) => {
+  let pathTemp = path.join(dirPath, 'lab');
   console.log(`Running LClean on ${pathTemp}`);
   runKatharaCommand(`lclean -d "${pathTemp}"`, event);
-});
-
-ipcMain.on('anything-asynchronous', (_, arg) => {
-  // execute tasks on behalf of renderer process
-  console.log(arg);
 });

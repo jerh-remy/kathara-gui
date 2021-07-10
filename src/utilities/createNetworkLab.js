@@ -283,9 +283,6 @@ function createRouter(kathara, lab) {
   for (let machine of kathara) {
     if (machine.name && machine.name != '' && machine.type == 'router') {
       if (machine.routing.isis.en || machine.routing.bgp.en) {
-        if (machine.routing.isis.en) createIsisConf(machine, lab);
-        if (machine.routing.bgp.en) createBgpConf(machine, lab);
-
         lab.file[machine.name + '.startup'] += '/etc/init.d/zebra start\n';
         lab.folders.push(machine.name + '/etc/quagga');
         lab.file[machine.name + '/etc/quagga/daemons'] = 'zebra=yes\n';
@@ -295,6 +292,9 @@ function createRouter(kathara, lab) {
           'password zebra\n' +
           'enable password zebra\n' +
           '\nlog file /var/log/quagga/zebra.log\n';
+
+        if (machine.routing.isis.en) createIsisConf(machine, lab);
+        if (machine.routing.bgp.en) createBgpConf(machine, lab);
       }
     }
   }
@@ -329,7 +329,7 @@ function createStaticRouting(kathara, lab) {
       }
 
       // if machine is router, create loopback interface for IS-IS
-      if (machine.name === 'router') {
+      if (machine.type === 'router') {
         lab.file[machine.name + '.startup'] +=
           'ifconfig lo' + ' ' + machine.routing.isis.loopback + ' up\n';
       }

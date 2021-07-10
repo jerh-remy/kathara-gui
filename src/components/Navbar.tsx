@@ -52,8 +52,7 @@ export const Navbar = () => {
   // console.log({ error });
 
   function createLabFolderOnFileSystem(script: string) {
-    const dirPathArr = katharaConfig.labInfo.labDirPath.split('\\');
-    const dirPath = dirPathArr.slice(0, -1).join('\\');
+    const dirPath = katharaConfig.labInfo.labDirPath;
     console.log({ dirPath });
     ipcRenderer.send('script:copy', script, 'script.sh', dirPath);
   }
@@ -66,7 +65,7 @@ export const Navbar = () => {
   const createNewProjectFolder = async () => {
     const projectFileName = katharaConfig.labInfo.description;
     const projectFolderPath = katharaConfig.labInfo.labDirPath;
-    console.log({ projectFolderPath });
+    console.log({ projectFolderPath }, { projectFileName });
 
     // create the folder if it does not exist
     try {
@@ -130,7 +129,8 @@ export const Navbar = () => {
   }
 
   function _executeGeneric(command: string) {
-    ipcRenderer.send('script:' + command);
+    const dirPath = katharaConfig.labInfo.labDirPath;
+    ipcRenderer.send('script:' + command, dirPath);
   }
 
   const onPopoverItemClicked = (item: string) => {

@@ -94,11 +94,11 @@ export const Workspace = ({
     console.log('THE ONE I AM CURRENTLY LOOKING AT');
     if (reactFlowInstance) {
       setElements(katharaConfig.elements || []);
-      console.log(katharaConfig.position);
-      if (katharaConfig.position) {
-        const [x = 0, y = 0] = katharaConfig.position;
-        transform({ x, y, zoom: katharaConfig.zoom || 0 });
-      }
+      // console.log(katharaConfig.position);
+      // if (katharaConfig.position) {
+      //   const [x = 0, y = 0] = katharaConfig.position;
+      //   transform({ x, y, zoom: katharaConfig.zoom || 0 });
+      // }
     }
   }, [katharaConfig.elements, reactFlowInstance]);
 
