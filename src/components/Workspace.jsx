@@ -119,6 +119,7 @@ export const Workspace = ({
           // label: 'styled label',
           // labelStyle: { fill: 'red', fontWeight: 700 },
           // animated: true,
+          // type: 'straight',
           type: 'default',
         },
         els

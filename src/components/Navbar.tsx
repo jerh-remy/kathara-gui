@@ -1,10 +1,10 @@
 import React, { FC, Fragment, useEffect, useState } from 'react';
 import logo from '../../assets/logo_kathara_white.png';
+import MyPopover from '../components/Popover';
 import {
   FolderAddIcon,
   DownloadIcon,
   UploadIcon,
-  ChevronDownIcon,
 } from '@heroicons/react/outline';
 import { useKatharaConfig } from '../contexts/katharaConfigContext';
 import {
@@ -50,7 +50,10 @@ export const Navbar = () => {
   // console.log({ error });
 
   function createLabFolderOnFileSystem(script: string) {
-    ipcRenderer.send('script:copy', script, 'script.sh');
+    const dirPathArr = katharaConfig.labInfo.labDirPath.split('\\');
+    const dirPath = dirPathArr.slice(0, -1).join('\\');
+    console.log({ dirPath });
+    ipcRenderer.send('script:copy', script, 'script.sh', dirPath);
   }
 
   function executeStart(script: string) {
@@ -76,34 +79,39 @@ export const Navbar = () => {
         if (!existsSync(projectFolderPath)) {
           mkdirSync(projectFolderPath);
         }
+        const directory = await dialog.showSaveDialog({
+          defaultPath: path.join(projectFolderPath, 'katharaConfig.json'),
+          // properties: ['treatPackageAsDirectory'],
+        });
+        console.log({ directory });
+
+        const folderNameArr = directory.filePath?.split('\\');
+        const foldername = folderNameArr![folderNameArr!.length - 2];
+        console.log({ folderNameArr }, { foldername });
+
+        writeFile(
+          directory.filePath!,
+          JSON.stringify(katharaConfig, undefined, 2),
+          (err) => {
+            console.log({ err });
+          }
+        );
+
+        // after first time project has been saved, enable autosave
+        setKatharaConfig((config: any) => {
+          return {
+            ...config,
+            labInfo: {
+              ...config.labInfo,
+              autosaveEnabled: true,
+              labDirPath: directory.filePath,
+              description: foldername,
+            },
+          };
+        });
       } catch (err) {
         console.error(err);
       }
-
-      const directory = await dialog.showSaveDialog({
-        defaultPath: path.join(projectFolderPath, 'katharaConfig.json'),
-        // properties: ['treatPackageAsDirectory'],
-      });
-      console.log({ directory });
-      writeFile(
-        directory.filePath!,
-        JSON.stringify(katharaConfig, undefined, 2),
-        (err) => {
-          console.log({ err });
-        }
-      );
-
-      // after first time project has been saved, enable autosave
-      setKatharaConfig((config: any) => {
-        return {
-          ...config,
-          labInfo: {
-            ...config.labInfo,
-            autosaveEnabled: true,
-            labDirPath: directory.filePath,
-          },
-        };
-      });
     }
   };
   const importExistingProject = async () => {
@@ -138,45 +146,35 @@ export const Navbar = () => {
     ipcRenderer.send('script:' + command);
   }
 
+  const onPopoverItemClicked = (item: string) => {
+    switch (item) {
+      case 'NEW':
+        createNewProjectFolder();
+        break;
+      case 'IMPORT':
+        importExistingProject();
+        break;
+      default:
+        break;
+    }
+  };
+
   return (
-    <nav className="flex justify-between px-4 py-2 bg-gray-800 shadow-lg align-center">
+    <nav className="flex justify-between items-center px-4 py-2 bg-gray-800 shadow-lg align-center">
       {/* <a className="focus:outline-none focus:ring-2 focus:ring-emerald-400 flex items-center"> */}
 
       <div className="cursor-auto">
         <img className="w-auto h-8 mt-1" src={logo} alt="kathara logo" />
       </div>
-      {/* </a> */}
+      <div>
+        <p className="text-md text-white font-bold">{`${
+          katharaConfig.labInfo.labDirPath?.length > 0
+            ? katharaConfig.labInfo.description
+            : ''
+        }`}</p>
+      </div>
       <div className="flex items-center justify-center">
-        <MyPopover
-          children={
-            <>
-              <button
-                type="button"
-                aria-label="Create Lab"
-                onClick={(e) => {
-                  e.preventDefault();
-                  createNewProjectFolder();
-                }}
-                className="w-full flex whitespace-nowrap px-2 py-2 text-sm font-normal tracking-normal rounded-sm text-gray-900 hover:border-transparent hover:bg-gray-100 focus:outline-none focus:ring-1  focus:ring-gray-200"
-              >
-                <FolderAddIcon className="text-gray-900 w-5 h-5 mr-[5px] mt-[1.2px]" />
-                <span>Create new lab</span>
-              </button>
-              <button
-                type="button"
-                aria-label="Import Lab"
-                onClick={(e) => {
-                  e.preventDefault();
-                  importExistingProject();
-                }}
-                className="w-full flex whitespace-nowrap px-2 py-2 text-sm font-normal tracking-normal rounded-sm text-gray-900 hover:border-transparent hover:bg-gray-100 focus:outline-none focus:ring-1  focus:ring-gray-200"
-              >
-                <UploadIcon className="text-gray-900 w-5 h-5 mr-[5px] mt-[1.2px]" />
-                <span>Import existing lab</span>
-              </button>
-            </>
-          }
-        />
+        <MyPopover onItemClicked={onPopoverItemClicked} />
 
         {katharaConfig.machines.length > 0 && (
           <>
@@ -186,7 +184,7 @@ export const Navbar = () => {
               onClick={(e) => {
                 e.preventDefault();
                 console.log('generate lab zip file');
-                // createZip(katharaConfig);
+                createZip(katharaConfig);
               }}
               className="relative inline-flex items-center px-4 py-1 mr-3 text-sm font-bold tracking-wide text-gray-300 rounded-md border-[1.6px] border-gray-300 bg-transparent hover:border-transparent hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-emerald-500 focus:border-transparent"
             >
@@ -231,51 +229,5 @@ export const Navbar = () => {
         )}
       </div>
     </nav>
-  );
-};
-
-import { Popover, Transition } from '@headlessui/react';
-
-type Props = {
-  children: React.ReactNode;
-};
-
-const MyPopover: FC<Props> = ({ children }) => {
-  return (
-    <Popover className="relative mr-3">
-      {({ open }) => (
-        <>
-          <Popover.Button>
-            <div className="w-max flex px-4 py-1 text-sm  font-bold tracking-wide text-gray-300 rounded-md bg-gray-700 hover:bg-gray-600">
-              <span className="text-white">Save / Import</span>
-              <ChevronDownIcon
-                className={`${
-                  open ? 'transform rotate-180' : ''
-                } w-5 h-5 text-white ml-2 -mr-1 mt-[1px]`}
-              />
-            </div>
-          </Popover.Button>
-
-          <Transition
-            // show={open}
-            // as={Fragment}
-            enter="transition duration-200 ease-in-out"
-            enterFrom="transform scale-95 opacity-70"
-            enterTo="transform scale-100 opacity-100"
-            leave="transition duration-150 ease-out"
-            leaveFrom="transform scale-100 opacity-100"
-            leaveTo="transform scale-95 opacity-70"
-          >
-            <Popover.Panel className="absolute z-10 origin-top-right right-0 mt-[5px]">
-              <div className="flex flex-col bg-white rounded-md px-3 py-3 shadow-xl w-auto h-auto">
-                {children}
-              </div>
-
-              {/* <img src="/solutions.jpg" alt ="" /> */}
-            </Popover.Panel>
-          </Transition>
-        </>
-      )}
-    </Popover>
   );
 };

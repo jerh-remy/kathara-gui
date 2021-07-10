@@ -23,13 +23,17 @@ function KatharaConfigProvider({ children }) {
     const labPath = newKatharaConfig.labInfo.labDirPath;
     console.log({ labPath });
     setKatharaConfig(newKatharaConfig);
-    writeFileSync(labPath, JSON.stringify(newKatharaConfig, undefined, 2));
+    try {
+      writeFileSync(labPath, JSON.stringify(newKatharaConfig, undefined, 2));
+    } catch (error) {
+      console.log({ error });
+    }
     console.log('Saved successfully!');
   }, []);
 
   const debouncedSave = useCallback(
     _.debounce((newData) => {
-      saveData(newData);
+      // saveData(newData);
     }, DEBOUNCE_SAVE_DELAY_MS),
     []
   );

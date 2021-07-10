@@ -191,13 +191,19 @@ function runKatharaCommand(command: string, event: Electron.IpcMainEvent) {
 
 /* ------------------------- SCRIPT ------------------------- */
 
-ipcMain.on('script:copy', function (event, script, filename) {
+ipcMain.on('script:copy', function (event, script, filename, dirPath) {
   console.log({ filename });
-  console.log(app.getName());
-  console.log({ baseFolder });
-  let pathTemp = path.join(baseFolder, filename);
+
+  let pathTemp = path.join(dirPath, filename);
   console.log('Saving script to ' + pathTemp);
   writeFileSync(pathTemp, script);
+
+  // console.log({ filename });
+  // console.log(app.getName());
+  // console.log({ baseFolder });
+  // let pathTemp = path.join(baseFolder, filename);
+  // console.log('Saving script to ' + pathTemp);
+  // writeFileSync(pathTemp, script);
 
   console.log('Running ' + pathTemp);
   exec(

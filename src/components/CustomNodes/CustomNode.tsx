@@ -23,14 +23,14 @@ const CustomNode: FC<NodeProps> = ({ data }) => {
       <div className="relative">
         <div className="flex flex-col justify-center items-center p-[2px] ">
           <Handle
-            id="eth0"
+            id="eth3"
             type="source"
             position={Position.Left}
             style={{ top: 35, background: '#555' }}
             onConnect={onConnect}
             children={
               <div className="inline-flex whitespace-nowrap bg-gray-200 rounded-lg px-1 py-[2px] text-[8px] text-gray-500 absolute right-2 -top-2">
-                eth0
+                eth3
               </div>
             }
           />
@@ -59,14 +59,14 @@ const CustomNode: FC<NodeProps> = ({ data }) => {
             }
           />
           <Handle
-            id="eth3"
+            id="eth0"
             type="source"
             position={Position.Bottom}
             style={{ bottom: -2, background: '#555' }}
             onConnect={onConnect}
             children={
               <div className="inline-flex whitespace-nowrap bg-gray-200 rounded-lg px-1 py-[2px] text-[8px] text-gray-500 absolute -left-2 top-2">
-                eth3
+                eth0
               </div>
             }
           />

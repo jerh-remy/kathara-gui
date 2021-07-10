@@ -283,6 +283,9 @@ function createRouter(kathara, lab) {
   for (let machine of kathara) {
     if (machine.name && machine.name != '' && machine.type == 'router') {
       if (machine.routing.isis.en || machine.routing.bgp.en) {
+        if (machine.routing.isis.en) createIsisConf(machine, lab);
+        if (machine.routing.bgp.en) createBgpConf(machine, lab);
+
         lab.file[machine.name + '.startup'] += '/etc/init.d/zebra start\n';
         lab.folders.push(machine.name + '/etc/quagga');
         lab.file[machine.name + '/etc/quagga/daemons'] = 'zebra=yes\n';
@@ -293,9 +296,6 @@ function createRouter(kathara, lab) {
           'enable password zebra\n' +
           '\nlog file /var/log/quagga/zebra.log\n';
       }
-
-      if (machine.routing.isis.en) createIsisConf(machine, lab);
-      if (machine.routing.bgp.en) createBgpConf(machine, lab);
     }
   }
 }
@@ -310,14 +310,13 @@ function createStaticRouting(kathara, lab) {
   for (let machine of kathara) {
     if (machine.name && machine.name != '') {
       for (let intf of machine.interfaces.if) {
-        if (intf.eth.number == 0) {
-          if (machine.type == 'switch') {
-            intf.ip = '192.168.100.' + switchCounter++ + '/24'; // TODO: E se non bastassero 200+ switch?
-          } else if (machine.type == 'controller') {
-            intf.ip = '192.168.100.1/24';
-          }
-        }
-        //ifconfig eth_ SELFADDRESS/MASK up
+        // if (intf.eth.number == 0) {
+        //   if (machine.type == 'switch') {
+        //     intf.ip = '192.168.100.' + switchCounter++ + '/24'; // TODO: E se non bastassero 200+ switch?
+        //   } else if (machine.type == 'controller') {
+        //     intf.ip = '192.168.100.1/24';
+        //   }
+        // }
         if (
           intf.eth.domain &&
           intf.eth.domain != '' &&
@@ -327,6 +326,12 @@ function createStaticRouting(kathara, lab) {
           lab.file[machine.name + '.startup'] +=
             'ifconfig eth' + intf.eth.number + ' ' + intf.eth.ip + ' up\n';
         }
+      }
+
+      // if machine is router, create loopback interface for IS-IS
+      if (machine.name === 'router') {
+        lab.file[machine.name + '.startup'] +=
+          'ifconfig lo' + ' ' + machine.routing.isis.loopback + ' up\n';
       }
 
       for (let gateway of machine.gateways.gw) {
@@ -395,12 +400,7 @@ function createIsisConf(router, lab) {
   lab.file[router.name + '/etc/quagga/isisd.conf'] =
     '' + 'hostname isisd\n' + 'password zebra\n' + 'enable password zebra\n\n';
 
-  // create loopback interface in router.startup
-  lab.file[router.name + '.startup'] +=
-    'ifconfig lo' + ' ' + router.routing.isis.loopback + ' up\n';
-
   // configure all the interfaces taking part in IS-IS
-
   for (let intf of router.routing.isis.interfaces) {
     lab.file[router.name + '/etc/quagga/isisd.conf'] +=
       'interface ' + intf + '\n';
