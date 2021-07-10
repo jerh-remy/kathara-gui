@@ -5,12 +5,12 @@ export const Statusbar = () => {
   const [katharaConfig] = useKatharaConfig();
 
   return (
-    <nav className="flex justify-between px-4 py-2 bg-[#2b2933] shadow-lg align-center">
+    <footer className="flex justify-between px-4 py-2 bg-[#2b2933] shadow-lg align-center">
       <div className="flex-1 flex">
         <p className="text-gray-300 text-xs mr-1">{`${
           katharaConfig.labInfo.autosaveEnabled
             ? 'Your project is being autosaved.'
-            : 'Please save this project as a new Kathara lab to enable the autosave feature. '
+            : 'To enable the autosave feature, create a new Kathara lab project. '
         }`}</p>
         <p className="text-gray-300 text-xs">{`${
           katharaConfig.labInfo.autosaveEnabled
@@ -28,6 +28,6 @@ export const Statusbar = () => {
           <span className="text-gray-300 text-xs">Docker Status</span>
         </div>
       </div>
-    </nav>
+    </footer>
   );
 };

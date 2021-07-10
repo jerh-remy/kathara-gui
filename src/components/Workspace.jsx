@@ -59,7 +59,7 @@ export const Workspace = ({
   isConfigurationPanelOpen,
 }) => {
   const [katharaConfig, setKatharaConfig] = useKatharaConfig();
-  const [elements, setElements] = useState([]);
+  const [elements, setElements] = useState(katharaConfig.elements || []);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const reactFlowWrapper = useRef(null);
   const [activeDevice, setActiveDevice] = useState();
@@ -411,7 +411,7 @@ export const Workspace = ({
       <ReactFlowProvider>
         <div className="flex-1 bg-gray-50 p-1" ref={reactFlowWrapper}>
           <ReactFlow
-            elements={katharaConfig.elements || elements}
+            elements={elements}
             snapGrid={snapGrid}
             // onElementClick={onElementClick}
             onElementsRemove={onElementsRemove}

@@ -33,7 +33,7 @@ function KatharaConfigProvider({ children }) {
 
   const debouncedSave = useCallback(
     _.debounce((newData) => {
-      // saveData(newData);
+      saveData(newData);
     }, DEBOUNCE_SAVE_DELAY_MS),
     []
   );

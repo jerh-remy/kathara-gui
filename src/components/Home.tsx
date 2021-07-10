@@ -24,8 +24,8 @@ export const Home = () => {
 
   return (
     <>
-      <KatharaConfigProvider>
-        <ErrorBoundary FallbackComponent={ErrorFallback}>
+      <ErrorBoundary FallbackComponent={ErrorFallback}>
+        <KatharaConfigProvider>
           <div className="flex flex-col min-h-screen">
             <Navbar />
             <div className="flex flex-1">
@@ -37,8 +37,8 @@ export const Home = () => {
             </div>
             <Statusbar />
           </div>
-        </ErrorBoundary>
-      </KatharaConfigProvider>
+        </KatharaConfigProvider>
+      </ErrorBoundary>
     </>
   );
 };

@@ -23,11 +23,13 @@ import {
   writeFile,
   writeFileSync,
 } from 'fs';
+import { NewProjectModal } from './NewProjectModal';
 const { dialog } = remote;
 
 export const Navbar = () => {
   const [katharaConfig, setKatharaConfig] = useKatharaConfig();
   const [error, setError] = useState('');
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     ipcRenderer.on('script:execute-reply-error', (_, katharaData) => {
@@ -62,58 +64,42 @@ export const Navbar = () => {
   }
 
   const createNewProjectFolder = async () => {
-    if (confirm('Are you sure you want to create a new project?')) {
-      const defaultPath = remote.app.getPath('documents');
+    const projectFileName = katharaConfig.labInfo.description;
+    const projectFolderPath = katharaConfig.labInfo.labDirPath;
+    console.log({ projectFolderPath });
 
-      console.log({ defaultPath });
-
-      const projectFileName =
-        katharaConfig.labInfo.description ||
-        dayjs().format('DD-MM-YYYY') + ' (Lab)';
-
-      const projectFolderPath = path.join(defaultPath, projectFileName);
-      console.log({ projectFolderPath });
-
-      // create the folder if it does not exist
-      try {
-        if (!existsSync(projectFolderPath)) {
-          mkdirSync(projectFolderPath);
-        }
-        const directory = await dialog.showSaveDialog({
-          defaultPath: path.join(projectFolderPath, 'katharaConfig.json'),
-          // properties: ['treatPackageAsDirectory'],
-        });
-        console.log({ directory });
-
-        const folderNameArr = directory.filePath?.split('\\');
-        const foldername = folderNameArr![folderNameArr!.length - 2];
-        console.log({ folderNameArr }, { foldername });
-
-        writeFile(
-          directory.filePath!,
-          JSON.stringify(katharaConfig, undefined, 2),
-          (err) => {
-            console.log({ err });
-          }
-        );
-
-        // after first time project has been saved, enable autosave
-        setKatharaConfig((config: any) => {
-          return {
-            ...config,
-            labInfo: {
-              ...config.labInfo,
-              autosaveEnabled: true,
-              labDirPath: directory.filePath,
-              description: foldername,
-            },
-          };
-        });
-      } catch (err) {
-        console.error(err);
+    // create the folder if it does not exist
+    try {
+      if (!existsSync(projectFolderPath)) {
+        mkdirSync(projectFolderPath);
       }
+      const configFilePath = path.join(projectFolderPath, 'katharaConfig.json');
+      console.log({ configFilePath });
+
+      writeFile(
+        configFilePath,
+        JSON.stringify(katharaConfig, undefined, 2),
+        (err) => {
+          console.log({ err });
+          if (err === null) {
+            // after first time project has been saved, enable autosave
+            setKatharaConfig((config: any) => {
+              return {
+                ...config,
+                labInfo: {
+                  ...config.labInfo,
+                  autosaveEnabled: true,
+                },
+              };
+            });
+          }
+        }
+      );
+    } catch (err) {
+      console.error(err);
     }
   };
+
   const importExistingProject = async () => {
     const defaultPath = remote.app.getPath('documents');
 
@@ -149,7 +135,9 @@ export const Navbar = () => {
   const onPopoverItemClicked = (item: string) => {
     switch (item) {
       case 'NEW':
-        createNewProjectFolder();
+        setShowModal(true);
+        // createNewProjectFolder();
+        console.log('New project');
         break;
       case 'IMPORT':
         importExistingProject();
@@ -162,7 +150,6 @@ export const Navbar = () => {
   return (
     <nav className="flex justify-between items-center px-4 py-2 bg-gray-800 shadow-lg align-center">
       {/* <a className="focus:outline-none focus:ring-2 focus:ring-emerald-400 flex items-center"> */}
-
       <div className="cursor-auto">
         <img className="w-auto h-8 mt-1" src={logo} alt="kathara logo" />
       </div>
@@ -175,7 +162,6 @@ export const Navbar = () => {
       </div>
       <div className="flex items-center justify-center">
         <MyPopover onItemClicked={onPopoverItemClicked} />
-
         {katharaConfig.machines.length > 0 && (
           <>
             <button
@@ -228,6 +214,11 @@ export const Navbar = () => {
           </>
         )}
       </div>
+      <NewProjectModal
+        showModal={showModal}
+        setShowModal={setShowModal}
+        onSaveClicked={createNewProjectFolder}
+      />
     </nav>
   );
 };

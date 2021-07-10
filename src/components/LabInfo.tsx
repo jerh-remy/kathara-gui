@@ -78,6 +78,7 @@ export const LabInfo = () => {
                         type="text"
                         id="description"
                         name="description"
+                        disabled={labInfo.description.length > 0}
                         onChange={handleChange}
                         value={labInfo.description}
                         placeholder={`Exam ${new Date().getFullYear()}`}
