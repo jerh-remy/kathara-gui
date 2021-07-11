@@ -29,10 +29,11 @@ const { dialog } = remote;
 export const Navbar = () => {
   const [katharaConfig, setKatharaConfig] = useKatharaConfig();
   const [error, setError] = useState('');
+  const [exitCode, setExitCode] = useState();
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    ipcRenderer.on('script:execute-reply-error', (_, katharaData) => {
+    ipcRenderer.on('script:stderr-reply', (_, katharaData) => {
       console.log({ katharaData });
       setError((_) => katharaData.trim());
     });
@@ -48,6 +49,17 @@ export const Navbar = () => {
       ipcRenderer.removeAllListeners('script:execute-reply-error');
     };
   }, [error]);
+
+  useEffect(() => {
+    ipcRenderer.on('script:code-reply', (_, code) => {
+      console.log({ code });
+      setExitCode(code);
+    });
+    return () => {
+      // setError('');
+      ipcRenderer.removeAllListeners('script:code-reply');
+    };
+  }, [exitCode]);
 
   // console.log({ error });
 
@@ -128,6 +140,13 @@ export const Navbar = () => {
     _executeGeneric('clean');
   }
 
+  function executeCheck() {
+    ipcRenderer.send('script:check');
+  }
+  function executeCheckDocker() {
+    ipcRenderer.send('script:checkDocker');
+  }
+
   function _executeGeneric(command: string) {
     const dirPath = katharaConfig.labInfo.labDirPath;
     ipcRenderer.send('script:' + command, dirPath);
@@ -193,6 +212,8 @@ export const Navbar = () => {
                 );
                 console.log({ script });
                 executeStart(script);
+
+                // executeCheck();
               }}
               className="relative inline-flex items-center px-4 py-1 mr-3 text-sm font-bold tracking-wide text-white border border-transparent rounded-md shadow-sm bg-emerald-500 hover:bg-emerald-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-emerald-500"
             >
@@ -206,6 +227,7 @@ export const Navbar = () => {
                 e.preventDefault();
                 console.log('stop lab');
                 executeClean();
+                // executeCheckDocker();
               }}
               className="relative inline-flex items-center px-4 py-1 text-sm font-bold tracking-wide text-white border border-transparent rounded-md shadow-sm bg-red-500 hover:bg-red-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-red-500"
             >

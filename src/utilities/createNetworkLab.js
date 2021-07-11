@@ -337,13 +337,17 @@ function createStaticRouting(kathara, lab) {
       for (let gateway of machine.gateways.gw) {
         if (gateway.gw && gateway.gw != '') {
           //route add default gw GATEWAY dev eth_
-          if (gateway.route == '') {
+          // if (gateway.route == '') {
+          //   lab.file[machine.name + '.startup'] +=
+          //     'route add default gw ' +
+          //     gateway.gw +
+          //     ' dev eth' +
+          //     gateway.if +
+          //     '\n';
+          // }
+          if (!gateway.route) {
             lab.file[machine.name + '.startup'] +=
-              'route add default gw ' +
-              gateway.gw +
-              ' dev eth' +
-              gateway.if +
-              '\n';
+              'route add default gw ' + gateway.gw + '\n';
           }
           //route add -net NETADDRESS/MASK gw GATEADDRESS dev eth_
           else {

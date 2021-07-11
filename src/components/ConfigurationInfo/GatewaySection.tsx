@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import { ChevronRightIcon, TrashIcon } from '@heroicons/react/outline';
 import { Heading2 } from '../Heading2';
 import { Disclosure, Transition } from '@headlessui/react';
@@ -144,6 +144,14 @@ export const Gateway: FC<GatewayProps> = ({
   activeDevice,
   setActiveDevice,
 }) => {
+  console.log({ id });
+  const [gateway, setGateway] = useState(
+    activeDevice.gateways.gw.find((elem: any) => elem.id === id)
+  );
+  // let gateway = activeDevice.gateways.gw.find((elem: any) => elem.id === id);
+  console.log(`THE TYPE OF GATEWAY IS: ${typeof gateway}`, { gateway });
+  // console.log({ activeDevice });
+
   const handleChange = (event: any) => {
     console.log(event.target.name);
 
@@ -156,69 +164,30 @@ export const Gateway: FC<GatewayProps> = ({
 
     switch (propertyName) {
       case 'static-route':
-        setActiveDevice((device: any) => {
-          let filteredGatewaysArr = device.gateways.gw.filter((elem: any) => {
-            return elem.id !== id;
-          });
+        setGateway({ ...gateway, route: value });
+        // setGateway((elem: any) => {
+        //   const newGw = { ...elem, route: value };
+        //   return newGw;
+        // });
 
-          let updatedGateway = device.gateways.gw.find((elem: any) => {
-            return elem.id === id;
-          });
-
-          console.log({ id }, { updatedGateway });
-
-          updatedGateway.route = value;
-
-          const newDevice = {
-            ...device,
-            gateways: {
-              gw: [...filteredGatewaysArr, updatedGateway],
-            },
-          };
-          return newDevice;
-        });
         break;
       case 'gateway':
-        setActiveDevice((device: any) => {
-          let filteredGatewaysArr = device.gateways.gw.filter((elem: any) => {
-            return elem.id !== id;
-          });
+        setGateway({ ...gateway, gw: value });
 
-          let updatedGateway = device.gateways.gw.find((elem: any) => {
-            return elem.id === id;
-          });
+        // setGateway((elem: any) => {
+        //   const newGw = { ...elem, gw: value };
+        //   return newGw;
+        // });
 
-          updatedGateway.gw = value;
-
-          const newDevice = {
-            ...device,
-            gateways: {
-              gw: [...filteredGatewaysArr, updatedGateway],
-            },
-          };
-          return newDevice;
-        });
         break;
       case 'interface':
-        setActiveDevice((device: any) => {
-          let filteredGatewaysArr = device.gateways.gw.filter((elem: any) => {
-            return elem.id !== id;
-          });
+        setGateway({ ...gateway, if: value });
 
-          let updatedGateway = device.gateways.gw.find((elem: any) => {
-            return elem.id === id;
-          });
+        // setGateway((elem: any) => {
+        //   const newGw = { ...elem, if: value };
+        //   return newGw;
+        // });
 
-          updatedGateway.if = value;
-
-          const newDevice = {
-            ...device,
-            gateways: {
-              gw: [...filteredGatewaysArr, updatedGateway],
-            },
-          };
-          return newDevice;
-        });
         break;
 
       default:
@@ -226,9 +195,21 @@ export const Gateway: FC<GatewayProps> = ({
     }
   };
 
-  let gateway = activeDevice.gateways.gw.find((elem: any) => elem.id === id);
-  console.log(typeof gateway);
-  console.log({ activeDevice });
+  useEffect(() => {
+    setActiveDevice((device: any) => {
+      let filteredGatewaysArr = device.gateways.gw.filter((elem: any) => {
+        return elem.id !== id;
+      });
+
+      const newDevice = {
+        ...device,
+        gateways: {
+          gw: [...filteredGatewaysArr, gateway],
+        },
+      };
+      return newDevice;
+    });
+  }, [gateway]);
 
   return (
     <div className="mt-4 border-2 border-dashed rounded-md mx-4 px-2 py-2">
@@ -267,6 +248,7 @@ export const Gateway: FC<GatewayProps> = ({
                     name="static-route"
                     placeholder="0.0.0.0/0"
                     value={typeof gateway !== 'undefined' ? gateway.route : ''}
+                    // value={gateway.route}
                     onChange={handleChange}
                   />
                 </div>
@@ -284,6 +266,7 @@ export const Gateway: FC<GatewayProps> = ({
                       name="gateway"
                       placeholder="0.0.0.0"
                       value={typeof gateway !== 'undefined' ? gateway.gw : ''}
+                      // value={gateway.gw}
                       onChange={handleChange}
                     />
                   </div>

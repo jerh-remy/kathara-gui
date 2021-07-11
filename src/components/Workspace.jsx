@@ -67,15 +67,13 @@ export const Workspace = ({
 
   const { transform } = useZoomPanHelper();
 
-  const onConnectStart = useCallback((event, { nodeId, handleType }) => {
-    console.log({ nodeId, handleType });
-  }, []);
-
-  // const onElementClick = (event, element) => {
-  //   // console.log('click', element);
-  //   onDeviceClicked(element);
-  //   openConfigurationPanel(true);
-  // };
+  useEffect(() => {
+    if (reactFlowInstance) {
+      // reactFlowInstance.fitView();
+      console.table({ elements });
+      console.log({ katharaConfig });
+    }
+  }, [reactFlowInstance, elements.length]);
 
   useEffect(() => {
     if (reactFlowInstance) {
@@ -91,16 +89,18 @@ export const Workspace = ({
   }, [reactFlowInstance]);
 
   useEffect(() => {
-    console.log('THE ONE I AM CURRENTLY LOOKING AT');
     if (reactFlowInstance) {
       setElements(katharaConfig.elements || []);
-      // console.log(katharaConfig.position);
       // if (katharaConfig.position) {
       //   const [x = 0, y = 0] = katharaConfig.position;
       //   transform({ x, y, zoom: katharaConfig.zoom || 0 });
       // }
     }
   }, [katharaConfig.elements, reactFlowInstance]);
+
+  const onConnectStart = useCallback((event, { nodeId, handleType }) => {
+    console.log({ nodeId, handleType });
+  }, []);
 
   const onNodeDoubleClick = (event, node) => {
     const connectedEdges = getConnectedEdges(
@@ -145,19 +145,11 @@ export const Workspace = ({
     );
   }, []);
 
-  const onEdgeUpdate = useCallback(
-    (oldEdge, newConnection) =>
-      setElements((els) => updateEdge(oldEdge, newConnection, els)),
-    []
-  );
-
-  useEffect(() => {
-    if (reactFlowInstance) {
-      // reactFlowInstance.fitView();
-      console.table({ elements });
-      console.log({ katharaConfig });
-    }
-  }, [reactFlowInstance, elements.length]);
+  // const onEdgeUpdate = useCallback(
+  //   (oldEdge, newConnection) =>
+  //     setElements((els) => updateEdge(oldEdge, newConnection, els)),
+  //   []
+  // );
 
   const onElementsRemove = useCallback(
     (elementsToRemove) => {
@@ -376,7 +368,6 @@ export const Workspace = ({
           ],
           elements: elements.concat(newNode),
         };
-        // console.log({ lab });
         return lab;
       });
     }
@@ -422,7 +413,7 @@ export const Workspace = ({
         nodesDraggable={true}
         onNodeDragStop={onNodeDragStop}
         connectionMode={ConnectionMode.Loose}
-        onEdgeUpdate={onEdgeUpdate}
+        // onEdgeUpdate={onEdgeUpdate}
         onConnectStart={onConnectStart}
         // onPaneClick={onPaneClick}
         // onPaneScroll={onPaneScroll}

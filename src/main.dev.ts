@@ -169,23 +169,25 @@ function runKatharaCommand(command: string, event: Electron.IpcMainEvent) {
   child.stdout.on('data', (data) => {
     console.log(`stdout:${data}`);
     output = data.toString();
-    event.reply('script:execute-reply', output);
+    event.reply('script:stdout-reply', output);
   });
 
   child.stderr.on('data', (data) => {
     console.error(`stderr: ${data}`);
     output = data.toString();
-    event.reply('script:execute-reply-error', output);
+    event.reply('script:stderr-reply', output);
   });
 
   child.on('error', (error) => {
     console.error(`error: ${error.message}`);
-    // output = error;
+    output = error.message;
+    event.reply('script:error-reply', output);
   });
 
   child.on('close', (code) => {
     console.log(`child process exited with code ${code}`);
-    // output = code;
+    output = code;
+    event.reply('script:code-reply', code);
   });
 }
 
@@ -235,4 +237,29 @@ ipcMain.on('script:clean', (event, dirPath) => {
   let pathTemp = path.join(dirPath, 'lab');
   console.log(`Running LClean on ${pathTemp}`);
   runKatharaCommand(`lclean -d "${pathTemp}"`, event);
+});
+
+ipcMain.on('script:check', (event) => {
+  console.log(`Checking if Kathara is installed`);
+  runKatharaCommand(`-v`, event);
+});
+
+ipcMain.on('script:checkDocker', (event) => {
+  console.log(`Checking if Docker daemon is running`);
+  const docker = exec(`docker info `, (error, stdout, stderr) => {
+    if (error) {
+      console.log(`error: ${error.message}`);
+      return;
+    }
+    if (stderr) {
+      console.log(`stderr: ${stderr}`);
+      return;
+    }
+    console.log(`stdout: ${stdout}`);
+  });
+
+  docker.on('exit', (code) => {
+    console.log(`exit code: ${code}`);
+    event.reply('script:code-reply', code);
+  });
 });
