@@ -7,21 +7,32 @@ import {
   Position,
   HandleProps,
 } from 'react-flow-renderer';
+import ReactTooltip from 'react-tooltip';
+import { useKatharaConfig } from '../../contexts/katharaConfigContext';
 
 import { getImage } from '../../utilities/utilities';
 
 const onConnect = (params: Connection | Edge) =>
   console.log('handle onConnect', params);
 
-const CustomNode: FC<NodeProps> = ({ data }) => {
+const CustomNode: FC<NodeProps> = ({ data, id, ...rest }) => {
+  const [katharaConfig, setKatharaConfig] = useKatharaConfig();
+
   const deviceLabel = data.label;
   const deviceType = data.deviceType;
-  // console.log({ deviceType, data });
+  console.log({ rest });
+
+  const nodeData = katharaConfig.machines.find((elem: any) => elem.id === id);
+  console.log({ nodeData });
 
   return (
     <>
       <div className="relative">
-        <div className="flex flex-col justify-center items-center p-[2px] ">
+        <div
+          data-tip
+          data-for={id}
+          className="flex flex-col justify-center items-center p-[2px]"
+        >
           <Handle
             id="eth3"
             type="source"
@@ -82,6 +93,45 @@ const CustomNode: FC<NodeProps> = ({ data }) => {
           {deviceLabel}
         </div>
       </div>
+      {nodeData?.interfaces.if.length > 0 && (
+        <ReactTooltip id={id} place="top" effect="float">
+          <div className="space-y-2">
+            {
+              // const sortedInterfacesArr = nodeData.interfaces.if.sort((a,b)=>{
+              //   return a.eth.number - b.eth.number;
+              // });
+
+              nodeData.interfaces.if
+                .sort((a: any, b: any) => {
+                  return a.eth.number - b.eth.number;
+                })
+                .map((intf: any) => {
+                  const interfaceNumber = `eth${intf.eth.number}`;
+                  const interfaceDomain = intf.eth.domain;
+                  const interfaceIp = intf.eth.ip;
+                  return (
+                    <div className="border border-dashed border-gray-100 px-2 py-2 rounded-md w-[180px] min-w-max">
+                      <div className="" key={intf.eth.number}>
+                        <div className="flex justify-between items-center">
+                          <p>Interface: </p>
+                          <p>{interfaceNumber}</p>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <p>Domain: </p>
+                          <p>{interfaceDomain}</p>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <p>IP address: </p>
+                          <p>{interfaceIp}</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+            }
+          </div>
+        </ReactTooltip>
+      )}
     </>
   );
 };

@@ -26,11 +26,17 @@ import {
 import { NewProjectModal } from './NewProjectModal';
 const { dialog } = remote;
 
-export const Navbar = () => {
+type NavbarProps = {
+  showNewProjectModal: boolean;
+  setShowNewProjectModal: React.Dispatch<React.SetStateAction<boolean>>;
+};
+export const Navbar: FC<NavbarProps> = ({
+  showNewProjectModal,
+  setShowNewProjectModal,
+}) => {
   const [katharaConfig, setKatharaConfig] = useKatharaConfig();
   const [error, setError] = useState('');
   const [exitCode, setExitCode] = useState();
-  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     ipcRenderer.on('script:stderr-reply', (_, katharaData) => {
@@ -155,7 +161,7 @@ export const Navbar = () => {
   const onPopoverItemClicked = (item: string) => {
     switch (item) {
       case 'NEW':
-        setShowModal(true);
+        setShowNewProjectModal(true);
         // createNewProjectFolder();
         console.log('New project');
         break;
@@ -238,8 +244,8 @@ export const Navbar = () => {
         )}
       </div>
       <NewProjectModal
-        showModal={showModal}
-        setShowModal={setShowModal}
+        showModal={showNewProjectModal}
+        setShowModal={setShowNewProjectModal}
         onSaveClicked={createNewProjectFolder}
       />
     </nav>

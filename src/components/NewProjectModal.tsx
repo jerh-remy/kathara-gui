@@ -31,21 +31,21 @@ export const NewProjectModal: FC<Props> = ({
     setProjectDir(path.join(projectDefaultPath, projectName));
   }, [projectName, projectDefaultPath]);
 
-  // useEffect(() => {
-  //   setKatharaConfig((config: any) => {
-  //     return {
-  //       machines: [],
-  //       elements: [],
-  //       position: [],
-  //       zoom: 1,
-  //       labInfo: {
-  //         ...config.labInfo,
-  //         labDirPath: projectDir,
-  //         description: projectName,
-  //       },
-  //     };
-  //   });
-  // }, [projectDir]);
+  useEffect(() => {
+    setKatharaConfig((config: any) => {
+      return {
+        machines: [],
+        elements: [],
+        position: [],
+        zoom: 1,
+        labInfo: {
+          ...config.labInfo,
+          labDirPath: projectDir,
+          description: projectName,
+        },
+      };
+    });
+  }, [projectDir]);
 
   const selectProjectFolder = async () => {
     try {
@@ -53,7 +53,9 @@ export const NewProjectModal: FC<Props> = ({
         defaultPath: defaultPath,
         properties: ['openDirectory'],
       });
-      setProjectDefaultPath(directory.filePaths[0]);
+      if (directory.filePaths[0]) {
+        setProjectDefaultPath(directory.filePaths[0]);
+      }
 
       // after first time project has been saved, enable autosave
       // setKatharaConfig((config: any) => {

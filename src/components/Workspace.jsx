@@ -57,6 +57,7 @@ const getId = () => `node_${+new Date()}`;
 export const Workspace = ({
   openConfigurationPanel,
   isConfigurationPanelOpen,
+  onNewProjectCreate,
 }) => {
   const [katharaConfig, setKatharaConfig] = useKatharaConfig();
   const [elements, setElements] = useState(katharaConfig.elements);
@@ -329,47 +330,51 @@ export const Workspace = ({
 
   const onDrop = (event) => {
     event.preventDefault();
-
-    if (reactFlowInstance) {
-      const data = event.dataTransfer.getData('application/reactflow');
-      console.log({ data });
-      const type = data.split('|')[0];
-      const dt = data.split('|')[1];
-      const deviceType = data.split('|')[2];
-      const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
-      const position = reactFlowInstance.project({
-        x: event.clientX - reactFlowBounds.left,
-        y: event.clientY - reactFlowBounds.top,
-      });
-      const newNode = {
-        id: getId(),
-        type,
-        position,
-        data: { label: `${deviceType}`, deviceType: dt },
-      };
-
-      setElements((es) => {
-        const newArr = es.concat(newNode);
-        return newArr;
-      });
-
-      setKatharaConfig((config) => {
-        const machine = _.cloneDeep(device);
-        console.log({ machine });
-        const lab = {
-          ...config,
-          machines: [
-            ...config.machines,
-            {
-              ...machine,
-              id: newNode.id,
-              type: dt,
-            },
-          ],
-          elements: elements.concat(newNode),
+    if (!katharaConfig.labInfo.description) {
+      console.log('You need to create a new project first');
+      onNewProjectCreate();
+    } else {
+      if (reactFlowInstance) {
+        const data = event.dataTransfer.getData('application/reactflow');
+        console.log({ data });
+        const type = data.split('|')[0];
+        const dt = data.split('|')[1];
+        const deviceType = data.split('|')[2];
+        const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
+        const position = reactFlowInstance.project({
+          x: event.clientX - reactFlowBounds.left,
+          y: event.clientY - reactFlowBounds.top,
+        });
+        const newNode = {
+          id: getId(),
+          type,
+          position,
+          data: { label: `${deviceType}`, deviceType: dt },
         };
-        return lab;
-      });
+
+        setElements((es) => {
+          const newArr = es.concat(newNode);
+          return newArr;
+        });
+
+        setKatharaConfig((config) => {
+          const machine = _.cloneDeep(device);
+          console.log({ machine });
+          const lab = {
+            ...config,
+            machines: [
+              ...config.machines,
+              {
+                ...machine,
+                id: newNode.id,
+                type: dt,
+              },
+            ],
+            elements: elements.concat(newNode),
+          };
+          return lab;
+        });
+      }
     }
   };
 
