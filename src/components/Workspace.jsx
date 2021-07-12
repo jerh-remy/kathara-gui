@@ -373,6 +373,16 @@ export const Workspace = ({
     }
   };
 
+  const onNodeMouseEnter = (event, node) => {
+    console.log(`onNodeMouseEnter: `);
+    console.log({ event }, { node });
+  };
+
+  const onNodeMouseLeave = (event, node) => {
+    console.log(`onNodeMouseLeave: `);
+    console.log({ event }, { node });
+  };
+
   const updateActiveDeviceLabel = () => {
     const rfNodeId = activeDevice.id;
     const updatedLabel = katharaConfig.machines.find(
@@ -409,6 +419,8 @@ export const Workspace = ({
         onLoad={onLoad}
         onDrop={onDrop}
         onDragOver={onDragOver}
+        // onNodeMouseEnter={onNodeMouseEnter}
+        // onNodeMouseLeave={onNodeMouseLeave}
         nodeTypes={nodeTypes}
         nodesDraggable={true}
         onNodeDragStop={onNodeDragStop}
