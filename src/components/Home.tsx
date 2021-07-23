@@ -37,7 +37,7 @@ export const Home = () => {
         <KatharaConfigProvider>
           <div
             className={`flex flex-col min-h-screen  ${
-              isLabRunning ? 'border-[3.5px] border-green-400' : ''
+              isLabRunning ? 'border-[3.5px] border-green-300' : ''
             }`}
           >
             <Navbar

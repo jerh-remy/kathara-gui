@@ -95,10 +95,11 @@ const CustomNode: FC<NodeProps> = ({ data, id, ...rest }) => {
       </div>
       {nodeData?.interfaces.if.length > 0 && (
         <ReactTooltip
+          type="light"
           id={id}
           place="top"
           effect="solid"
-          // className="z-[222222222222222]"
+          className="shadow-md"
         >
           <div className="mt-2 mb-2 space-y-2">
             {nodeData.interfaces.if
@@ -112,20 +113,20 @@ const CustomNode: FC<NodeProps> = ({ data, id, ...rest }) => {
                 return (
                   <div
                     key={intf.eth.number}
-                    className="border border-dashed border-gray-100 px-2 py-2 rounded-md w-[180px] min-w-max"
+                    className="border border-dashed border-gray-300 px-4 py-2 rounded-md w-[180px] min-w-max"
                   >
                     <div className="">
                       <div className="flex justify-between items-center">
                         <p>Interface: </p>
-                        <p>{interfaceNumber}</p>
+                        <p className="text-teal-500">{interfaceNumber}</p>
                       </div>
                       <div className="flex justify-between items-center">
                         <p>Domain: </p>
-                        <p>{interfaceDomain}</p>
+                        <p className="text-teal-500">{interfaceDomain}</p>
                       </div>
                       <div className="flex justify-between items-center">
                         <p>IP address: </p>
-                        <p>{interfaceIp}</p>
+                        <p className="text-teal-500">{interfaceIp}</p>
                       </div>
                     </div>
                   </div>

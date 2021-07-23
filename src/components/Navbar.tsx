@@ -243,12 +243,17 @@ export const Navbar: FC<NavbarProps> = ({
       <div className="cursor-auto">
         <img className="w-auto h-8 mt-1" src={logo} alt="kathara logo" />
       </div>
-      <div>
+      <div className="flex items-center">
         <p className="text-md text-white font-bold">{`${
           katharaConfig.labInfo.labDirPath?.length > 0
             ? katharaConfig.labInfo.description
             : ''
         }`}</p>
+        {isLabRunning && (
+          <div className="text-xs text-green-600 font-semibold px-2 py-1 rounded-md bg-green-200 mr-1 ml-2">
+            Lab running
+          </div>
+        )}
       </div>
       <div className="flex items-center justify-center">
         <MyPopover onItemClicked={onPopoverItemClicked} />

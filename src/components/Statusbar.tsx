@@ -15,7 +15,7 @@ export const Statusbar = () => {
         {katharaConfig.labInfo.autosaveEnabled ? (
           <p className="text-gray-300 text-xs">
             Current project directory: {` `}
-            <span className="text-lightBlue-600 text-xs">
+            <span className="text-teal-500 text-xs">
               {katharaConfig.labInfo.labDirPath}
             </span>
           </p>
