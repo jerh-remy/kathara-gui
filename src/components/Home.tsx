@@ -22,20 +22,29 @@ export const ErrorFallback: FC<Props> = ({ error }) => {
 export const Home = () => {
   const [openConfigPanel, setOpenConfigPanel] = useState(false);
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
+  const [isLabRunning, setIsLabRunning] = useState(false);
 
   const onNewProjectCreate = () => {
     console.log('Creating new Project');
     setShowNewProjectModal(true);
   };
 
+  console.log(`isLabRunning: ${isLabRunning}`);
+
   return (
     <>
       <ErrorBoundary FallbackComponent={ErrorFallback}>
         <KatharaConfigProvider>
-          <div className="flex flex-col min-h-screen">
+          <div
+            className={`flex flex-col min-h-screen  ${
+              isLabRunning ? 'border-[3.5px] border-green-400' : ''
+            }`}
+          >
             <Navbar
               showNewProjectModal={showNewProjectModal}
               setShowNewProjectModal={setShowNewProjectModal}
+              setIsLabRunning={setIsLabRunning}
+              isLabRunning={isLabRunning}
             />
             <div className="flex flex-1">
               <DeviceSelectionColumn />

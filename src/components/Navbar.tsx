@@ -29,14 +29,19 @@ const { dialog } = remote;
 type NavbarProps = {
   showNewProjectModal: boolean;
   setShowNewProjectModal: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsLabRunning: React.Dispatch<React.SetStateAction<boolean>>;
+  isLabRunning: boolean;
 };
 export const Navbar: FC<NavbarProps> = ({
   showNewProjectModal,
   setShowNewProjectModal,
+  setIsLabRunning,
+  isLabRunning,
 }) => {
   const [katharaConfig, setKatharaConfig] = useKatharaConfig();
   const [error, setError] = useState('');
-  const [exitCode, setExitCode] = useState();
+  const [exitCode, setExitCode] = useState(1);
+  const [isLabRunCommandIssued, setIsLabRunCommandIssued] = useState(false);
 
   useEffect(() => {
     ipcRenderer.on('script:stderr-reply', (_, katharaData) => {
@@ -61,11 +66,26 @@ export const Navbar: FC<NavbarProps> = ({
       console.log({ code });
       setExitCode(code);
     });
+
     return () => {
       // setError('');
       ipcRenderer.removeAllListeners('script:code-reply');
     };
   }, [exitCode]);
+
+  useEffect(() => {
+    if (isLabRunCommandIssued && exitCode === 0) {
+      setIsLabRunning(true);
+    } else if (!isLabRunCommandIssued && exitCode === 0) {
+      setIsLabRunning(false);
+    }
+
+    console.log({ isLabRunCommandIssued }, { isLabRunning }, { exitCode });
+
+    return () => {
+      setExitCode(1);
+    };
+  }, [exitCode, isLabRunCommandIssued]);
 
   // console.log({ error });
 
@@ -78,6 +98,24 @@ export const Navbar: FC<NavbarProps> = ({
   function executeStart(script: string) {
     createLabFolderOnFileSystem(script);
     _executeGeneric('execute');
+    setIsLabRunCommandIssued(true);
+  }
+
+  function executeClean() {
+    _executeGeneric('clean');
+    setIsLabRunCommandIssued(false);
+  }
+
+  function executeCheck() {
+    ipcRenderer.send('script:check');
+  }
+  function executeCheckDocker() {
+    ipcRenderer.send('script:checkDocker');
+  }
+
+  function _executeGeneric(command: string) {
+    const dirPath = katharaConfig.labInfo.labDirPath;
+    ipcRenderer.send('script:' + command, dirPath);
   }
 
   const createNewProjectFolder = async () => {
@@ -142,27 +180,10 @@ export const Navbar: FC<NavbarProps> = ({
     }
   };
 
-  function executeClean() {
-    _executeGeneric('clean');
-  }
-
-  function executeCheck() {
-    ipcRenderer.send('script:check');
-  }
-  function executeCheckDocker() {
-    ipcRenderer.send('script:checkDocker');
-  }
-
-  function _executeGeneric(command: string) {
-    const dirPath = katharaConfig.labInfo.labDirPath;
-    ipcRenderer.send('script:' + command, dirPath);
-  }
-
   const onPopoverItemClicked = (item: string) => {
     switch (item) {
       case 'NEW':
         setShowNewProjectModal(true);
-        // createNewProjectFolder();
         console.log('New project');
         break;
       case 'IMPORT':
@@ -173,6 +194,49 @@ export const Navbar: FC<NavbarProps> = ({
     }
   };
 
+  let startStopLabButton;
+
+  if (!isLabRunning) {
+    startStopLabButton = (
+      <button
+        type="button"
+        aria-label="Run Lab"
+        disabled={katharaConfig.machines.length === 0}
+        onClick={(e) => {
+          e.preventDefault();
+          console.log('run lab');
+          const script = createScript(
+            createFilesStructure(katharaConfig.machines, katharaConfig.labInfo)
+          );
+          console.log({ script });
+          executeStart(script);
+
+          // executeCheck();
+        }}
+        className="relative inline-flex items-center px-4 py-1 mr-3 text-sm font-bold tracking-wide text-white border border-transparent rounded-md shadow-sm bg-emerald-500 hover:bg-emerald-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-emerald-500"
+      >
+        <span>Run lab</span>
+      </button>
+    );
+  } else {
+    startStopLabButton = (
+      <button
+        type="button"
+        aria-label="Stop Lab"
+        disabled={katharaConfig.machines.length === 0}
+        onClick={(e) => {
+          e.preventDefault();
+          console.log('stop lab');
+          executeClean();
+          // executeCheckDocker();
+        }}
+        className="relative inline-flex items-center px-4 py-1 text-sm font-bold tracking-wide text-white border border-transparent rounded-md shadow-sm bg-red-500 hover:bg-red-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-red-500"
+      >
+        {/* <img className="w-auto h-6 mr-2 cursor-pointer" src="download.svg" /> */}
+        <span>Stop lab</span>
+      </button>
+    );
+  }
   return (
     <nav className="flex justify-between items-center px-4 py-2 bg-gray-800 shadow-lg align-center">
       {/* <a className="focus:outline-none focus:ring-2 focus:ring-emerald-400 flex items-center"> */}
@@ -203,43 +267,8 @@ export const Navbar: FC<NavbarProps> = ({
               <DownloadIcon className="text-white w-5 h-5 mr-[5px] mt-[1.2px]" />
               <span>Generate zip</span>
             </button>
-            <button
-              type="button"
-              aria-label="Run Lab"
-              disabled={katharaConfig.machines.length === 0}
-              onClick={(e) => {
-                e.preventDefault();
-                console.log('run lab');
-                const script = createScript(
-                  createFilesStructure(
-                    katharaConfig.machines,
-                    katharaConfig.labInfo
-                  )
-                );
-                console.log({ script });
-                executeStart(script);
 
-                // executeCheck();
-              }}
-              className="relative inline-flex items-center px-4 py-1 mr-3 text-sm font-bold tracking-wide text-white border border-transparent rounded-md shadow-sm bg-emerald-500 hover:bg-emerald-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-emerald-500"
-            >
-              <span>Run lab</span>
-            </button>
-            <button
-              type="button"
-              aria-label="Stop Lab"
-              disabled={katharaConfig.machines.length === 0}
-              onClick={(e) => {
-                e.preventDefault();
-                console.log('stop lab');
-                executeClean();
-                // executeCheckDocker();
-              }}
-              className="relative inline-flex items-center px-4 py-1 text-sm font-bold tracking-wide text-white border border-transparent rounded-md shadow-sm bg-red-500 hover:bg-red-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-red-500"
-            >
-              {/* <img className="w-auto h-6 mr-2 cursor-pointer" src="download.svg" /> */}
-              <span>Stop lab</span>
-            </button>
+            {startStopLabButton}
           </>
         )}
       </div>

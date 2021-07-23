@@ -12,11 +12,16 @@ export const Statusbar = () => {
             ? 'Your project is being autosaved.'
             : 'To enable the autosave feature, create a new Kathara lab project. '
         }`}</p>
-        <p className="text-gray-300 text-xs">{`${
-          katharaConfig.labInfo.autosaveEnabled
-            ? ` Current project directory: ${katharaConfig.labInfo.labDirPath}`
-            : ''
-        }`}</p>
+        {katharaConfig.labInfo.autosaveEnabled ? (
+          <p className="text-gray-300 text-xs">
+            Current project directory: {` `}
+            <span className="text-lightBlue-600 text-xs">
+              {katharaConfig.labInfo.labDirPath}
+            </span>
+          </p>
+        ) : (
+          ''
+        )}
       </div>
       <div className="flex justify-between items-center space-x-4">
         <div className="flex items-center">

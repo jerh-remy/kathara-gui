@@ -43,7 +43,7 @@ body {
 }
 
 path.react-flow__edge-path:hover {
-  stroke-width: 3;
+  stroke-width: 4;
   /* stroke: #b5f3fc; */
   cursor: pointer;
 }

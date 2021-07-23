@@ -20,10 +20,10 @@ const CustomNode: FC<NodeProps> = ({ data, id, ...rest }) => {
 
   const deviceLabel = data.label;
   const deviceType = data.deviceType;
-  console.log({ rest });
+  // console.log({ rest });
 
   const nodeData = katharaConfig.machines.find((elem: any) => elem.id === id);
-  console.log({ nodeData });
+  // console.log({ nodeData });
 
   return (
     <>
@@ -94,41 +94,43 @@ const CustomNode: FC<NodeProps> = ({ data, id, ...rest }) => {
         </div>
       </div>
       {nodeData?.interfaces.if.length > 0 && (
-        <ReactTooltip id={id} place="top" effect="float">
-          <div className="space-y-2">
-            {
-              // const sortedInterfacesArr = nodeData.interfaces.if.sort((a,b)=>{
-              //   return a.eth.number - b.eth.number;
-              // });
-
-              nodeData.interfaces.if
-                .sort((a: any, b: any) => {
-                  return a.eth.number - b.eth.number;
-                })
-                .map((intf: any) => {
-                  const interfaceNumber = `eth${intf.eth.number}`;
-                  const interfaceDomain = intf.eth.domain;
-                  const interfaceIp = intf.eth.ip;
-                  return (
-                    <div className="border border-dashed border-gray-100 px-2 py-2 rounded-md w-[180px] min-w-max">
-                      <div className="" key={intf.eth.number}>
-                        <div className="flex justify-between items-center">
-                          <p>Interface: </p>
-                          <p>{interfaceNumber}</p>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <p>Domain: </p>
-                          <p>{interfaceDomain}</p>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <p>IP address: </p>
-                          <p>{interfaceIp}</p>
-                        </div>
+        <ReactTooltip
+          id={id}
+          place="top"
+          effect="solid"
+          // className="z-[222222222222222]"
+        >
+          <div className="mt-2 mb-2 space-y-2">
+            {nodeData.interfaces.if
+              .sort((a: any, b: any) => {
+                return a.eth.number - b.eth.number;
+              })
+              .map((intf: any) => {
+                const interfaceNumber = `eth${intf.eth.number}`;
+                const interfaceDomain = intf.eth.domain;
+                const interfaceIp = intf.eth.ip;
+                return (
+                  <div
+                    key={intf.eth.number}
+                    className="border border-dashed border-gray-100 px-2 py-2 rounded-md w-[180px] min-w-max"
+                  >
+                    <div className="">
+                      <div className="flex justify-between items-center">
+                        <p>Interface: </p>
+                        <p>{interfaceNumber}</p>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <p>Domain: </p>
+                        <p>{interfaceDomain}</p>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <p>IP address: </p>
+                        <p>{interfaceIp}</p>
                       </div>
                     </div>
-                  );
-                })
-            }
+                  </div>
+                );
+              })}
           </div>
         </ReactTooltip>
       )}
