@@ -1,4 +1,9 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
+import {
+  TerminalIcon,
+  PencilAltIcon,
+  TrashIcon,
+} from '@heroicons/react/outline';
 // import {deepCopy} from 'lodash';
 import _ from 'lodash';
 import ReactFlow, {
@@ -32,8 +37,7 @@ import { useKatharaConfig } from '../contexts/katharaConfigContext';
 import { labInfo, device } from '../models/network';
 import { getDefaultDeviceLabel } from '../utilities/utilities';
 
-import { ErrorFallback } from '../components/Home';
-import { ErrorBoundary } from 'react-error-boundary';
+import { ContextMenu } from './ContextMenu';
 
 const snapGrid = [16, 16];
 
@@ -121,6 +125,11 @@ export const Workspace = ({
     setActiveDevice(node);
     setActiveDeviceInterfaces(interfaces);
     openConfigurationPanel(true);
+  };
+
+  const onNodeContextMenu = (event, node) => {
+    event.preventDefault();
+    setActiveDevice(node);
   };
 
   const onConnect = useCallback((params) => {
@@ -426,6 +435,7 @@ export const Workspace = ({
         // onNodeDragStart={onNodeDragStart}
         // onNodeDrag={onNodeDrag}
         onNodeDoubleClick={onNodeDoubleClick}
+        onNodeContextMenu={onNodeContextMenu}
         // onSelectionDragStart={onSelectionDragStart}
         // onSelectionDrag={onSelectionDrag}
         // onSelectionDragStop={onSelectionDragStop}
@@ -451,6 +461,41 @@ export const Workspace = ({
         activeDevice={activeDevice}
         interfaces={activeDeviceInterfaces}
       />
+      <ContextMenu>
+        <div className="space-y-2">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              openConfigurationPanel(true);
+            }}
+            className="w-full flex whitespace-nowrap text-sm px-2 py-1 font-normal tracking-normal rounded-sm text-gray-600 hover:border-transparent hover:bg-gray-100 focus:outline-none focus:ring-1  focus:ring-gray-200 hover:text-teal-600"
+          >
+            <PencilAltIcon className="text-gray-600 w-5 h-5 mr-2" />
+            <span>{`Configure ${activeDevice.data.label}`}</span>
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+            }}
+            className="w-full flex whitespace-nowrap text-sm px-2 py-1 font-normal tracking-normal rounded-sm text-gray-600 hover:border-transparent hover:bg-gray-100 focus:outline-none focus:ring-1  focus:ring-gray-200  hover:text-teal-600"
+          >
+            <TerminalIcon className="text-gray-600 w-5 h-5 mr-2" />
+            <span>Open in console</span>
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+            }}
+            className="w-full flex whitespace-nowrap text-sm px-2 py-1 font-normal tracking-normal rounded-sm text-gray-600 hover:border-transparent hover:bg-gray-100 focus:outline-none focus:ring-1  focus:ring-gray-200 hover:text-teal-600"
+          >
+            <TrashIcon className="text-gray-600 w-5 h-5 mr-2" />
+            <span> {`Delete ${activeDevice.data.label}`}</span>
+          </button>
+        </div>
+      </ContextMenu>
     </div>
   );
 };

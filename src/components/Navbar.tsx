@@ -251,7 +251,7 @@ export const Navbar: FC<NavbarProps> = ({
         }`}</p>
         {isLabRunning && (
           <div className="text-xs text-green-600 font-semibold px-2 py-1 rounded-md bg-green-200 mr-1 ml-2">
-            Lab running
+            Kathará Lab running
           </div>
         )}
       </div>
@@ -272,7 +272,6 @@ export const Navbar: FC<NavbarProps> = ({
               <DownloadIcon className="text-white w-5 h-5 mr-[5px] mt-[1.2px]" />
               <span>Generate zip</span>
             </button>
-
             {startStopLabButton}
           </>
         )}
