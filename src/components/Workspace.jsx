@@ -38,6 +38,7 @@ import { labInfo, device } from '../models/network';
 import { getDefaultDeviceLabel } from '../utilities/utilities';
 
 import { ContextMenu } from './ContextMenu';
+import { ConsolePanel } from './ConsolePanel';
 
 const snapGrid = [16, 16];
 
@@ -412,7 +413,7 @@ export const Workspace = ({
   };
 
   return (
-    <div className="flex-1 bg-gray-50 p-1" ref={reactFlowWrapper}>
+    <div className="relative flex-1 bg-gray-50" ref={reactFlowWrapper}>
       <ReactFlow
         elements={elements}
         snapGrid={snapGrid}
@@ -461,6 +462,7 @@ export const Workspace = ({
         activeDevice={activeDevice}
         interfaces={activeDeviceInterfaces}
       />
+      <ConsolePanel />
       <ContextMenu>
         <div className="space-y-2">
           <button
@@ -472,7 +474,7 @@ export const Workspace = ({
             className="w-full flex whitespace-nowrap text-sm px-2 py-1 font-normal tracking-normal rounded-sm text-gray-600 hover:border-transparent hover:bg-gray-100 focus:outline-none focus:ring-1  focus:ring-gray-200 hover:text-teal-600"
           >
             <PencilAltIcon className="text-gray-600 w-5 h-5 mr-2" />
-            <span>{`Configure ${activeDevice.data.label}`}</span>
+            <span>{`Configure ${activeDevice?.data.label}`}</span>
           </button>
           <button
             type="button"
@@ -492,7 +494,7 @@ export const Workspace = ({
             className="w-full flex whitespace-nowrap text-sm px-2 py-1 font-normal tracking-normal rounded-sm text-gray-600 hover:border-transparent hover:bg-gray-100 focus:outline-none focus:ring-1  focus:ring-gray-200 hover:text-teal-600"
           >
             <TrashIcon className="text-gray-600 w-5 h-5 mr-2" />
-            <span> {`Delete ${activeDevice.data.label}`}</span>
+            <span> {`Delete ${activeDevice?.data.label}`}</span>
           </button>
         </div>
       </ContextMenu>
