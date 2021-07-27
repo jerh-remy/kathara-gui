@@ -38,7 +38,7 @@ import { labInfo, device } from '../models/network';
 import { getDefaultDeviceLabel } from '../utilities/utilities';
 
 import { ContextMenu } from './ContextMenu';
-import { ConsolePanel } from './ConsolePanel';
+import { ConsolePanel } from './ConsolePanel/ConsolePanel';
 
 const snapGrid = [16, 16];
 
@@ -413,7 +413,10 @@ export const Workspace = ({
   };
 
   return (
-    <div className="relative flex-1 bg-gray-50" ref={reactFlowWrapper}>
+    <div
+      className="relative flex-1 bg-gray-50 overflow-y-hidden"
+      ref={reactFlowWrapper}
+    >
       <ReactFlow
         elements={elements}
         snapGrid={snapGrid}

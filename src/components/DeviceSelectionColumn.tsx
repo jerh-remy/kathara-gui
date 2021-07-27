@@ -1,5 +1,5 @@
 import React from 'react';
-import { ConsolePanel } from './ConsolePanel';
+import { ConsolePanel } from './ConsolePanel/ConsolePanel';
 import { Device } from './Device';
 import { Heading } from './Heading';
 import { LabInfo } from './LabInfo';

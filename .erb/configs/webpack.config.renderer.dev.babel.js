@@ -69,6 +69,12 @@ export default merge(baseConfig, {
           },
         ],
       },
+      // {
+      //   test: /\.node$/,
+      //   use: {
+      //     loader: 'node-loader',
+      //   },
+      // },
       {
         test: /\.global\.css$/,
         use: [

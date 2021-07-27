@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { Resizable } from 're-resizable';
+import { ConsoleTabs } from './ConsoleTabs';
+// import { FitAddon } from 'xterm-addon-fit';
 
 export const ConsolePanel = () => {
   const [size, setSize] = useState({
     width: `100%`,
     height: 200,
   });
+
   return (
     <div className="absolute bottom-0 z-10 w-full">
       <Resizable
@@ -19,12 +22,12 @@ export const ConsolePanel = () => {
             };
           });
         }}
-        className="bg-gray-700"
+        className="bg-[#181717]"
         minHeight={200}
         maxHeight="60vh"
       >
-        <div className="w-full bg-gray-700 text-xs px-2 py-1 divide-y-2 divide-gray-100 text-gray-100">
-          Console
+        <div className="w-full bg-[#181717] text-xs px-2 py-1 text-gray-100">
+          <ConsoleTabs terminalSize={size} />
         </div>
       </Resizable>
     </div>
