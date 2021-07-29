@@ -414,7 +414,8 @@ export const Workspace = ({
 
   return (
     <div
-      className="relative flex-1 bg-gray-50 overflow-y-hidden"
+      // className="relative flex-1 bg-gray-50 overflow-y-hidden"
+      className="relative flex-1 bg-gray-50 "
       ref={reactFlowWrapper}
     >
       <ReactFlow

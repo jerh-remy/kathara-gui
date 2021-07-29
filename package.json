@@ -253,6 +253,7 @@
   "dependencies": {
     "@headlessui/react": "^1.2.0",
     "@heroicons/react": "^1.0.1",
+    "@material-ui/core": "^4.12.2",
     "@tailwindcss/forms": "^0.3.3",
     "@types/lodash": "^4.14.170",
     "dayjs": "^1.10.5",
@@ -274,6 +275,7 @@
     "react-tooltip": "^4.2.21",
     "regenerator-runtime": "^0.13.5",
     "source-map-support": "^0.5.19",
+    "xterm": "^4.13.0",
     "xterm-addon-fit": "^0.5.0",
     "xterm-for-react": "^1.0.4"
   },

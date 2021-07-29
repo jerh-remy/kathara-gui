@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { XTerm } from 'xterm-for-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Terminal } from 'xterm';
 import { spawn } from 'node-pty';
 import { FitAddon } from 'xterm-addon-fit';
+import { Resizable } from 're-resizable';
 import os from 'os';
+// import '../../../node_modules/xterm/css/xterm.css';
 
 // let pty;
 // try {
@@ -11,12 +13,12 @@ import os from 'os';
 //   console.error('outerError', outerError);
 // }
 
-const Terminal = ({ size }) => {
+const MyTerminal = ({ size }) => {
   const [input, setInput] = useState('');
-  const xtermRef = React.useRef(null);
-  const fitAddon = new FitAddon();
+  const xtermRef = useRef();
+  const resizableRef = useRef();
   const [pty, setPty] = useState();
-  // let ptyProcess;
+  const fitAddon = new FitAddon();
 
   useEffect(() => {
     // Start PTY process
@@ -26,57 +28,51 @@ const Terminal = ({ size }) => {
 
       const ptyProcess = spawn(shell, [], {
         name: 'xterm-color',
+        // cols: 80,
+        // rows: 30,
         // useConpty: false,
         cwd: process.env.HOME, // Which path should terminal start
         env: process.env, // Pass environment variables
       });
 
+      if (resizableRef && resizableRef.current) {
+        xtermRef.current = new Terminal();
+
+        xtermRef.current.open(resizableRef.current);
+        xtermRef.current.loadAddon(new FitAddon());
+        xtermRef.current.onRender(() => {
+          fitAddon.fit();
+        });
+      }
+
       console.log({ ptyProcess });
 
       ptyProcess.on('data', function (data) {
-        xtermRef.current.terminal.write(data);
+        xtermRef.current.write(data);
       });
-      setPty(ptyProcess);
+
+      xtermRef.current.onData((data) => {
+        ptyProcess.write(data);
+      });
     } catch (error) {
       console.log({ error });
     }
   }, []);
 
-  useEffect(() => {
-    // You can call any method in XTerm.js by using 'xterm xtermRef.current.terminal.[What you want to call]
-    // xtermRef.current.terminal.writeln('Hello, World!');
-    fitAddon.fit();
-  }, []);
-
-  // useEffect(() => {
-  //   fitAddon.fit();
-  // }, [size.height]);
-
   return (
-    <XTerm
-      ref={xtermRef}
-      addons={[fitAddon]}
-      className="w-full h-[410px]"
-      onData={(data) => {
-        pty.write(data);
-
-        // const code = data.charCodeAt(0);
-        // // If the user hits empty and there is `something` typed echo it.
-        // if (code === 13 && input.length > 0) {
-        //   xtermRef.current.terminal.write("\r\nYou typed: '" + input + "'\r\n");
-        //   xtermRef.current.terminal.write('echo> ');
-        //   setInput('');
-        // } else if (code < 32 || code === 127) {
-        //   // Disable control Keys such as arrow keys
-        //   return;
-        // } else {
-        //   // Add general key press characters to the terminal
-        //   xtermRef.current.terminal.write(data);
-        //   setInput((prev) => prev + data);
-        // }
-      }}
-    />
+    <div>
+      <Resizable
+        onResizeStop={(e, direction, ref, d) => {
+          fitAddon.fit();
+        }}
+      >
+        <div
+          ref={resizableRef}
+          // style={{ background: 'red', height: '100%', width: '100%' }}
+        />
+      </Resizable>
+    </div>
   );
 };
 
-export default Terminal;
+export default MyTerminal;

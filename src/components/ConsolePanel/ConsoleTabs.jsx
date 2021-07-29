@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
-import Terminal from './Terminal';
+import MyTerminal from './Terminal';
 import '../../App.global.css';
+import { LabInfo } from '../LabInfo';
 
 export const ConsoleTabs = ({ terminalSize }) => {
   const [tabIndex, setTabIndex] = useState(0);
@@ -14,11 +15,15 @@ export const ConsoleTabs = ({ terminalSize }) => {
     >
       <TabList>
         <Tab>Output</Tab>
-        {/* <Tab>Output 2</Tab> */}
+        <Tab>Output 2</Tab>
+        {/* <Tab>Output 3</Tab> */}
       </TabList>
 
       <TabPanel>
-        <Terminal size={terminalSize} />
+        <MyTerminal size={terminalSize} />
+      </TabPanel>
+      <TabPanel>
+        <MyTerminal size={terminalSize} />
       </TabPanel>
       {/* <TabPanel>
         <Terminal size={terminalSize} />

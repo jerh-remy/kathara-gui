@@ -10,7 +10,7 @@ export const ConsolePanel = () => {
   });
 
   return (
-    <div className="absolute bottom-0 z-10 w-full">
+    <div className="absolute bottom-[24px] z-10 w-full">
       <Resizable
         enable={{ top: true }}
         size={{ width: size.width, height: size.height }}
