@@ -5,7 +5,7 @@ export const Statusbar = () => {
   const [katharaConfig] = useKatharaConfig();
 
   return (
-    <footer className="z-50 flex justify-between px-4 py-2 bg-[#2b2933] shadow-lg align-center">
+    <footer className="z-20 flex justify-between px-4 py-2 bg-[#2b2933] shadow-lg align-center">
       <div className="flex-1 flex">
         <p className="text-gray-300 text-xs mr-1">{`${
           katharaConfig.labInfo.autosaveEnabled

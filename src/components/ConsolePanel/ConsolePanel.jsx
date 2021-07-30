@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Resizable } from 're-resizable';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import { XIcon, MinusIcon } from '@heroicons/react/outline';
@@ -6,16 +6,67 @@ import { XIcon, MinusIcon } from '@heroicons/react/outline';
 import MyTerminal from './Terminal';
 import '../../App.global.css';
 
-export const ConsolePanel = ({ isOpen, setOpen }) => {
+// const CustomTab = ({ children }) => <Tab>{children}</Tab>;
+
+// CustomTab.tabsRole = 'Tab'; // Required field to use your custom Tab
+
+export const ConsolePanel = ({ isOpen, setOpen, terminals }) => {
   const [size, setSize] = useState({
     width: '100%',
     height: '60vh',
   });
-
   const [tabIndex, setTabIndex] = useState(0);
+  const [terminalTabs, setTerminalTabs] = useState([]);
+  const [terminalPanels, setTerminalPanels] = useState([]);
   const resizableRef = useRef();
 
-  // console.log(size.height, isOpen);
+  useEffect(() => {
+    setTerminalTabs(
+      terminals.map((term) => {
+        return (
+          <Tab key={term.terminalId}>
+            {/* <div className="w-auto flex justify-between items-center py-1"> */}
+            {term.terminalTabName}
+            {/* <XIcon className="ml-4 w-3 h-3 text-white cursor-pointer hover:bg-teal-500 hover:rounded-sm" /> */}
+            {/* </div> */}
+          </Tab>
+        );
+      })
+    );
+    setTerminalPanels(
+      terminals.map((term) => {
+        return (
+          <TabPanel key={term.terminalId}>
+            <MyTerminal size={size} deviceName={term.terminalTabName} />
+          </TabPanel>
+        );
+      })
+    );
+    // switch to the most recently added tab
+    setTabIndex(terminals.length - 1);
+  }, [terminals.length]);
+
+  // console.log(terminals);
+  // const addNewTerminal = (event) => {
+  //   event.preventDefault();
+  //   const uniqueId = generateKey();
+
+  //   setGateways((gw: any) => {
+  //     const newGateways = [
+  //       ...gw,
+  //       <Gateway
+  //         key={uniqueId}
+  //         onDeleteClick={removeGateway}
+  //         id={uniqueId}
+  //         interfaces={interfaces}
+  //         activeDevice={activeDevice}
+  //         setActiveDevice={setActiveDevice}
+  //       />,
+  //     ];
+  //     console.log({ newGateways });
+  //     return newGateways;
+  //   });
+  // };
 
   return (
     <div
@@ -27,9 +78,9 @@ export const ConsolePanel = ({ isOpen, setOpen }) => {
         ref={resizableRef}
         enable={{ top: true }}
         size={{ width: size.width, height: size.height }}
-        onResize={(e, direction, ref, d) => {
-          console.log(d);
-        }}
+        // onResize={(e, direction, ref, d) => {
+        //   console.log(d);
+        // }}
         onResizeStop={(e, direction, ref, d) => {
           setSize((oldSize) => {
             return {
@@ -49,12 +100,7 @@ export const ConsolePanel = ({ isOpen, setOpen }) => {
             onSelect={(index) => setTabIndex(index)}
           >
             <div className="flex justify-between items-center">
-              <TabList>
-                <Tab>Output</Tab>
-                <Tab>Output 2</Tab>
-                <Tab>Output 3</Tab>
-              </TabList>
-
+              <TabList>{terminalTabs}</TabList>
               <MinusIcon
                 onClick={() => {
                   setOpen(false);
@@ -62,15 +108,7 @@ export const ConsolePanel = ({ isOpen, setOpen }) => {
                 className="mx-2 my-2 w-5 h-5 text-white cursor-pointer hover:bg-teal-500 hover:rounded-sm"
               />
             </div>
-            <TabPanel>
-              <MyTerminal size={size} />
-            </TabPanel>
-            <TabPanel>
-              <MyTerminal size={size} />
-            </TabPanel>
-            <TabPanel>
-              <MyTerminal size={size} />
-            </TabPanel>
+            {terminalPanels}
           </Tabs>
         </div>
       </Resizable>

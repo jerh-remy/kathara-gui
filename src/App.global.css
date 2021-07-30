@@ -111,6 +111,7 @@ path.react-flow__edge-path:hover {
   /* border-bottom: 1px solid #aaa; */
   margin: 0 0 10px;
   padding: 0;
+  display: block;
 }
 
 .react-tabs__tab {
@@ -121,6 +122,7 @@ path.react-flow__edge-path:hover {
   bottom: -1px;
   position: relative;
   list-style: none;
+  /* margin-right: 8px; */
   padding: 5px 16px;
   cursor: pointer;
 }

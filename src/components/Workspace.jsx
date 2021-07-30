@@ -71,6 +71,7 @@ export const Workspace = ({
   const [activeDevice, setActiveDevice] = useState();
   const [activeDeviceInterfaces, setActiveDeviceInterfaces] = useState([]);
   const [isConsoleOpen, setIsConsoleOpen] = useState(false);
+  const [terminals, setTerminals] = useState([]);
 
   const { transform } = useZoomPanHelper();
 
@@ -131,7 +132,7 @@ export const Workspace = ({
 
   const onNodeContextMenu = (event, node) => {
     event.preventDefault();
-    console.log({ event });
+    // console.log({ event });
     setActiveDevice(node);
   };
 
@@ -468,7 +469,11 @@ export const Workspace = ({
         activeDevice={activeDevice}
         interfaces={activeDeviceInterfaces}
       />
-      <ConsolePanel isOpen={isConsoleOpen} setOpen={setIsConsoleOpen} />
+      <ConsolePanel
+        isOpen={isConsoleOpen}
+        setOpen={setIsConsoleOpen}
+        terminals={terminals}
+      />
       <ContextMenu>
         <div className="space-y-2">
           <button
@@ -487,6 +492,21 @@ export const Workspace = ({
             onClick={(e) => {
               e.preventDefault();
               setIsConsoleOpen(true);
+              if (
+                !terminals.some((value) => value.terminalId == activeDevice?.id)
+              ) {
+                setTerminals((terms) => {
+                  return [
+                    ...terms,
+                    {
+                      terminalId: activeDevice?.id,
+                      terminalTabName: activeDevice?.data.label,
+                    },
+                  ];
+                });
+              } else {
+                console.log('Already there');
+              }
             }}
             className="w-full flex whitespace-nowrap text-sm px-2 py-1 font-normal tracking-normal rounded-sm text-gray-600 hover:border-transparent hover:bg-gray-100 focus:outline-none focus:ring-1  focus:ring-gray-200  hover:text-teal-600"
           >

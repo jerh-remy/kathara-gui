@@ -4,12 +4,14 @@ import { spawn } from 'node-pty';
 import { FitAddon } from 'xterm-addon-fit';
 import { Resizable } from 're-resizable';
 import os from 'os';
+import path from 'path';
+import { useKatharaConfig } from '../../contexts/katharaConfigContext';
 
-const MyTerminal = ({ size }) => {
+const MyTerminal = ({ size, deviceName }) => {
   const xtermRef = useRef();
   const resizableRef = useRef();
-  const [pty, setPty] = useState();
   const fitAddon = new FitAddon();
+  const [katharaConfig, setKatharaConfig] = useKatharaConfig();
 
   useEffect(() => {
     // Start PTY process
@@ -20,7 +22,9 @@ const MyTerminal = ({ size }) => {
       const ptyProcess = spawn(shell, [], {
         name: 'xterm-color',
         // useConpty: false,
-        cwd: process.env.HOME, // Which path should terminal start
+        cwd:
+          path.join(katharaConfig.labInfo.labDirPath, 'lab') ||
+          process.env.HOME, // Which path should terminal start
         env: process.env, // Pass environment variables
       });
 
@@ -33,6 +37,8 @@ const MyTerminal = ({ size }) => {
           fitAddon.fit();
         });
       }
+
+      ptyProcess.write(`kathara connect ${deviceName}\r`);
 
       console.log({ ptyProcess });
 

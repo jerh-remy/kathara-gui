@@ -26,7 +26,7 @@ const getImage = (deviceType) => {
     case 'webserver':
       img = webServer;
       break;
-    case 'other':
+    case 'custom':
       img = other;
       break;
     case 'controller':
@@ -57,8 +57,8 @@ const getDefaultDeviceLabel = (deviceType) => {
     case 'webserver':
       label = 'Web Server';
       break;
-    case 'other':
-      label = 'Other';
+    case 'custom':
+      label = 'Custom';
       break;
     case 'controller':
       label = 'Controller';

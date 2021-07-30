@@ -29,7 +29,7 @@ export default function useContextMenu() {
     [setXPos, setYPos]
   );
 
-  console.log({ xPos }, { yPos });
+  // console.log({ xPos }, { yPos });
 
   const handleClick = useCallback(() => {
     showMenu && setShowMenu(false);

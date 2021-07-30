@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { useRef } from 'react';
-import { ConsolePanel } from './ConsolePanel/ConsolePanel';
 import { Device } from './Device';
 import { Heading } from './Heading';
 import { LabInfo } from './LabInfo';
@@ -8,11 +7,12 @@ import { LabInfo } from './LabInfo';
 export const DeviceSelectionColumn = () => {
   const myRef = useRef<any>(null);
 
-  useEffect(() => {
-    if (myRef.current !== null) {
-      console.log(myRef.current!.getBoundingClientRect());
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (myRef.current !== null) {
+  //     console.log(myRef.current!.getBoundingClientRect());
+  //   }
+  // }, []);
+
   return (
     <>
       <div
@@ -26,7 +26,7 @@ export const DeviceSelectionColumn = () => {
             <Device deviceType="Router" />
             <Device deviceType="Name Server" />
             <Device deviceType="Web Server" />
-            <Device deviceType="Other" />
+            <Device deviceType="Custom" />
 
             {/* <Device deviceType="OpenFlow Ryu Controller" /> */}
           </div>

@@ -29,7 +29,7 @@ export const ConfigurationPanel: FC<Props> = ({
       <Dialog
         as="div"
         static
-        className="fixed inset-0 z-10 overflow-hidden"
+        className="fixed inset-0 z-20 overflow-hidden"
         open={isOpen}
         onClose={() => {
           onPanelClose();
