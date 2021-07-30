@@ -70,6 +70,7 @@ export const Workspace = ({
   const reactFlowWrapper = useRef(null);
   const [activeDevice, setActiveDevice] = useState();
   const [activeDeviceInterfaces, setActiveDeviceInterfaces] = useState([]);
+  const [isConsoleOpen, setIsConsoleOpen] = useState(false);
 
   const { transform } = useZoomPanHelper();
 
@@ -130,6 +131,7 @@ export const Workspace = ({
 
   const onNodeContextMenu = (event, node) => {
     event.preventDefault();
+    console.log({ event });
     setActiveDevice(node);
   };
 
@@ -414,8 +416,8 @@ export const Workspace = ({
 
   return (
     <div
-      // className="relative flex-1 bg-gray-50 overflow-y-hidden"
-      className="relative flex-1 bg-gray-50 "
+      className="relative flex-1 bg-gray-50 overflow-hidden"
+      // className="relative flex-1 bg-gray-50 "
       ref={reactFlowWrapper}
     >
       <ReactFlow
@@ -466,7 +468,7 @@ export const Workspace = ({
         activeDevice={activeDevice}
         interfaces={activeDeviceInterfaces}
       />
-      <ConsolePanel />
+      <ConsolePanel isOpen={isConsoleOpen} setOpen={setIsConsoleOpen} />
       <ContextMenu>
         <div className="space-y-2">
           <button
@@ -484,6 +486,7 @@ export const Workspace = ({
             type="button"
             onClick={(e) => {
               e.preventDefault();
+              setIsConsoleOpen(true);
             }}
             className="w-full flex whitespace-nowrap text-sm px-2 py-1 font-normal tracking-normal rounded-sm text-gray-600 hover:border-transparent hover:bg-gray-100 focus:outline-none focus:ring-1  focus:ring-gray-200  hover:text-teal-600"
           >

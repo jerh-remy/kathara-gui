@@ -44,7 +44,7 @@ export const Navbar: FC<NavbarProps> = ({
   const [isLabRunCommandIssued, setIsLabRunCommandIssued] = useState(false);
 
   useEffect(() => {
-    ipcRenderer.on('script:stderr-reply', (_, katharaData) => {
+    ipcRenderer.on('script:stderr-reply', (_, katharaData: any) => {
       console.log({ katharaData });
       setError((_) => katharaData.trim());
     });
@@ -62,7 +62,7 @@ export const Navbar: FC<NavbarProps> = ({
   }, [error]);
 
   useEffect(() => {
-    ipcRenderer.on('script:code-reply', (_, code) => {
+    ipcRenderer.on('script:code-reply', (_: any, code: any) => {
       console.log({ code });
       setExitCode(code);
     });

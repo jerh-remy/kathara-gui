@@ -4,17 +4,8 @@ import { spawn } from 'node-pty';
 import { FitAddon } from 'xterm-addon-fit';
 import { Resizable } from 're-resizable';
 import os from 'os';
-// import '../../../node_modules/xterm/css/xterm.css';
-
-// let pty;
-// try {
-//   pty = require('node-pty');
-// } catch (outerError) {
-//   console.error('outerError', outerError);
-// }
 
 const MyTerminal = ({ size }) => {
-  const [input, setInput] = useState('');
   const xtermRef = useRef();
   const resizableRef = useRef();
   const [pty, setPty] = useState();
@@ -28,8 +19,6 @@ const MyTerminal = ({ size }) => {
 
       const ptyProcess = spawn(shell, [], {
         name: 'xterm-color',
-        // cols: 80,
-        // rows: 30,
         // useConpty: false,
         cwd: process.env.HOME, // Which path should terminal start
         env: process.env, // Pass environment variables
@@ -66,10 +55,7 @@ const MyTerminal = ({ size }) => {
           fitAddon.fit();
         }}
       >
-        <div
-          ref={resizableRef}
-          // style={{ background: 'red', height: '100%', width: '100%' }}
-        />
+        <div ref={resizableRef} />
       </Resizable>
     </div>
   );

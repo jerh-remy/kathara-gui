@@ -31,12 +31,12 @@ const MyPopover: FC<Props> = ({ onItemClicked }) => {
           <Transition
             // show={open}
             // as={Fragment}
-            enter="transition duration-200 ease-in-out"
-            enterFrom="transform scale-95 opacity-70"
+            enter="transition duration-100 ease-in-out"
+            enterFrom="transform scale-10 opacity-80"
             enterTo="transform scale-100 opacity-100"
-            leave="transition duration-150 ease-out"
+            leave="transition duration-100 ease-out"
             leaveFrom="transform scale-100 opacity-100"
-            leaveTo="transform scale-95 opacity-70"
+            leaveTo="transform scale-10 opacity-80"
           >
             <Popover.Panel className="absolute z-10 origin-top-right right-0 mt-[5px]">
               <div className="flex flex-col bg-white rounded-md px-3 py-3 shadow-xl w-auto h-auto">
