@@ -33,6 +33,7 @@ import ReactFlow, {
 
 import { nodeTypes } from '../custom_nodes';
 import { ConfigurationPanel } from './ConfigurationPanel';
+import { useKatharaLabStatus } from '../contexts/katharaLabStatusContext';
 import { useKatharaConfig } from '../contexts/katharaConfigContext';
 import { labInfo, device } from '../models/network';
 import { getDefaultDeviceLabel } from '../utilities/utilities';
@@ -64,15 +65,13 @@ export const Workspace = ({
   isConfigurationPanelOpen,
   onNewProjectCreate,
 }) => {
+  const [katharaLabStatus, setKatharaLabStatus] = useKatharaLabStatus();
   const [katharaConfig, setKatharaConfig] = useKatharaConfig();
   const [elements, setElements] = useState(katharaConfig.elements);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const reactFlowWrapper = useRef(null);
   const [activeDevice, setActiveDevice] = useState();
   const [activeDeviceInterfaces, setActiveDeviceInterfaces] = useState([]);
-  const [isConsoleOpen, setIsConsoleOpen] = useState(false);
-  const [terminals, setTerminals] = useState([]);
-
   const { transform } = useZoomPanHelper();
 
   useEffect(() => {
@@ -470,9 +469,11 @@ export const Workspace = ({
         interfaces={activeDeviceInterfaces}
       />
       <ConsolePanel
-        isOpen={isConsoleOpen}
-        setOpen={setIsConsoleOpen}
-        terminals={terminals}
+      // isOpen={isConsoleOpen}
+      // setOpen={setIsConsoleOpen}
+      // killTerminals={killTerminals}
+      // setKillTerminals={setKillTerminals}
+      // terminals={terminals}
       />
       <ContextMenu>
         <div className="space-y-2">
@@ -489,28 +490,54 @@ export const Workspace = ({
           </button>
           <button
             type="button"
+            disabled={katharaLabStatus.isLabRunning === false}
+            className={`w-full flex whitespace-nowrap text-sm px-2 py-1 font-normal tracking-normal rounded-sm ${
+              katharaLabStatus.isLabRunning
+                ? 'text-gray-600 focus:outline-none focus:ring-1  focus:ring-gray-200  hover:text-teal-600'
+                : 'text-gray-200'
+            } hover:border-transparent hover:bg-gray-100`}
             onClick={(e) => {
               e.preventDefault();
-              setIsConsoleOpen(true);
+              setKatharaLabStatus((status) => {
+                const newStatus = {
+                  ...status,
+                  isConsoleOpen: true,
+                  killTerminals: false,
+                };
+                return newStatus;
+              });
+
               if (
-                !terminals.some((value) => value.terminalId == activeDevice?.id)
+                !katharaLabStatus.terminals.some(
+                  (value) => value.terminalId == activeDevice?.id
+                )
               ) {
-                setTerminals((terms) => {
-                  return [
-                    ...terms,
-                    {
-                      terminalId: activeDevice?.id,
-                      terminalTabName: activeDevice?.data.label,
-                    },
-                  ];
+                setKatharaLabStatus((status) => {
+                  const newStatus = {
+                    ...status,
+                    terminals: [
+                      ...status.terminals,
+                      {
+                        terminalId: activeDevice?.id,
+                        terminalTabName: activeDevice?.data.label,
+                      },
+                    ],
+                  };
+
+                  return newStatus;
                 });
               } else {
                 console.log('Already there');
               }
             }}
-            className="w-full flex whitespace-nowrap text-sm px-2 py-1 font-normal tracking-normal rounded-sm text-gray-600 hover:border-transparent hover:bg-gray-100 focus:outline-none focus:ring-1  focus:ring-gray-200  hover:text-teal-600"
           >
-            <TerminalIcon className="text-gray-600 w-5 h-5 mr-2" />
+            <TerminalIcon
+              className={`${
+                katharaLabStatus.isLabRunning
+                  ? 'text-gray-600'
+                  : 'text-gray-200'
+              } w-5 h-5 mr-2`}
+            />
             <span>Open in console</span>
           </button>
           <button

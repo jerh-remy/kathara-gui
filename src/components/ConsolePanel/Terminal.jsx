@@ -6,12 +6,14 @@ import { Resizable } from 're-resizable';
 import os from 'os';
 import path from 'path';
 import { useKatharaConfig } from '../../contexts/katharaConfigContext';
+import { useKatharaLabStatus } from '../../contexts/katharaLabStatusContext';
 
 const MyTerminal = ({ size, deviceName }) => {
   const xtermRef = useRef();
   const resizableRef = useRef();
   const fitAddon = new FitAddon();
   const [katharaConfig, setKatharaConfig] = useKatharaConfig();
+  const [katharaLabStatus, setKatharaLabStatus] = useKatharaLabStatus();
 
   useEffect(() => {
     // Start PTY process
@@ -21,7 +23,7 @@ const MyTerminal = ({ size, deviceName }) => {
 
       const ptyProcess = spawn(shell, [], {
         name: 'xterm-color',
-        // useConpty: false,
+        // useConpty: true,
         cwd:
           path.join(katharaConfig.labInfo.labDirPath, 'lab') ||
           process.env.HOME, // Which path should terminal start
@@ -29,7 +31,9 @@ const MyTerminal = ({ size, deviceName }) => {
       });
 
       if (resizableRef && resizableRef.current) {
-        xtermRef.current = new Terminal();
+        xtermRef.current = new Terminal({
+          cols: 120,
+        });
 
         xtermRef.current.open(resizableRef.current);
         xtermRef.current.loadAddon(new FitAddon());
@@ -38,6 +42,8 @@ const MyTerminal = ({ size, deviceName }) => {
         });
       }
 
+      // ptyProcess.resize(100, 40);
+      ptyProcess.write(`${os.platform() === 'win32' ? 'cls' : 'clear'}\r`);
       ptyProcess.write(`kathara connect ${deviceName}\r`);
 
       console.log({ ptyProcess });

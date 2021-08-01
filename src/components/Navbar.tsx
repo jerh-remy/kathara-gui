@@ -6,6 +6,7 @@ import {
   DownloadIcon,
   UploadIcon,
 } from '@heroicons/react/outline';
+import { useKatharaLabStatus } from '../contexts/katharaLabStatusContext';
 import { useKatharaConfig } from '../contexts/katharaConfigContext';
 import {
   createFilesStructure,
@@ -29,23 +30,27 @@ const { dialog } = remote;
 type NavbarProps = {
   showNewProjectModal: boolean;
   setShowNewProjectModal: React.Dispatch<React.SetStateAction<boolean>>;
-  setIsLabRunning: React.Dispatch<React.SetStateAction<boolean>>;
-  isLabRunning: boolean;
 };
 export const Navbar: FC<NavbarProps> = ({
   showNewProjectModal,
   setShowNewProjectModal,
-  setIsLabRunning,
-  isLabRunning,
 }) => {
+  const [katharaLabStatus, setKatharaLabStatus] = useKatharaLabStatus();
   const [katharaConfig, setKatharaConfig] = useKatharaConfig();
   const [error, setError] = useState('');
   const [exitCode, setExitCode] = useState(1);
   const [isLabRunCommandIssued, setIsLabRunCommandIssued] = useState(false);
 
   useEffect(() => {
-    ipcRenderer.on('script:stderr-reply', (_, katharaData: any) => {
+    ipcRenderer.on('script:stderr-reply', (_: any, katharaData: any) => {
       console.log({ katharaData });
+      setKatharaLabStatus((status: any) => {
+        const newStatus = {
+          ...status,
+          output: status.output + katharaData,
+        };
+        return newStatus;
+      });
       setError((_) => katharaData.trim());
     });
     if (
@@ -75,12 +80,25 @@ export const Navbar: FC<NavbarProps> = ({
 
   useEffect(() => {
     if (isLabRunCommandIssued && exitCode === 0) {
-      setIsLabRunning(true);
+      setKatharaLabStatus((status: any) => {
+        const newStatus = {
+          ...status,
+          isLabRunning: true,
+        };
+        return newStatus;
+      });
     } else if (!isLabRunCommandIssued && exitCode === 0) {
-      setIsLabRunning(false);
+      setKatharaLabStatus((status: any) => {
+        const newStatus = {
+          ...status,
+          isLabRunning: false,
+          terminals: [],
+        };
+        return newStatus;
+      });
     }
 
-    console.log({ isLabRunCommandIssued }, { isLabRunning }, { exitCode });
+    console.log({ isLabRunCommandIssued }, katharaLabStatus, { exitCode });
 
     return () => {
       setExitCode(1);
@@ -99,6 +117,14 @@ export const Navbar: FC<NavbarProps> = ({
     createLabFolderOnFileSystem(script);
     _executeGeneric('execute');
     setIsLabRunCommandIssued(true);
+    setKatharaLabStatus((status: any) => {
+      const newStatus = {
+        ...status,
+        isConsoleOpen: true,
+        killTerminals: false,
+      };
+      return newStatus;
+    });
   }
 
   function executeClean() {
@@ -196,7 +222,7 @@ export const Navbar: FC<NavbarProps> = ({
 
   let startStopLabButton;
 
-  if (!isLabRunning) {
+  if (!katharaLabStatus.isLabRunning) {
     startStopLabButton = (
       <button
         type="button"
@@ -249,7 +275,7 @@ export const Navbar: FC<NavbarProps> = ({
             ? katharaConfig.labInfo.description
             : ''
         }`}</p>
-        {isLabRunning && (
+        {katharaLabStatus.isLabRunning && (
           <div className="text-xs text-green-600 font-semibold px-2 py-1 rounded-md bg-green-200 mr-1 ml-2">
             Kathará Lab running
           </div>

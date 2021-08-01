@@ -21,7 +21,6 @@ function KatharaConfigProvider({ children }) {
   // This is the side effect we want to run on users' changes.
   // It is responsible for persisting the changes on the fs.
   const saveData = useCallback((newKatharaConfig) => {
-    // Renderer process has to get `app` module via `remote`, whereas the main process can get it directly
     const labPath = newKatharaConfig.labInfo.labDirPath;
     console.log({ labPath });
     setKatharaConfig(newKatharaConfig);
