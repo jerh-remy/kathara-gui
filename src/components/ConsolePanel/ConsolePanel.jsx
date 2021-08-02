@@ -13,20 +13,49 @@ const LabOutput = () => {
   const [output, setOutput] = useState('');
 
   useEffect(() => {
-    setOutput((prev) => prev + katharaLabStatus.output);
-    return () => {
-      setOutput('');
-    };
+    console.log(`They are the same: ${katharaLabStatus.output}: ${output}`);
+    if (
+      katharaLabStatus.output !== ''
+      // && katharaLabStatus.output.trim() !== output.trim()
+    ) {
+      setOutput((prev) => {
+        console.log({ prev });
+        if (prev !== katharaLabStatus.output) {
+          return prev + katharaLabStatus.output;
+        } else {
+          return katharaLabStatus.output;
+        }
+      });
+    }
+    // return () => {
+    //   setOutput('');
+    // };
   }, [katharaLabStatus.output]);
 
+  console.log({ output });
+
   return (
-    <textarea
-      className="bg-[#181717] text-sm focus:outline-none focus:border-none focus:ring-transparent min-h-[60vh] w-full text-white border-none"
-      name="output"
-      id="output"
-      readOnly
-      value={output}
-    />
+    <>
+      <textarea
+        className="bg-[#181717] relative text-sm focus:outline-none focus:border-none focus:ring-transparent min-h-[60vh] w-full text-white border-none"
+        name="output"
+        id="output"
+        onContextMenu={(event) => {
+          event.preventDefault();
+        }}
+        readOnly
+        value={output}
+      />
+      <button
+        className="absolute text-white right-[5.5rem] top-[12px] rounded-md px-2 py-[2px] border-2 border-teal-400"
+        onClick={(e) => {
+          e.preventDefault();
+          setOutput('');
+        }}
+      >
+        Clear output
+      </button>
+    </>
   );
 };
 

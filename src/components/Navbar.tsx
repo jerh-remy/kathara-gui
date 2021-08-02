@@ -47,12 +47,21 @@ export const Navbar: FC<NavbarProps> = ({
       setKatharaLabStatus((status: any) => {
         const newStatus = {
           ...status,
-          output: status.output + katharaData,
+          // output: status.output + katharaData,
+          output: katharaData,
         };
         return newStatus;
       });
       setError((_) => katharaData.trim());
     });
+
+    return () => {
+      setError('');
+      ipcRenderer.removeAllListeners('script:execute-reply-error');
+    };
+  }, []);
+
+  useEffect(() => {
     if (
       error !== '' &&
       !error.includes('Deploying') &&
@@ -60,10 +69,6 @@ export const Navbar: FC<NavbarProps> = ({
     ) {
       alert(error);
     }
-    return () => {
-      // setError('');
-      ipcRenderer.removeAllListeners('script:execute-reply-error');
-    };
   }, [error]);
 
   useEffect(() => {
@@ -207,16 +212,20 @@ export const Navbar: FC<NavbarProps> = ({
   };
 
   const onPopoverItemClicked = (item: string) => {
-    switch (item) {
-      case 'NEW':
-        setShowNewProjectModal(true);
-        console.log('New project');
-        break;
-      case 'IMPORT':
-        importExistingProject();
-        break;
-      default:
-        break;
+    if (katharaLabStatus.isLabRunning) {
+      alert('Please stop the running lab before creating/importing a project');
+    } else {
+      switch (item) {
+        case 'NEW':
+          setShowNewProjectModal(true);
+          console.log('New project');
+          break;
+        case 'IMPORT':
+          importExistingProject();
+          break;
+        default:
+          break;
+      }
     }
   };
 

@@ -53,7 +53,6 @@ const onDragOver = (event) => {
 };
 
 const onNodeDragStop = (event, node) => {
-  // console.log({ event });
   console.log('drag stop', node);
 };
 
@@ -76,16 +75,12 @@ export const Workspace = ({
 
   useEffect(() => {
     if (reactFlowInstance) {
-      // reactFlowInstance.fitView();
       console.table({ elements });
       console.log({ katharaConfig });
-    }
-  }, [reactFlowInstance, elements.length]);
 
-  useEffect(() => {
-    if (reactFlowInstance) {
       const rfInstance = reactFlowInstance.toObject();
       console.log({ rfInstance });
+      // this is where I autosave
       setKatharaConfig((config) => {
         return {
           ...config,
@@ -93,15 +88,20 @@ export const Workspace = ({
         };
       });
     }
-  }, [reactFlowInstance]);
+  }, [
+    reactFlowInstance,
+    elements.length,
+    // rfInstance.zoom,
+    // reactFlowInstance.toObject().position,
+  ]);
 
   useEffect(() => {
     if (reactFlowInstance) {
       setElements(katharaConfig.elements || []);
-      // if (katharaConfig.position) {
-      //   const [x = 0, y = 0] = katharaConfig.position;
-      //   transform({ x, y, zoom: katharaConfig.zoom || 0 });
-      // }
+      if (katharaConfig.position) {
+        const [x = 0, y = 0] = katharaConfig.position;
+        transform({ x, y, zoom: katharaConfig.zoom || 0 });
+      }
     }
   }, [katharaConfig.elements, reactFlowInstance]);
 
@@ -468,13 +468,7 @@ export const Workspace = ({
         activeDevice={activeDevice}
         interfaces={activeDeviceInterfaces}
       />
-      <ConsolePanel
-      // isOpen={isConsoleOpen}
-      // setOpen={setIsConsoleOpen}
-      // killTerminals={killTerminals}
-      // setKillTerminals={setKillTerminals}
-      // terminals={terminals}
-      />
+      <ConsolePanel />
       <ContextMenu>
         <div className="space-y-2">
           <button

@@ -11,19 +11,26 @@ export default function useContextMenu() {
       // This is a hack to fix the context menu.
       // Ideally, I should find the offset from the right edge of
       // the device selection column to the event target
-      const offsetLeft =
-        e.target.offsetParent.offsetParent.offsetParent.offsetParent
-          .offsetParent.offsetParent.offsetLeft;
-      const offsetTop = 20;
 
-      const boundingClientRect = e.target.getBoundingClientRect();
+      if (
+        e.target.nodeName !== 'path' &&
+        !e.target.className.includes('react-flow__pane')
+      ) {
+        try {
+          const offsetLeft =
+            e.target.offsetParent.offsetParent.offsetParent.offsetParent
+              .offsetParent.offsetParent.offsetLeft;
+          const offsetTop = 20;
 
-      if (!e.target.className.includes('react-flow__pane')) {
-        setXPos(`${boundingClientRect.x - offsetLeft}px`);
-        setYPos(`${boundingClientRect.y + offsetTop}px`);
-        // setXPos(`${e.pageX}px`);
-        // setYPos(`${e.pageY}px`);
-        setShowMenu(true);
+          const boundingClientRect = e.target.getBoundingClientRect();
+          setXPos(`${boundingClientRect.x - offsetLeft}px`);
+          setYPos(`${boundingClientRect.y + offsetTop}px`);
+          // setXPos(`${e.pageX}px`);
+          // setYPos(`${e.pageY}px`);
+          setShowMenu(true);
+        } catch {
+          setShowMenu(false);
+        }
       }
     },
     [setXPos, setYPos]
