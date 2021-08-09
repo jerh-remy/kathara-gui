@@ -77,88 +77,89 @@ export const Navbar: FC<NavbarProps> = ({
       //   router: router?.name,
       //   bgpRoutes: [],
       // });
-
       const outputArr = stdout.split('\n');
-      const routerIDArr = outputArr[0].split(',')[1].split(' ');
-      const routerID = routerIDArr[routerIDArr.length - 1];
-      console.log({ routerID });
+      if (outputArr) {
+        const routerIDArr = outputArr[0].split(',')[1].split(' ');
+        const routerID = routerIDArr[routerIDArr.length - 1];
+        console.log({ routerID });
 
-      const routerName = sortedRouters.find((router: any) => {
-        return router.interfaces.if.some((intf: any) => {
-          if (!intf.eth.ip) {
-            return;
+        const routerName = sortedRouters.find((router: any) => {
+          return router.interfaces.if.some((intf: any) => {
+            if (!intf.eth.ip) {
+              return;
+            }
+
+            return intf.eth.ip.split('/')[0].trim() === routerID.trim();
+          });
+        }).name;
+
+        console.log({ routerName });
+
+        let bestPathNetwork: any;
+        outputArr.forEach((line: any) => {
+          if (line.startsWith('*') || line.startsWith('*>')) {
+            line.trim();
+            let [status, network, nextHop] = line.split(/\s+/);
+            console.log(
+              {
+                status,
+              },
+              {
+                network,
+              },
+              {
+                nextHop,
+              }
+            );
+            if (status === '*>') {
+              if (nextHop === '0') {
+                nextHop = network;
+                network = bestPathNetwork;
+              }
+
+              const existingNextHop = bgpRoutes.find((elem: any) => {
+                return elem.nextHop === nextHop;
+              });
+              console.log({
+                existingNextHop,
+              });
+              if (!existingNextHop) {
+                bgpRoutes.push({
+                  nextHop: nextHop,
+                  networks: [network],
+                });
+              } else {
+                const filteredArr = bgpRoutes.filter((elem: any) => {
+                  return elem.nextHop !== nextHop;
+                });
+                bgpRoutes = [
+                  ...filteredArr,
+                  {
+                    ...existingNextHop,
+                    networks: [...existingNextHop.networks, network],
+                  },
+                ];
+              }
+            } else if (status === '*') {
+              bestPathNetwork = network;
+              return;
+            }
           }
-
-          return intf.eth.ip.split('/')[0].trim() === routerID.trim();
         });
-      }).name;
+        console.log({
+          bgpRoutes,
+        });
+        bgpRouterArr.push({
+          router: routerName,
+          bgpRoutes: bgpRoutes,
+        });
+        bgpRouterArr.sort((a: any, b: any) => a.router.localeCompare(b.router));
+        bgpRoutes = [];
 
-      console.log({ routerName });
-
-      let bestPathNetwork: any;
-      outputArr.forEach((line: any) => {
-        if (line.startsWith('*') || line.startsWith('*>')) {
-          line.trim();
-          let [status, network, nextHop] = line.split(/\s+/);
-          console.log(
-            {
-              status,
-            },
-            {
-              network,
-            },
-            {
-              nextHop,
-            }
-          );
-          if (status === '*>') {
-            if (nextHop === '0') {
-              nextHop = network;
-              network = bestPathNetwork;
-            }
-
-            const existingNextHop = bgpRoutes.find((elem: any) => {
-              return elem.nextHop === nextHop;
-            });
-            console.log({
-              existingNextHop,
-            });
-            if (!existingNextHop) {
-              bgpRoutes.push({
-                nextHop: nextHop,
-                networks: [network],
-              });
-            } else {
-              const filteredArr = bgpRoutes.filter((elem: any) => {
-                return elem.nextHop !== nextHop;
-              });
-              bgpRoutes = [
-                ...filteredArr,
-                {
-                  ...existingNextHop,
-                  networks: [...existingNextHop.networks, network],
-                },
-              ];
-            }
-          } else if (status === '*') {
-            bestPathNetwork = network;
-            return;
-          }
-        }
-      });
-      console.log({
-        bgpRoutes,
-      });
-      bgpRouterArr.push({
-        router: routerName,
-        bgpRoutes: bgpRoutes,
-      });
-      bgpRouterArr.sort((a: any, b: any) => a.router.localeCompare(b.router));
-      bgpRoutes = [];
-
-      console.log({
-        bgpRouterArr,
-      });
+        console.log({
+          bgpRouterArr,
+        });
+      }
     });
 
     return () => {
@@ -255,7 +256,7 @@ export const Navbar: FC<NavbarProps> = ({
     console.log({ sortedRouters });
     // const dirPath = katharaConfig.labInfo.labDirPath;
     // ipcRenderer.send('script:bgp', dirPath, 'r2');
-    for (router of sortedRouters) {
+    for (let router of sortedRouters) {
       const dirPath = katharaConfig.labInfo.labDirPath;
       ipcRenderer.send('script:bgp', dirPath, router.name);
     }

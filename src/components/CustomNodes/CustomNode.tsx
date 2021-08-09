@@ -1,4 +1,5 @@
-import React, { FC, memo } from 'react';
+import React, { useState, FC, memo } from 'react';
+import { useRef } from 'react';
 import {
   Connection,
   Edge,
@@ -17,18 +18,74 @@ const onConnect = (params: Connection | Edge) =>
 
 const CustomNode: FC<NodeProps> = ({ data, id, ...rest }) => {
   const [katharaConfig, setKatharaConfig] = useKatharaConfig();
+  const toolTipRef = useRef<HTMLDivElement | null>(null);
 
   const deviceLabel = data.label;
   const deviceType = data.deviceType;
   // console.log({ rest });
 
   const nodeData = katharaConfig.machines.find((elem: any) => elem.id === id);
-  // console.log({ nodeData });
+  // console.log({ showToolTip });
+
+  let tooltip;
+  if (nodeData?.interfaces.if.length > 0) {
+    tooltip = (
+      <ReactTooltip
+        type="light"
+        id={id}
+        place="top"
+        effect="solid"
+        className="shadow-md"
+      >
+        <div className="mt-2 mb-2 space-y-2">
+          {nodeData.interfaces.if
+            .sort((a: any, b: any) => {
+              return a.eth.number - b.eth.number;
+            })
+            .map((intf: any) => {
+              const interfaceNumber = `eth${intf.eth.number}`;
+              const interfaceDomain = intf.eth.domain;
+              const interfaceIp = intf.eth.ip;
+              return (
+                <div
+                  key={intf.eth.number}
+                  className="border border-dashed border-gray-300 px-4 py-2 rounded-md w-[200px] min-w-max"
+                >
+                  <div className="">
+                    <div className="flex justify-between items-center">
+                      <p>Interface: </p>
+                      <p className="text-teal-500">{interfaceNumber}</p>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <p>Domain: </p>
+                      <p className="text-teal-500">{interfaceDomain}</p>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <p>IP address: </p>
+                      <p className="text-teal-500">{interfaceIp}</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+        </div>
+      </ReactTooltip>
+    );
+  } else {
+    tooltip = null;
+  }
 
   return (
     <>
-      <div className="relative">
+      <div
+        className="relative"
+        onContextMenu={(e) => {
+          e.preventDefault();
+          ReactTooltip.hide(toolTipRef.current!);
+        }}
+      >
         <div
+          ref={toolTipRef}
           data-tip
           data-for={id}
           className="flex flex-col justify-center items-center p-[2px]"
@@ -93,48 +150,7 @@ const CustomNode: FC<NodeProps> = ({ data, id, ...rest }) => {
           {deviceLabel}
         </div>
       </div>
-      {nodeData?.interfaces.if.length > 0 && (
-        <ReactTooltip
-          type="light"
-          id={id}
-          place="top"
-          effect="solid"
-          className="shadow-md"
-        >
-          <div className="mt-2 mb-2 space-y-2">
-            {nodeData.interfaces.if
-              .sort((a: any, b: any) => {
-                return a.eth.number - b.eth.number;
-              })
-              .map((intf: any) => {
-                const interfaceNumber = `eth${intf.eth.number}`;
-                const interfaceDomain = intf.eth.domain;
-                const interfaceIp = intf.eth.ip;
-                return (
-                  <div
-                    key={intf.eth.number}
-                    className="border border-dashed border-gray-300 px-4 py-2 rounded-md w-[200px] min-w-max"
-                  >
-                    <div className="">
-                      <div className="flex justify-between items-center">
-                        <p>Interface: </p>
-                        <p className="text-teal-500">{interfaceNumber}</p>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <p>Domain: </p>
-                        <p className="text-teal-500">{interfaceDomain}</p>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <p>IP address: </p>
-                        <p className="text-teal-500">{interfaceIp}</p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-          </div>
-        </ReactTooltip>
-      )}
+      {tooltip}
     </>
   );
 };
