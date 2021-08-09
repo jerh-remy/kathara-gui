@@ -41,6 +41,15 @@ export const Navbar: FC<NavbarProps> = ({
   const [exitCode, setExitCode] = useState(1);
   const [isLabRunCommandIssued, setIsLabRunCommandIssued] = useState(false);
 
+  const sortedRouters = katharaConfig.machines
+    .filter((element: any) => {
+      return element.type === 'router';
+    })
+    .sort((a: any, b: any) => a.name.localeCompare(b.name));
+
+  let bgpRouterArr: any = [];
+  let bgpRoutes: any = [];
+
   useEffect(() => {
     ipcRenderer.on('script:stderr-reply', (_: any, katharaData: any) => {
       console.log({ katharaData });
@@ -62,14 +71,101 @@ export const Navbar: FC<NavbarProps> = ({
   }, []);
 
   useEffect(() => {
-    if (
-      error !== '' &&
-      !error.includes('Deploying') &&
-      !error.includes('Deleting')
-    ) {
-      alert(error);
-    }
-  }, [error]);
+    ipcRenderer.on('script:stdout-reply', (_: any, stdout: any) => {
+      // console.log({ stdout });
+      // bgpRouterArr.push({
+      //   router: router?.name,
+      //   bgpRoutes: [],
+      // });
+
+      const outputArr = stdout.split('\n');
+      const routerIDArr = outputArr[0].split(',')[1].split(' ');
+      const routerID = routerIDArr[routerIDArr.length - 1];
+      console.log({ routerID });
+
+      const routerName = sortedRouters.find((router: any) => {
+        return router.interfaces.if.some((intf: any) => {
+          if (!intf.eth.ip) {
+            return;
+          }
+
+          return intf.eth.ip.split('/')[0].trim() === routerID.trim();
+        });
+      }).name;
+
+      console.log({ routerName });
+
+      let bestPathNetwork: any;
+      outputArr.forEach((line: any) => {
+        if (line.startsWith('*') || line.startsWith('*>')) {
+          line.trim();
+          let [status, network, nextHop] = line.split(/\s+/);
+          console.log(
+            {
+              status,
+            },
+            {
+              network,
+            },
+            {
+              nextHop,
+            }
+          );
+          if (status === '*>') {
+            if (nextHop === '0') {
+              nextHop = network;
+              network = bestPathNetwork;
+            }
+
+            const existingNextHop = bgpRoutes.find((elem: any) => {
+              return elem.nextHop === nextHop;
+            });
+            console.log({
+              existingNextHop,
+            });
+            if (!existingNextHop) {
+              bgpRoutes.push({
+                nextHop: nextHop,
+                networks: [network],
+              });
+            } else {
+              const filteredArr = bgpRoutes.filter((elem: any) => {
+                return elem.nextHop !== nextHop;
+              });
+              bgpRoutes = [
+                ...filteredArr,
+                {
+                  ...existingNextHop,
+                  networks: [...existingNextHop.networks, network],
+                },
+              ];
+            }
+          } else if (status === '*') {
+            bestPathNetwork = network;
+            return;
+          }
+        }
+      });
+      console.log({
+        bgpRoutes,
+      });
+      bgpRouterArr.push({
+        router: routerName,
+        bgpRoutes: bgpRoutes,
+      });
+      bgpRouterArr.sort((a: any, b: any) => a.router.localeCompare(b.router));
+      bgpRoutes = [];
+
+      console.log({
+        bgpRouterArr,
+      });
+    });
+
+    return () => {
+      ipcRenderer.removeAllListeners('script:stdout-reply');
+      console.log('FINISH');
+    };
+  }, []);
 
   useEffect(() => {
     ipcRenderer.on('script:code-reply', (_: any, code: any) => {
@@ -82,6 +178,16 @@ export const Navbar: FC<NavbarProps> = ({
       ipcRenderer.removeAllListeners('script:code-reply');
     };
   }, [exitCode]);
+
+  useEffect(() => {
+    if (
+      error !== '' &&
+      !error.includes('Deploying') &&
+      !error.includes('Deleting')
+    ) {
+      alert(error);
+    }
+  }, [error]);
 
   useEffect(() => {
     if (isLabRunCommandIssued && exitCode === 0) {
@@ -140,8 +246,19 @@ export const Navbar: FC<NavbarProps> = ({
   function executeCheck() {
     ipcRenderer.send('script:check');
   }
+
   function executeCheckDocker() {
     ipcRenderer.send('script:checkDocker');
+  }
+
+  function executeShowIpBgp() {
+    console.log({ sortedRouters });
+    // const dirPath = katharaConfig.labInfo.labDirPath;
+    // ipcRenderer.send('script:bgp', dirPath, 'r2');
+    for (router of sortedRouters) {
+      const dirPath = katharaConfig.labInfo.labDirPath;
+      ipcRenderer.send('script:bgp', dirPath, router.name);
+    }
   }
 
   function _executeGeneric(command: string) {
@@ -300,7 +417,8 @@ export const Navbar: FC<NavbarProps> = ({
               onClick={(e) => {
                 e.preventDefault();
                 console.log('generate lab zip file');
-                createZip(katharaConfig);
+                // createZip(katharaConfig);
+                executeShowIpBgp();
               }}
               className="relative inline-flex items-center px-4 py-1 mr-3 text-sm font-bold tracking-wide text-gray-300 rounded-md border-[1.6px] border-gray-300 bg-transparent hover:border-transparent hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-emerald-500 focus:border-transparent"
             >

@@ -53,7 +53,9 @@ export const Statusbar = () => {
           }}
           className="m-0 w-full flex whitespace-nowrap items-center px-2 py-1 text-xs font-normal tracking-normal rounded-sm text-gray-300 border hover:border-transparent hover:bg-gray-500 focus:outline-none focus:ring-1  focus:ring-gray-200"
         >
-          Open console panel
+          {katharaLabStatus.isConsoleOpen
+            ? 'Close console panel'
+            : ' Open console panel'}
         </button>
         <div className="flex whitespace-nowrap items-center">
           <div className="rounded-full w-3 h-3 bg-red-600 mr-1"></div>

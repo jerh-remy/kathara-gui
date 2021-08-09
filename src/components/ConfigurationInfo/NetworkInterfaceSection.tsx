@@ -171,6 +171,7 @@ export const NetworkInterface: FC<NetworkInterfaceProps> = ({
   setActiveDevice,
 }) => {
   const interfaceNumberDigit = interfaceNo[interfaceNo.length - 1];
+  console.log({ interfaceNumberDigit });
   // const [device] = useState(activeDevice);
 
   const handleChange = (event: any, interfaceNo?: any) => {
@@ -210,62 +211,78 @@ export const NetworkInterface: FC<NetworkInterfaceProps> = ({
         });
         break;
       case 'ip-address':
-        setActiveDevice((activeDevice: any) => {
-          let filteredInterfaceArr = activeDevice.interfaces.if.filter(
-            (intf: any) => {
-              return intf.eth.number !== interfaceNo;
-            }
-          );
-
-          let networkIntf = activeDevice.interfaces.if.find(
+        if (
+          !activeDevice.interfaces.if.find(
             (intf: any) => intf.eth.number === parseInt(interfaceNo)
-          );
+          )
+        ) {
+          alert('Please enter a collision domain for this interface first');
+        } else {
+          setActiveDevice((activeDevice: any) => {
+            let filteredInterfaceArr = activeDevice.interfaces.if.filter(
+              (intf: any) => {
+                return intf.eth.number !== interfaceNo;
+              }
+            );
 
-          networkIntf.eth.ip = value;
+            let networkIntf = activeDevice.interfaces.if.find(
+              (intf: any) => intf.eth.number === parseInt(interfaceNo)
+            );
 
-          const newDevice = {
-            ...activeDevice,
-            interfaces: {
-              ...activeDevice.interfaces,
-              if: [
-                ...filteredInterfaceArr,
-                {
-                  ...networkIntf,
-                },
-              ],
-            },
-          };
-          return newDevice;
-        });
+            networkIntf.eth.ip = value;
+
+            const newDevice = {
+              ...activeDevice,
+              interfaces: {
+                ...activeDevice.interfaces,
+                if: [
+                  ...filteredInterfaceArr,
+                  {
+                    ...networkIntf,
+                  },
+                ],
+              },
+            };
+            return newDevice;
+          });
+        }
         break;
       case 'dns':
-        setActiveDevice((activeDevice: any) => {
-          let filteredInterfaceArr = activeDevice.interfaces.if.filter(
-            (intf: any) => {
-              return intf.eth.number !== interfaceNo;
-            }
-          );
-
-          let networkIntf = activeDevice.interfaces.if.find(
+        if (
+          !activeDevice.interfaces.if.find(
             (intf: any) => intf.eth.number === parseInt(interfaceNo)
-          );
+          )
+        ) {
+          alert('Please enter a collision domain for this interface first');
+        } else {
+          setActiveDevice((activeDevice: any) => {
+            let filteredInterfaceArr = activeDevice.interfaces.if.filter(
+              (intf: any) => {
+                return intf.eth.number !== interfaceNo;
+              }
+            );
 
-          networkIntf.dns = value;
+            let networkIntf = activeDevice.interfaces.if.find(
+              (intf: any) => intf.eth.number === parseInt(interfaceNo)
+            );
 
-          const newDevice = {
-            ...activeDevice,
-            interfaces: {
-              ...activeDevice.interfaces,
-              if: [
-                ...filteredInterfaceArr,
-                {
-                  ...networkIntf,
-                },
-              ],
-            },
-          };
-          return newDevice;
-        });
+            networkIntf.dns = value;
+
+            const newDevice = {
+              ...activeDevice,
+              interfaces: {
+                ...activeDevice.interfaces,
+                if: [
+                  ...filteredInterfaceArr,
+                  {
+                    ...networkIntf,
+                  },
+                ],
+              },
+            };
+            return newDevice;
+          });
+        }
         break;
 
       default:

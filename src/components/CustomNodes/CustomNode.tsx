@@ -113,7 +113,7 @@ const CustomNode: FC<NodeProps> = ({ data, id, ...rest }) => {
                 return (
                   <div
                     key={intf.eth.number}
-                    className="border border-dashed border-gray-300 px-4 py-2 rounded-md w-[180px] min-w-max"
+                    className="border border-dashed border-gray-300 px-4 py-2 rounded-md w-[200px] min-w-max"
                   >
                     <div className="">
                       <div className="flex justify-between items-center">

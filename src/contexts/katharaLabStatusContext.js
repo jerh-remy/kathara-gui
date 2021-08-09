@@ -1,8 +1,4 @@
 import React, { createContext, useMemo, useCallback, useEffect } from 'react';
-import _ from 'lodash';
-import electron from 'electron';
-import { writeFileSync } from 'fs';
-import path from 'path';
 
 const KatharaLabStatusContext = createContext();
 

@@ -200,13 +200,6 @@ ipcMain.on('script:copy', function (event, script, filename, dirPath) {
   console.log('Saving script to ' + pathTemp);
   writeFileSync(pathTemp, script);
 
-  // console.log({ filename });
-  // console.log(app.getName());
-  // console.log({ baseFolder });
-  // let pathTemp = path.join(baseFolder, filename);
-  // console.log('Saving script to ' + pathTemp);
-  // writeFileSync(pathTemp, script);
-
   console.log('Running ' + pathTemp);
   exec(
     `bash ${filename}`,
@@ -237,6 +230,16 @@ ipcMain.on('script:clean', (event, dirPath) => {
   let pathTemp = path.join(dirPath, 'lab');
   console.log(`Running LClean on ${pathTemp}`);
   runKatharaCommand(`lclean -d "${pathTemp}"`, event);
+});
+
+ipcMain.on('script:bgp', (event, dirPath, deviceName) => {
+  let pathTemp = path.join(dirPath, 'lab');
+
+  console.log(`Running "show ip bgp" on ${deviceName}`);
+  runKatharaCommand(
+    `exec -d "${pathTemp}" ${deviceName} -- vtysh -c "show ip bgp"`,
+    event
+  );
 });
 
 ipcMain.on('script:check', (event) => {

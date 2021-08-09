@@ -80,7 +80,7 @@ export const Workspace = ({
 
       const rfInstance = reactFlowInstance.toObject();
       console.log({ rfInstance });
-      // this is where I autosave
+      // anytime I call setKatharaConfig it autosaves
       setKatharaConfig((config) => {
         return {
           ...config,
@@ -150,7 +150,7 @@ export const Workspace = ({
           // label: 'styled label',
           // labelStyle: { fill: 'red', fontWeight: 700 },
           // animated: true,
-          // type: 'straight',
+          // type: 'step',
           type: 'default',
         },
         els
@@ -345,6 +345,8 @@ export const Workspace = ({
     if (!katharaConfig.labInfo.description) {
       console.log('You need to create a new project first');
       onNewProjectCreate();
+    } else if (katharaLabStatus.isLabRunning) {
+      alert('Please stop the running lab before adding a new device');
     } else {
       if (reactFlowInstance) {
         const data = event.dataTransfer.getData('application/reactflow');
@@ -412,6 +414,14 @@ export const Workspace = ({
 
       return newArr.concat(rfNode);
     });
+
+    setKatharaConfig((config) => {
+      const lab = {
+        ...config,
+        elements: elements,
+      };
+      return lab;
+    });
   };
 
   return (
@@ -471,7 +481,7 @@ export const Workspace = ({
       <ConsolePanel />
       <ContextMenu>
         <div className="space-y-2">
-          <button
+          {/* <button
             type="button"
             onClick={(e) => {
               e.preventDefault();
@@ -481,7 +491,7 @@ export const Workspace = ({
           >
             <PencilAltIcon className="text-gray-600 w-5 h-5 mr-2" />
             <span>{`Configure ${activeDevice?.data.label}`}</span>
-          </button>
+          </button> */}
           <button
             type="button"
             disabled={katharaLabStatus.isLabRunning === false}

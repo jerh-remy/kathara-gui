@@ -39,11 +39,12 @@ function createLabConfFile(kathara, lab) {
   for (let machine of kathara) {
     for (let intf of machine.interfaces.if) {
       if (intf.eth.domain && intf.eth.domain != '') {
-        lab.file['lab.conf'] +=
-          machine.name + '[' + intf.eth.number + ']=' + intf.eth.domain + '\n';
+        lab.file[
+          'lab.conf'
+        ] += `${machine.name}[${intf.eth.number}]=${intf.eth.domain}\n`;
       }
     }
-    lab.file['lab.conf'] += '\n';
+    // lab.file['lab.conf'] += '\n';
   }
 }
 
