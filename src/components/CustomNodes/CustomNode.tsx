@@ -88,7 +88,7 @@ const CustomNode: FC<NodeProps> = ({ data, id, ...rest }) => {
           ref={toolTipRef}
           data-tip
           data-for={id}
-          className="flex flex-col justify-center items-center p-[2px]"
+          className="flex flex-col justify-center items-center p-[2px] "
         >
           <Handle
             id="eth3"
@@ -140,13 +140,13 @@ const CustomNode: FC<NodeProps> = ({ data, id, ...rest }) => {
           />
           <img
             // draggable="false"
-            className="h-[60px] w-[60px] object-scale-down"
+            className="transition-all h-[60px] w-[60px] object-scale-down hover:scale-105"
             src={getImage(deviceType)}
             onDragStart={(event) => event.preventDefault()}
             alt="The type of network device"
           />
         </div>
-        <div className="absolute flex justify-center items-center whitespace-nowrap -bottom-12 left-0 right-0 text-sm text-center text-gray-500">
+        <div className="absolute flex justify-center items-center whitespace-nowrap -bottom-12 left-0 right-0 text-sm text-center text-gray-500 font-medium tracking-wide">
           {deviceLabel}
         </div>
       </div>

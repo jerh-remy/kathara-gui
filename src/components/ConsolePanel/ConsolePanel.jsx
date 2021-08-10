@@ -32,7 +32,7 @@ const LabOutput = () => {
     // };
   }, [katharaLabStatus.output]);
 
-  console.log({ output });
+  // console.log({ output });
 
   return (
     <>

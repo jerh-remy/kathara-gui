@@ -6,6 +6,7 @@ function KatharaLabStatusProvider({ children }) {
   const [katharaLabStatus, setKatharaLabStatus] = React.useState({
     isLabRunning: false,
     isConsoleOpen: false,
+    isRoutingPathPanelOpen: false,
     killTerminals: false,
     terminals: [],
     output: '',

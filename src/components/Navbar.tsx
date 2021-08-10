@@ -4,6 +4,7 @@ import MyPopover from '../components/Popover';
 import {
   FolderAddIcon,
   DownloadIcon,
+  CogIcon,
   UploadIcon,
 } from '@heroicons/react/outline';
 import { useKatharaLabStatus } from '../contexts/katharaLabStatusContext';
@@ -72,45 +73,43 @@ export const Navbar: FC<NavbarProps> = ({
 
   useEffect(() => {
     ipcRenderer.on('script:stdout-reply', (_: any, stdout: any) => {
-      // console.log({ stdout });
-      // bgpRouterArr.push({
-      //   router: router?.name,
-      //   bgpRoutes: [],
-      // });
-      const outputArr = stdout.split('\n');
-      if (outputArr) {
+      try {
+        const outputArr = stdout.split('\n');
         const routerIDArr = outputArr[0].split(',')[1].split(' ');
         const routerID = routerIDArr[routerIDArr.length - 1];
-        console.log({ routerID });
+        // console.log({
+        //   routerID,
+        // });
 
         const routerName = sortedRouters.find((router: any) => {
           return router.interfaces.if.some((intf: any) => {
             if (!intf.eth.ip) {
               return;
             }
-
             return intf.eth.ip.split('/')[0].trim() === routerID.trim();
           });
         }).name;
 
-        console.log({ routerName });
+        // console.log({
+        //   routerName,
+        // });
 
         let bestPathNetwork: any;
         outputArr.forEach((line: any) => {
           if (line.startsWith('*') || line.startsWith('*>')) {
             line.trim();
             let [status, network, nextHop] = line.split(/\s+/);
-            console.log(
-              {
-                status,
-              },
-              {
-                network,
-              },
-              {
-                nextHop,
-              }
-            );
+            // console.log(
+            //   {
+            //     status,
+            //   },
+            //   {
+            //     network,
+            //   },
+            //   {
+            //     nextHop,
+            //   }
+            // );
             if (status === '*>') {
               if (nextHop === '0') {
                 nextHop = network;
@@ -120,9 +119,9 @@ export const Navbar: FC<NavbarProps> = ({
               const existingNextHop = bgpRoutes.find((elem: any) => {
                 return elem.nextHop === nextHop;
               });
-              console.log({
-                existingNextHop,
-              });
+              // console.log({
+              //   existingNextHop,
+              // });
               if (!existingNextHop) {
                 bgpRoutes.push({
                   nextHop: nextHop,
@@ -154,15 +153,21 @@ export const Navbar: FC<NavbarProps> = ({
           bgpRoutes: bgpRoutes,
         });
         bgpRouterArr.sort((a: any, b: any) => a.router.localeCompare(b.router));
+
+        // clear the array
         bgpRoutes = [];
 
         console.log({
           bgpRouterArr,
         });
+      } catch (e) {
+        console.log({ e });
       }
     });
 
     return () => {
+      // clear the array
+      bgpRouterArr = [];
       ipcRenderer.removeAllListeners('script:stdout-reply');
       console.log('FINISH');
     };
@@ -383,7 +388,7 @@ export const Navbar: FC<NavbarProps> = ({
           executeClean();
           // executeCheckDocker();
         }}
-        className="relative inline-flex items-center px-4 py-1 text-sm font-bold tracking-wide text-white border border-transparent rounded-md shadow-sm bg-red-500 hover:bg-red-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-red-500"
+        className="relative inline-flex items-center px-4 py-1 mr-3 text-sm font-bold tracking-wide text-white border border-transparent rounded-md shadow-sm bg-red-500 hover:bg-red-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-red-500"
       >
         {/* <img className="w-auto h-6 mr-2 cursor-pointer" src="download.svg" /> */}
         <span>Stop lab</span>
@@ -429,7 +434,19 @@ export const Navbar: FC<NavbarProps> = ({
             {startStopLabButton}
           </>
         )}
+        <button
+          type="button"
+          aria-label="Configure Kathara Settings"
+          className="px-2 py-1 rounded-md border-[1.6px] border-gray-300 bg-transparent hover:border-transparent hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-emerald-500 focus:border-transparent"
+          onClick={(e) => {
+            e.preventDefault();
+            console.log('Open Settings dialog');
+          }}
+        >
+          <CogIcon className="text-white w-5 h-5" />
+        </button>
       </div>
+
       <NewProjectModal
         showModal={showNewProjectModal}
         setShowModal={setShowNewProjectModal}

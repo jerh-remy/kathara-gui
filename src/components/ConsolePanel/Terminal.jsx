@@ -14,6 +14,7 @@ const MyTerminal = ({ size, deviceName }) => {
   const fitAddon = new FitAddon();
   const [katharaConfig, setKatharaConfig] = useKatharaConfig();
   const [katharaLabStatus, setKatharaLabStatus] = useKatharaLabStatus();
+  const [xTermData, setXtermData] = useState('');
 
   useEffect(() => {
     // Start PTY process
@@ -53,12 +54,22 @@ const MyTerminal = ({ size, deviceName }) => {
       });
 
       xtermRef.current.onData((data) => {
+        // setXtermData((prevData) => prevData + data);
+        // const code = data.charCodeAt(0);
+        // console.log({ code });
+        // if (code === 13 && xTermData.length > 0) {
+        //   console.log({ data });
+        //   ptyProcess.write("\r\nYou typed: '" + xTermData + "'\r\n");
+        // } else {
         ptyProcess.write(data);
+        // }
       });
     } catch (error) {
       console.log({ error });
     }
   }, []);
+
+  // console.log({ xTermData });
 
   return (
     <div>

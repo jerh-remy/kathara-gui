@@ -44,9 +44,14 @@ body {
 }
 
 path.react-flow__edge-path:hover {
-  stroke-width: 4;
-  /* stroke: #b5f3fc; */
+  stroke-width: 5;
+  stroke: #828688;
   cursor: pointer;
+}
+
+path.react-flow__edge-path {
+  stroke-width: 2.2;
+  stroke: rgba(209, 213, 219, 1);
 }
 
 .dndflow {

@@ -4,7 +4,7 @@ import {
   FolderAddIcon,
   UploadIcon,
 } from '@heroicons/react/outline';
-import React, { FC, useRef } from 'react';
+import React, { Fragment, FC, useRef } from 'react';
 
 type Props = {
   onItemClicked: (item: string) => void;
@@ -17,26 +17,33 @@ const MyPopover: FC<Props> = ({ onItemClicked }) => {
     <Popover className="relative mr-3">
       {({ open }) => (
         <>
-          <Popover.Button ref={buttonRef}>
-            <div className="w-max flex px-4 py-1 text-sm  font-bold tracking-wide text-gray-300 rounded-md bg-gray-700 hover:bg-gray-600">
-              <span className="text-white">New / Import</span>
-              <ChevronDownIcon
-                className={`${
-                  open ? 'transform rotate-180' : ''
-                } w-5 h-5 text-white ml-2 -mr-1 mt-[1px]`}
-              />
-            </div>
+          <Popover.Button
+            className="w-max flex px-4 py-1 text-sm  font-bold tracking-wide text-gray-300 rounded-md bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-emerald-500 focus:border-transparent"
+            ref={buttonRef}
+          >
+            <span className="text-white">New / Import</span>
+            <ChevronDownIcon
+              className={`${
+                open ? 'transform rotate-180' : ''
+              } w-5 h-5 text-white ml-2 -mr-1 mt-[1px]`}
+            />
           </Popover.Button>
 
           <Transition
             // show={open}
-            // as={Fragment}
-            enter="transition duration-100 ease-in-out"
-            enterFrom="transform scale-10 opacity-80"
-            enterTo="transform scale-100 opacity-100"
-            leave="transition duration-100 ease-out"
-            leaveFrom="transform scale-100 opacity-100"
-            leaveTo="transform scale-10 opacity-80"
+            as={Fragment}
+            // enter="transition duration-100 ease-in-out"
+            // enterFrom="transform scale-10 opacity-80"
+            // enterTo="transform scale-100 opacity-100"
+            // leave="transition duration-100 ease-out"
+            // leaveFrom="transform scale-100 opacity-100"
+            // leaveTo="transform scale-10 opacity-80"
+            enter="transition ease-out duration-200"
+            enterFrom="opacity-0 translate-y-1"
+            enterTo="opacity-100 translate-y-0"
+            leave="transition ease-in duration-150"
+            leaveFrom="opacity-100 translate-y-0"
+            leaveTo="opacity-0 translate-y-1"
           >
             <Popover.Panel className="absolute z-10 origin-top-right right-0 mt-[5px]">
               <div className="flex flex-col bg-white rounded-md px-3 py-3 shadow-xl w-auto h-auto">

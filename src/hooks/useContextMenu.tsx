@@ -20,7 +20,7 @@ export default function useContextMenu() {
           const offsetLeft =
             e.target.offsetParent.offsetParent.offsetParent.offsetParent
               .offsetParent.offsetParent.offsetLeft;
-          const offsetTop = 20;
+          const offsetTop = 10;
 
           const boundingClientRect = e.target.getBoundingClientRect();
           setXPos(`${boundingClientRect.x - offsetLeft}px`);
