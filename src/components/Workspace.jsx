@@ -592,9 +592,7 @@ export const Workspace = ({
           </button>
         </div>
       </ContextMenu>
-      {/* {katharaLabStatus.isLabRunning && ( */}
       <RoutingPathPanel />
-      {/* )} */}
     </div>
   );
 };

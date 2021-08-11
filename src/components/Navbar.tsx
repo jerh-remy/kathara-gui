@@ -320,15 +320,18 @@ export const Navbar: FC<NavbarProps> = ({
     console.log({ directory });
 
     if (directory.filePaths.length > 0) {
-      const configFromFile = JSON.parse(
-        readFileSync(directory.filePaths[0], 'utf8')
-      );
+      const file = directory.filePaths[0];
+      const configFromFile = JSON.parse(readFileSync(file, 'utf8'));
 
-      console.log({ configFromFile });
+      console.log({ configFromFile }, path.dirname(file));
 
       setKatharaConfig((_: any) => {
         return {
           ...configFromFile,
+          labInfo: {
+            ...configFromFile.labInfo,
+            labDirPath: path.dirname(file),
+          },
         };
       });
     }

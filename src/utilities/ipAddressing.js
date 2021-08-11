@@ -1,15 +1,15 @@
-function get_network_from_ip_net(ip_net) {
+function getNetworkFromIpNet(ip_net) {
   let [ip, net] = ip_net.split('/');
   if (net > 32) net = 32;
   if (net < 0) net = 0;
-  let binary = ip_to_bin(ip);
-  let netmask = binary_netmask_from_decimal(net);
-  let network = network_from_binary_ip_mask(binary, netmask);
-  let network_ip = bin_to_ip(network);
+  let binary = ipToBin(ip);
+  let netmask = binaryNetmaskFromDecimal(net);
+  let network = networkFromBinaryIpMask(binary, netmask);
+  let network_ip = binToIp(network);
   return network_ip + '/' + net;
 }
 
-function ip_to_bin(ip) {
+function ipToBin(ip) {
   let binary = '';
   for (let octet of ip.split('.')) {
     if (octet > 255) octet = 255;
@@ -24,7 +24,7 @@ function ip_to_bin(ip) {
   return binary;
 }
 
-function network_from_binary_ip_mask(binary, netmask) {
+function networkFromBinaryIpMask(binary, netmask) {
   let network = '';
   for (let j = 0; j < 32; j++) {
     network += netmask[j] == '1' ? binary[j] : '0';
@@ -32,7 +32,7 @@ function network_from_binary_ip_mask(binary, netmask) {
   return network;
 }
 
-function bin_to_ip(bin) {
+function binToIp(bin) {
   let ip = '';
   for (let i = 0; i < 32; i = i + 8) {
     let app = '';
@@ -42,7 +42,7 @@ function bin_to_ip(bin) {
   return ip;
 }
 
-function binary_netmask_from_decimal(dec) {
+function binaryNetmaskFromDecimal(dec) {
   let netmask = '';
   if (dec > 32) dec = 32;
   for (let j = 0; j < 32; j++) {
@@ -50,3 +50,5 @@ function binary_netmask_from_decimal(dec) {
   }
   return netmask;
 }
+
+export { getNetworkFromIpNet };
