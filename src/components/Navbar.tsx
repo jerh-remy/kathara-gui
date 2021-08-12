@@ -99,6 +99,17 @@ export const Navbar: FC<NavbarProps> = ({
         };
         return newStatus;
       });
+
+      // disable autosave when lab is running
+      setKatharaConfig((config: any) => {
+        return {
+          ...config,
+          labInfo: {
+            ...config.labInfo,
+            autosaveEnabled: false,
+          },
+        };
+      });
     } else if (!isLabRunCommandIssued && exitCode === 0) {
       setKatharaLabStatus((status: any) => {
         const newStatus = {
@@ -107,6 +118,17 @@ export const Navbar: FC<NavbarProps> = ({
           terminals: [],
         };
         return newStatus;
+      });
+
+      // re-enable autosave when lab is stopped
+      setKatharaConfig((config: any) => {
+        return {
+          ...config,
+          labInfo: {
+            ...config.labInfo,
+            autosaveEnabled: false,
+          },
+        };
       });
     }
 
@@ -223,21 +245,22 @@ export const Navbar: FC<NavbarProps> = ({
   };
 
   const onPopoverItemClicked = (item: string) => {
-    if (katharaLabStatus.isLabRunning) {
-      alert('Please stop the running lab before creating/importing a project');
-    } else {
-      switch (item) {
-        case 'NEW':
-          setShowNewProjectModal(true);
-          console.log('New project');
-          break;
-        case 'IMPORT':
-          importExistingProject();
-          break;
-        default:
-          break;
-      }
+    // TODO uncomment these
+    // if (katharaLabStatus.isLabRunning) {
+    //   alert('Please stop the running lab before creating/importing a project');
+    // } else {
+    switch (item) {
+      case 'NEW':
+        setShowNewProjectModal(true);
+        console.log('New project');
+        break;
+      case 'IMPORT':
+        importExistingProject();
+        break;
+      default:
+        break;
     }
+    // }
   };
 
   let startStopLabButton;

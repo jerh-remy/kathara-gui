@@ -99,6 +99,9 @@ export const Workspace = ({
   console.log({ katharaConfig });
 
   useEffect(() => {
+    console.log(`RUNNING THIS SHID!!`);
+    console.table({ elements });
+
     if (reactFlowInstance) {
       setElements(katharaConfig.elements || []);
       if (katharaConfig.position) {
@@ -506,17 +509,6 @@ export const Workspace = ({
       <ConsolePanel />
       <ContextMenu>
         <div className="space-y-2">
-          {/* <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              openConfigurationPanel(true);
-            }}
-            className="w-full flex whitespace-nowrap text-sm px-2 py-1 font-normal tracking-normal rounded-sm text-gray-600 hover:border-transparent hover:bg-gray-100 focus:outline-none focus:ring-1  focus:ring-gray-200 hover:text-teal-600"
-          >
-            <PencilAltIcon className="text-gray-600 w-5 h-5 mr-2" />
-            <span>{`Configure ${activeDevice?.data.label}`}</span>
-          </button> */}
           <button
             type="button"
             disabled={katharaLabStatus.isLabRunning === false}
@@ -594,7 +586,10 @@ export const Workspace = ({
           </button>
         </div>
       </ContextMenu>
-      {katharaConfig.machines.length > 1 && <RoutingPathPanel />}
+      {katharaConfig.machines.length > 1 && (
+        // <RoutingPathPanel setElements={setElements} />
+        <RoutingPathPanel />
+      )}
     </div>
   );
 };

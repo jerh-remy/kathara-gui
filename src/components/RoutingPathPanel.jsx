@@ -1,17 +1,31 @@
 import React, { useEffect, useState } from 'react';
+
+import {
+  useStoreState,
+  useStoreActions,
+  useUpdateNodeInternals,
+} from 'react-flow-renderer';
 import { useKatharaConfig } from '../contexts/katharaConfigContext';
 import { useKatharaLabStatus } from '../contexts/katharaLabStatusContext';
 import { Heading2 } from './Heading2';
 import { getNetworkFromIpNet } from '../utilities/ipAddressing';
 import { ipcRenderer, remote, shell } from 'electron';
-import { CLIENT_RENEG_LIMIT } from 'tls';
 
 export const RoutingPathPanel = () => {
   const [routingType, setRoutingType] = useState('bgp');
   const [katharaConfig, setKatharaConfig] = useKatharaConfig();
   const [katharaLabStatus, setKatharaLabStatus] = useKatharaLabStatus();
 
-  const [machines, setMachines] = useState(katharaConfig.machines);
+  const nodes = useStoreState((store) => store.nodes);
+  const edges = useStoreState((store) => store.edges);
+  const setElements = useStoreActions((actions) => actions.setElements);
+  const updateNodeInternals = useUpdateNodeInternals();
+
+  console.log({ edges });
+
+  const [machines, setMachines] = useState(
+    katharaConfig.machines.sort((a, b) => a.name.localeCompare(b.name))
+  );
   const [sourceNode, setSourceNode] = useState(katharaConfig.machines[0]);
   const [destinationNode, setDestinationNode] = useState(
     katharaConfig.machines[1]
@@ -28,6 +42,7 @@ export const RoutingPathPanel = () => {
   ] = useState();
 
   const [bgpRouterArr, setBgpRouterArr] = useState([]);
+  const [routePaths, setRoutePaths] = useState([]);
 
   const sortedRouters = katharaConfig.machines
     .filter((element) => {
@@ -41,6 +56,8 @@ export const RoutingPathPanel = () => {
     setMachines(() => katharaConfig.machines);
     setSourceNode(() => katharaConfig.machines[0]);
     setDestinationNode(() => katharaConfig.machines[1]);
+    setDestinationIPAddress(() => '');
+    setconvertedIPtoNetworkAddress(() => '');
 
     return () => {
       console.log('CLEANING UP!!');
@@ -52,6 +69,7 @@ export const RoutingPathPanel = () => {
     };
   }, [katharaConfig.machines]);
 
+  // set the interfaces of the selected destination node
   useEffect(() => {
     if (destinationNode) {
       setDestinationNetworkInterfaces(() => {
@@ -76,8 +94,6 @@ export const RoutingPathPanel = () => {
       setconvertedIPtoNetworkAddress(() => {
         return getNetworkFromIpNet(destinationIPAddress);
       });
-
-      // executeShowIpBgp();
     }
   }, [destinationIPAddress]);
 
@@ -104,13 +120,18 @@ export const RoutingPathPanel = () => {
     };
   }, []);
 
+  console.log({ routePaths });
+
+  // this effect runs after the bgp routing information has been obtained from kathara
   useEffect(() => {
     if (bgpRouterArr.length === sortedRouters.length) {
-      console.log('FINISHED GETTING BGP ROUTE PATHS!!!', { bgpRouterArr });
+      console.log('FINISHED GETTING BGP ROUTING INFO FROM KATHARA!', {
+        bgpRouterArr,
+      });
 
       let isFinalDestinationFound = false;
-      let routePaths = [];
       let currentNode = sourceNode;
+      let routePathsArr = [];
       while (isFinalDestinationFound === false) {
         const router = bgpRouterArr.find((elem) => {
           return elem.router === currentNode.name;
@@ -146,7 +167,7 @@ export const RoutingPathPanel = () => {
 
           console.log({ currentRouterCorrespondingInterfaceInfo });
 
-          routePaths.push({
+          routePathsArr.push({
             source: {
               id: currentNode.id,
               name: currentNode.name,
@@ -157,6 +178,10 @@ export const RoutingPathPanel = () => {
               name: nextHopRouter.name,
               interface: nextHopRouterInterfaceInfo,
             },
+          });
+
+          setRoutePaths(() => {
+            return [...routePathsArr];
           });
 
           if (nextHopRouterInterfaceInfo.eth.ip === destinationIPAddress) {
@@ -192,7 +217,7 @@ export const RoutingPathPanel = () => {
 
           console.log({ currentRouterCorrespondingInterfaceInfo });
 
-          routePaths.push({
+          routePathsArr.push({
             source: {
               id: currentNode.id,
               name: currentNode.name,
@@ -205,14 +230,66 @@ export const RoutingPathPanel = () => {
             },
           });
 
+          setRoutePaths(() => {
+            return [...routePathsArr];
+          });
+
           // break out of the loop since the complete routing path has now been obtained
           isFinalDestinationFound = true;
         }
       }
       console.timeEnd('Execution Time');
-      console.log({ routePaths });
+      console.log({ routePathsArr });
     }
   }, [bgpRouterArr]);
+
+  // this effect runs after an element is added to the routing path array.
+  // it is meant to modify the UI with the new edges representing the paths
+  useEffect(() => {
+    if (routePaths && routePaths.length > 0) {
+      console.log(`THIS EDGE MODIFICATION EFFECT JUST RAN`);
+      for (let i = 0; i < routePaths.length; i++) {
+        const path = routePaths[i];
+        console.log({ path });
+        const edgeToModify = edges.find((el) => {
+          return (
+            (el.source === path.source.id &&
+              el.sourceHandle === `eth${path.source.interface.eth.number}` &&
+              el.target === path.destination.id &&
+              el.targetHandle ===
+                `eth${path.destination.interface.eth.number}`) ||
+            (el.source === path.destination.id &&
+              el.sourceHandle ===
+                `eth${path.destination.interface.eth.number}` &&
+              el.target === path.source.id &&
+              el.targetHandle === `eth${path.source.interface.eth.number}`)
+          );
+        });
+        console.log({ edgeToModify });
+
+        if (edgeToModify) {
+          // remove this edge from the internal edges array
+          const newEdges = edges.filter((el) => el.id !== edgeToModify.id);
+
+          // animate the edge
+          const modifiedEdge = {
+            ...edgeToModify,
+            animated: true,
+            style: { stroke: 'red' },
+          };
+
+          updateNodeInternals(modifiedEdge.id);
+
+          console.log({ modifiedEdge });
+
+          setElements([...nodes, ...newEdges, modifiedEdge]);
+        }
+      }
+    }
+    // return () => {
+    //   routePaths = [];
+    // };
+  }, [routePaths]);
 
   // console.log(machines);
   // console.log(sourceNode.name);
@@ -225,9 +302,9 @@ export const RoutingPathPanel = () => {
       const outputArr = output.split('\n');
       const routerIDArr = outputArr[0].split(',')[1].split(' ');
       const routerID = routerIDArr[routerIDArr.length - 1];
-      console.log({
-        routerID,
-      });
+      // console.log({
+      //   routerID,
+      // });
 
       let routerName;
       try {
@@ -252,9 +329,9 @@ export const RoutingPathPanel = () => {
         }).name;
       }
 
-      console.log({
-        routerName,
-      });
+      // console.log({
+      //   routerName,
+      // });
 
       let bestPathNetwork;
       let bgpRoutes = [];
@@ -299,9 +376,9 @@ export const RoutingPathPanel = () => {
           }
         }
       });
-      console.log({
-        bgpRoutes,
-      });
+      // console.log({
+      //   bgpRoutes,
+      // });
 
       setBgpRouterArr((arr) => {
         const newArr = [
@@ -418,6 +495,7 @@ export const RoutingPathPanel = () => {
     console.log({ sortedRouters });
     // clear the array
     setBgpRouterArr(() => []);
+    setRoutePaths(() => []);
 
     // const dirPath = katharaConfig.labInfo.labDirPath;
     // ipcRenderer.send('script:bgp', dirPath, 'r2');
@@ -529,7 +607,6 @@ export const RoutingPathPanel = () => {
                   .filter((machine) => {
                     return machine.name !== destinationNode.name;
                   })
-                  .sort((a, b) => a.name.localeCompare(b.name))
                   .map((machine) => {
                     return (
                       <option key={machine.name} value={machine.name}>
@@ -559,7 +636,6 @@ export const RoutingPathPanel = () => {
                   .filter((machine) => {
                     return machine.name !== sourceNode.name;
                   })
-                  .sort((a, b) => a.name.localeCompare(b.name))
                   .map((machine) => {
                     return (
                       <option key={machine.name} value={machine.name}>
@@ -598,13 +674,35 @@ export const RoutingPathPanel = () => {
               onClick={(e) => {
                 e.preventDefault();
                 console.log({ routingType });
-                console.time('Execution Time');
-                if (routingType === 'bgp' && destinationIPAddress) {
+
+                const originalEdgesArr = edges.filter((el) => {
+                  return !el.hasOwnProperty('animated');
+                });
+                const modifiedEdgesArr = edges.filter((el) => {
+                  return el.hasOwnProperty('animated');
+                });
+                console.log({ modifiedEdgesArr });
+
+                if (modifiedEdgesArr.length > 0) {
+                  modifiedEdgesArr.forEach((edge) => {
+                    delete edge.animated;
+                    delete edge.style;
+                  });
+
+                  setElements([
+                    ...nodes,
+                    ...originalEdgesArr,
+                    ...modifiedEdgesArr,
+                  ]);
+                }
+
+                if (routingType === 'bgp' && destinationIPAddress !== '') {
+                  console.time('Execution Time');
                   executeShowIpBgp();
                 }
-                if (routingType === 'isis' && destinationIPAddress) {
-                  executeShowIpISIS();
-                }
+                // if (routingType === 'isis' && destinationIPAddress) {
+                //   executeShowIpISIS();
+                // }
               }}
             >
               Start
