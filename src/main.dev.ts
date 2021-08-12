@@ -155,7 +155,11 @@ app.on('activate', () => {
 let baseFolder = app.getPath('userData');
 console.log({ baseFolder });
 
-function runKatharaCommand(command: string, event: Electron.IpcMainEvent) {
+function runKatharaCommand(
+  command: string,
+  action: string,
+  event: Electron.IpcMainEvent
+) {
   /* ---------------------------------------------------------- */
   /* ------------------------- kathara spawn ------------------------- */
   /* ---------------------------------------------------------- */
@@ -169,25 +173,25 @@ function runKatharaCommand(command: string, event: Electron.IpcMainEvent) {
   child.stdout.on('data', (data) => {
     console.log(`stdout:${data}`);
     output = data.toString();
-    event.reply('script:stdout-reply', output);
+    event.reply('script:stdout-reply', { action: action, output: output });
   });
 
   child.stderr.on('data', (data) => {
     console.error(`stderr: ${data}`);
     output = data.toString();
-    event.reply('script:stderr-reply', output);
+    event.reply('script:stderr-reply', { action: action, output: output });
   });
 
   child.on('error', (error) => {
     console.error(`error: ${error.message}`);
     output = error.message;
-    event.reply('script:error-reply', output);
+    event.reply('script:error-reply', { action: action, output: output });
   });
 
   child.on('close', (code) => {
     console.log(`child process exited with code ${code}`);
     output = code;
-    event.reply('script:code-reply', code);
+    event.reply('script:code-reply', { action: action, output: output });
   });
 }
 
@@ -223,28 +227,38 @@ ipcMain.on('script:copy', function (event, script, filename, dirPath) {
 ipcMain.on('script:execute', (event, dirPath) => {
   let pathTemp = path.join(dirPath, 'lab');
   console.log(`Running LStart on ${pathTemp}`);
-  runKatharaCommand(`lstart -d "${pathTemp}"`, event);
+  runKatharaCommand(`lstart -d "${pathTemp}"`, 'RUN_LAB', event);
 });
 
 ipcMain.on('script:clean', (event, dirPath) => {
   let pathTemp = path.join(dirPath, 'lab');
   console.log(`Running LClean on ${pathTemp}`);
-  runKatharaCommand(`lclean -d "${pathTemp}"`, event);
+  runKatharaCommand(`lclean -d "${pathTemp}"`, 'STOP_LAB', event);
 });
 
 ipcMain.on('script:bgp', (event, dirPath, deviceName) => {
   let pathTemp = path.join(dirPath, 'lab');
-
   console.log(`Running "show ip bgp" on ${deviceName}`);
   runKatharaCommand(
     `exec -d "${pathTemp}" ${deviceName} -- vtysh -c "show ip bgp"`,
+    'BGP',
+    event
+  );
+});
+
+ipcMain.on('script:isis', (event, dirPath, deviceName) => {
+  let pathTemp = path.join(dirPath, 'lab');
+  console.log(`Running "show ip route isis" on ${deviceName}`);
+  runKatharaCommand(
+    `exec -d "${pathTemp}" ${deviceName} -- vtysh -c "show ip route isis"`,
+    'IS-IS',
     event
   );
 });
 
 ipcMain.on('script:check', (event) => {
   console.log(`Checking if Kathara is installed`);
-  runKatharaCommand(`-v`, event);
+  runKatharaCommand(`-v`, 'CHECK_KATHARA', event);
 });
 
 ipcMain.on('script:checkDocker', (event) => {

@@ -96,6 +96,8 @@ export const Workspace = ({
     // reactFlowInstance.toObject().position,
   ]);
 
+  console.log({ katharaConfig });
+
   useEffect(() => {
     if (reactFlowInstance) {
       setElements(katharaConfig.elements || []);
@@ -592,7 +594,7 @@ export const Workspace = ({
           </button>
         </div>
       </ContextMenu>
-      <RoutingPathPanel />
+      {katharaConfig.machines.length > 1 && <RoutingPathPanel />}
     </div>
   );
 };

@@ -42,27 +42,18 @@ export const Navbar: FC<NavbarProps> = ({
   const [exitCode, setExitCode] = useState(1);
   const [isLabRunCommandIssued, setIsLabRunCommandIssued] = useState(false);
 
-  const sortedRouters = katharaConfig.machines
-    .filter((element: any) => {
-      return element.type === 'router';
-    })
-    .sort((a: any, b: any) => a.name.localeCompare(b.name));
-
-  let bgpRouterArr: any = [];
-  let bgpRoutes: any = [];
-
   useEffect(() => {
-    ipcRenderer.on('script:stderr-reply', (_: any, katharaData: any) => {
-      console.log({ katharaData });
+    ipcRenderer.on('script:stderr-reply', (_: any, stderr: any) => {
+      console.log({ stderr });
       setKatharaLabStatus((status: any) => {
         const newStatus = {
           ...status,
-          // output: status.output + katharaData,
-          output: katharaData,
+          // output: status.output + stderr,
+          output: stderr.output,
         };
         return newStatus;
       });
-      setError((_) => katharaData.trim());
+      setError((_) => stderr.output.trim());
     });
 
     return () => {
@@ -73,110 +64,14 @@ export const Navbar: FC<NavbarProps> = ({
 
   useEffect(() => {
     ipcRenderer.on('script:stdout-reply', (_: any, stdout: any) => {
-      try {
-        const outputArr = stdout.split('\n');
-        const routerIDArr = outputArr[0].split(',')[1].split(' ');
-        const routerID = routerIDArr[routerIDArr.length - 1];
-        // console.log({
-        //   routerID,
-        // });
-
-        const routerName = sortedRouters.find((router: any) => {
-          return router.interfaces.if.some((intf: any) => {
-            if (!intf.eth.ip) {
-              return;
-            }
-            return intf.eth.ip.split('/')[0].trim() === routerID.trim();
-          });
-        }).name;
-
-        // console.log({
-        //   routerName,
-        // });
-
-        let bestPathNetwork: any;
-        outputArr.forEach((line: any) => {
-          if (line.startsWith('*') || line.startsWith('*>')) {
-            line.trim();
-            let [status, network, nextHop] = line.split(/\s+/);
-            // console.log(
-            //   {
-            //     status,
-            //   },
-            //   {
-            //     network,
-            //   },
-            //   {
-            //     nextHop,
-            //   }
-            // );
-            if (status === '*>') {
-              if (nextHop === '0') {
-                nextHop = network;
-                network = bestPathNetwork;
-              }
-
-              const existingNextHop = bgpRoutes.find((elem: any) => {
-                return elem.nextHop === nextHop;
-              });
-              // console.log({
-              //   existingNextHop,
-              // });
-              if (!existingNextHop) {
-                bgpRoutes.push({
-                  nextHop: nextHop,
-                  networks: [network],
-                });
-              } else {
-                const filteredArr = bgpRoutes.filter((elem: any) => {
-                  return elem.nextHop !== nextHop;
-                });
-                bgpRoutes = [
-                  ...filteredArr,
-                  {
-                    ...existingNextHop,
-                    networks: [...existingNextHop.networks, network],
-                  },
-                ];
-              }
-            } else if (status === '*') {
-              bestPathNetwork = network;
-              return;
-            }
-          }
-        });
-        console.log({
-          bgpRoutes,
-        });
-        bgpRouterArr.push({
-          router: routerName,
-          bgpRoutes: bgpRoutes,
-        });
-        bgpRouterArr.sort((a: any, b: any) => a.router.localeCompare(b.router));
-
-        // clear the array
-        bgpRoutes = [];
-
-        console.log({
-          bgpRouterArr,
-        });
-      } catch (e) {
-        console.log({ e });
-      }
+      console.log({ stdout });
     });
-
-    return () => {
-      // clear the array
-      bgpRouterArr = [];
-      ipcRenderer.removeAllListeners('script:stdout-reply');
-      console.log('FINISH');
-    };
   }, []);
 
   useEffect(() => {
     ipcRenderer.on('script:code-reply', (_: any, code: any) => {
       console.log({ code });
-      setExitCode(code);
+      setExitCode(code.output);
     });
 
     return () => {
@@ -255,16 +150,6 @@ export const Navbar: FC<NavbarProps> = ({
 
   function executeCheckDocker() {
     ipcRenderer.send('script:checkDocker');
-  }
-
-  function executeShowIpBgp() {
-    console.log({ sortedRouters });
-    // const dirPath = katharaConfig.labInfo.labDirPath;
-    // ipcRenderer.send('script:bgp', dirPath, 'r2');
-    for (let router of sortedRouters) {
-      const dirPath = katharaConfig.labInfo.labDirPath;
-      ipcRenderer.send('script:bgp', dirPath, router.name);
-    }
   }
 
   function _executeGeneric(command: string) {
@@ -393,14 +278,12 @@ export const Navbar: FC<NavbarProps> = ({
         }}
         className="relative inline-flex items-center px-4 py-1 mr-3 text-sm font-bold tracking-wide text-white border border-transparent rounded-md shadow-sm bg-red-500 hover:bg-red-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-red-500"
       >
-        {/* <img className="w-auto h-6 mr-2 cursor-pointer" src="download.svg" /> */}
         <span>Stop lab</span>
       </button>
     );
   }
   return (
     <nav className="flex justify-between items-center px-4 py-2 bg-gray-800 shadow-lg align-center">
-      {/* <a className="focus:outline-none focus:ring-2 focus:ring-emerald-400 flex items-center"> */}
       <div className="cursor-auto">
         <img className="w-auto h-8 mt-1" src={logo} alt="kathara logo" />
       </div>
@@ -426,8 +309,7 @@ export const Navbar: FC<NavbarProps> = ({
               onClick={(e) => {
                 e.preventDefault();
                 console.log('generate lab zip file');
-                // createZip(katharaConfig);
-                executeShowIpBgp();
+                createZip(katharaConfig);
               }}
               className="relative inline-flex items-center px-4 py-1 mr-3 text-sm font-bold tracking-wide text-gray-300 rounded-md border-[1.6px] border-gray-300 bg-transparent hover:border-transparent hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-emerald-500 focus:border-transparent"
             >

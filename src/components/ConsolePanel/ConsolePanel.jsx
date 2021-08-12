@@ -51,6 +51,12 @@ const LabOutput = () => {
         onClick={(e) => {
           e.preventDefault();
           setOutput('');
+          setKatharaLabStatus((status) => {
+            return {
+              ...status,
+              output: '',
+            };
+          });
         }}
       >
         Clear output
