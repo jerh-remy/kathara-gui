@@ -25,8 +25,6 @@ export const RoutingPathPanel = () => {
   const setElements = useStoreActions((actions) => actions.setElements);
   const updateNodeInternals = useUpdateNodeInternals();
 
-  console.log({ edges });
-
   const [machines, setMachines] = useState(
     katharaConfig.machines.sort((a, b) => a.name.localeCompare(b.name))
   );
@@ -141,13 +139,30 @@ export const RoutingPathPanel = () => {
         let currentNode = sourceNode;
         let routePathsArr = [];
         while (isFinalDestinationFound === false) {
-          const router = bgpRouterArr.find((elem) => {
-            return elem.router === currentNode.name;
-          });
+          console.log(
+            `Current node is: ${currentNode.name}`,
+            `Current node type is: ${currentNode.type}`
+          );
 
-          const nextHopToDestinationNetwork = router.bgpRoutes.find((el) => {
-            return el.networks.includes(convertedIPtoNetworkAddress);
-          }).nextHop;
+          let device;
+          if (currentNode.type === 'router') {
+            device = bgpRouterArr.find((elem) => {
+              return elem.router === currentNode.name;
+            });
+          }
+
+          let nextHopToDestinationNetwork;
+          // use the gateway if the source node is not a router
+          if (currentNode.type !== 'router') {
+            const gateway = sourceNode.gateways.gw[0];
+            const gatewayIp = gateway.gw;
+
+            nextHopToDestinationNetwork = gatewayIp;
+          } else {
+            nextHopToDestinationNetwork = device.bgpRoutes.find((el) => {
+              return el.networks.includes(convertedIPtoNetworkAddress);
+            }).nextHop;
+          }
 
           console.log({ nextHopToDestinationNetwork });
 
@@ -253,6 +268,7 @@ export const RoutingPathPanel = () => {
       }
     } catch (err) {
       console.log({ err });
+      alert('An error occured while trying to plot BGP route path.');
     }
   }, [bgpRouterArr]);
 

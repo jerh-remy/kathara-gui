@@ -7,7 +7,6 @@ import { Heading } from './Heading';
 export const LabInfo = () => {
   const [katharaConfig, setKatharaConfig] = useKatharaConfig();
   const { labInfo } = katharaConfig;
-  // const [lab, setLab] = useState(labInfo);
 
   const handleChange = (event: any) => {
     console.log(event.target.name);
@@ -27,19 +26,6 @@ export const LabInfo = () => {
       },
     }));
   };
-
-  // useEffect(() => {
-  //   setKatharaConfig((config: any) => {
-  //     const { labInfo: oldLabInfo, ...rest } = config;
-  //     let labInfo = lab;
-  //     return {
-  //       ...rest,
-  //       labInfo,
-  //     };
-  //   });
-  // }, [lab]);
-
-  // console.log({ lab }, { katharaConfig });
 
   return (
     <div className="mt-4 mb-4">

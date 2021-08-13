@@ -27,11 +27,8 @@ export const Home = () => {
 
   const onNewProjectCreate = () => {
     console.log('Creating new Project');
-
     setShowNewProjectModal(true);
   };
-
-  // console.log({ katharaLabStatus });
 
   return (
     <>

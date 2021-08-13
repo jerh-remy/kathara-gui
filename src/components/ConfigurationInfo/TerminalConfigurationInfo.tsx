@@ -6,7 +6,6 @@ type Props = {
 };
 export const TerminalConfigurationInfo: FC<Props> = ({ device }) => {
   const [deviceName, setDeviceName] = useState<string>(device.data.label);
-  // console.log(device.data.label);
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
     setDeviceName(event.target.value);
   }

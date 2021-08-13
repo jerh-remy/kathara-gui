@@ -172,7 +172,6 @@ export const IsisConfiguration: FC<IsisProps> = ({
         </label>
         <div className="flex flex-wrap">
           {interfaces.map((intf) => {
-            // console.log({ intf });
             return (
               <label
                 key={intf}

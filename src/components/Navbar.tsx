@@ -127,7 +127,7 @@ export const Navbar: FC<NavbarProps> = ({
           ...config,
           labInfo: {
             ...config.labInfo,
-            autosaveEnabled: false,
+            autosaveEnabled: true,
           },
         };
       });
@@ -139,8 +139,6 @@ export const Navbar: FC<NavbarProps> = ({
       setExitCode(1);
     };
   }, [exitCode, isLabRunCommandIssued]);
-
-  // console.log({ error });
 
   function createLabFolderOnFileSystem(script: string) {
     const dirPath = katharaConfig.labInfo.labDirPath;

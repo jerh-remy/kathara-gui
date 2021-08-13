@@ -132,7 +132,7 @@ type GatewayProps = {
     id: string
   ) => void;
   id: string;
-  interfaces: [];
+  interfaces: any;
   activeDevice: any;
   setActiveDevice: React.Dispatch<any>;
 };
@@ -151,7 +151,6 @@ export const Gateway: FC<GatewayProps> = ({
 
   // let gateway = activeDevice.gateways.gw.find((elem: any) => elem.id === id);
   console.log(`THE TYPE OF GATEWAY IS: ${typeof gateway}`, { gateway });
-  // console.log({ activeDevice });
 
   const handleChange = (event: any) => {
     console.log(event.target.name);
@@ -214,6 +213,14 @@ export const Gateway: FC<GatewayProps> = ({
     });
   }, [gateway]);
 
+  useEffect(() => {
+    if (gateway) {
+      if (interfaces.length > 0 && !gateway.if) {
+        setGateway({ ...gateway, if: interfaces[0] });
+      }
+    }
+  }, [gateway]);
+
   return (
     <div className="mt-4 border-2 border-dashed rounded-md mx-4 px-2 py-2">
       <Disclosure>
@@ -251,7 +258,6 @@ export const Gateway: FC<GatewayProps> = ({
                     name="static-route"
                     placeholder="0.0.0.0/0"
                     value={typeof gateway !== 'undefined' ? gateway.route : ''}
-                    // value={gateway.route}
                     onChange={handleChange}
                   />
                 </div>
@@ -269,7 +275,6 @@ export const Gateway: FC<GatewayProps> = ({
                       name="gateway"
                       placeholder="0.0.0.0"
                       value={typeof gateway !== 'undefined' ? gateway.gw : ''}
-                      // value={gateway.gw}
                       onChange={handleChange}
                     />
                   </div>
@@ -287,7 +292,7 @@ export const Gateway: FC<GatewayProps> = ({
                       onChange={handleChange}
                       value={gateway.if}
                     >
-                      {interfaces.map((intf) => {
+                      {interfaces.map((intf: any) => {
                         return (
                           <option key={intf} value={intf}>
                             {intf}

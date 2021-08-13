@@ -99,8 +99,12 @@ export const Workspace = ({
     const interval = setInterval(() => {
       if (reactFlowInstance) {
         const rfInstance = reactFlowInstance.toObject();
-        // console.log('This will run every 5 seconds!', { rfInstance });
+        // console.log(
+        //   'Autosave enabled? ',
+        //   katharaConfig.labInfo.autosaveEnabled
+        // );
         if (katharaConfig.labInfo.autosaveEnabled) {
+          // console.log('This will run every 5 seconds!', { rfInstance });
           setKatharaConfig((config) => {
             return {
               ...config,
@@ -115,7 +119,7 @@ export const Workspace = ({
 
   // this effect runs when a lab is imported
   useEffect(() => {
-    console.log(`RUNNING THIS SHID!!`);
+    // console.log(`RUNNING THIS SHID!!`);
 
     if (reactFlowInstance) {
       setElements(katharaConfig.elements || []);
@@ -154,7 +158,6 @@ export const Workspace = ({
 
   const onNodeContextMenu = (event, node) => {
     event.preventDefault();
-    // console.log({ event });
     setActiveDevice(node);
   };
 

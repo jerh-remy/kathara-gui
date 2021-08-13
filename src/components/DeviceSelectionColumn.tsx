@@ -7,12 +7,6 @@ import { LabInfo } from './LabInfo';
 export const DeviceSelectionColumn = () => {
   const myRef = useRef<any>(null);
 
-  // useEffect(() => {
-  //   if (myRef.current !== null) {
-  //     console.log(myRef.current!.getBoundingClientRect());
-  //   }
-  // }, []);
-
   return (
     <>
       <div
@@ -27,7 +21,6 @@ export const DeviceSelectionColumn = () => {
             <Device deviceType="Name Server" />
             <Device deviceType="Web Server" />
             <Device deviceType="Custom" />
-
             {/* <Device deviceType="OpenFlow Ryu Controller" /> */}
           </div>
           <LabInfo />

@@ -1,10 +1,5 @@
 import React, { FC, useEffect, useState } from 'react';
-import {
-  useStoreState,
-  useStoreActions,
-  ReactFlowProps,
-  Elements,
-} from 'react-flow-renderer';
+
 import { useKatharaConfig } from '../../contexts/katharaConfigContext';
 import { AdditionalFunctions } from './AdditionalFunctions';
 import { GatewaySection } from './GatewaySection';
@@ -21,30 +16,6 @@ export const DefaultConfigurationInfo: FC<Props> = ({ device, interfaces }) => {
   const [activeDevice, setActiveDevice] = useState(
     katharaConfig.machines.find((machine: any) => machine.id === device.id)
   );
-
-  // console.log(Object.keys(activeDevice));
-  // console.log({ katharaConfig }, { activeDevice });
-  // sortInterfacesString(interfaces).forEach((element: any) => {
-  //   console.log(element);
-  // });
-
-  const nodes = useStoreState((store) => store.nodes);
-  const edges = useStoreState((store) => store.edges);
-  // const elements = [...nodes, ...edges];
-
-  // const setElements = useStoreActions((actions) => actions.setElements);
-
-  // console.log({ nodes });
-
-  // console.log(
-  //   katharaConfig.machines.find((machine: any) => machine.id === device.id)
-  // );
-  // console.log({ device });
-
-  // const handleInputChange = (event) => {
-  //   event.persist();
-  //   setInputs(inputs => ({...inputs, [event.target.name]: event.target.value}));
-  // }
 
   const handleChange = (event: any) => {
     console.log(event.target.name);
@@ -72,7 +43,6 @@ export const DefaultConfigurationInfo: FC<Props> = ({ device, interfaces }) => {
               ['free']: value,
             },
           };
-          // newDevice.interfaces.free = value;
           return newDevice;
         });
         break;
@@ -80,24 +50,6 @@ export const DefaultConfigurationInfo: FC<Props> = ({ device, interfaces }) => {
       default:
         break;
     }
-
-    // setElements(
-    //   nodes.map((el) => {
-    //     if (el.id === device.id) {
-    //       // it's important that you create a new object here
-    //       // in order to notify react flow about the change
-    //       // console.log({ ...el.data });
-    //       el.data = {
-    //         ...el.data,
-    //         label: event.target.value,
-    //       };
-    //     }
-    //     return el;
-    //   })
-    // );
-    // console.log(nodes.find((node) => node.id === device.id));
-
-    // console.log(nodes.find((node) => node.id === device.id)?.data.label);
   };
 
   useEffect(() => {
@@ -114,23 +66,6 @@ export const DefaultConfigurationInfo: FC<Props> = ({ device, interfaces }) => {
 
     console.log({ activeDevice }, { katharaConfig });
   }, [activeDevice]);
-
-  // const addNode = (event: React.MouseEvent<HTMLButtonElement>) => {
-  //   event.preventDefault();
-  //   const newNode = {
-  //     id: `${Math.random() * 1000}`,
-  //     type: 'custom',
-  //     position: { x: 250, y: 500 },
-  //     data: { label: `node_${+new Date().getSeconds()}`, deviceType: 'router' },
-  //   };
-  //   console.log({ newNode });
-  //   setElements(
-  //     elements.concat(newNode)
-
-  //     // els.find((node) => node.id === device.id).data.label = event.target.value;
-  //     // console.log(router);
-  //   );
-  // };
 
   return (
     <div className="mt-4 mb-4">
@@ -171,16 +106,7 @@ export const DefaultConfigurationInfo: FC<Props> = ({ device, interfaces }) => {
           setActiveDevice={setActiveDevice}
           interfaces={sortInterfacesString(interfaces)}
         />
-        {/* <div className="px-5 sm:px-7">
-          <button
-            className="rounded-sm border px-2 border-gray-500"
-            onClick={(event: React.MouseEvent<HTMLButtonElement>) =>
-              addNode(event)
-            }
-          >
-            Add Node
-          </button>
-        </div> */}
+
         <div className="invisible">
           <p>Should not require this workaround</p>
         </div>

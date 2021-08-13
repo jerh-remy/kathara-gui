@@ -20,10 +20,6 @@ export const ConfigurationPanel: FC<Props> = ({
   activeDevice,
   interfaces,
 }) => {
-  // const setOpen = () => {
-  //   console.log('clicked');
-  // };
-
   return (
     <Transition.Root show={isOpen} as={Fragment}>
       <Dialog
