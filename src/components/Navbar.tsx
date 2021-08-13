@@ -246,21 +246,21 @@ export const Navbar: FC<NavbarProps> = ({
 
   const onPopoverItemClicked = (item: string) => {
     // TODO uncomment these
-    // if (katharaLabStatus.isLabRunning) {
-    //   alert('Please stop the running lab before creating/importing a project');
-    // } else {
-    switch (item) {
-      case 'NEW':
-        setShowNewProjectModal(true);
-        console.log('New project');
-        break;
-      case 'IMPORT':
-        importExistingProject();
-        break;
-      default:
-        break;
+    if (katharaLabStatus.isLabRunning) {
+      alert('Please stop the running lab before creating/importing a project');
+    } else {
+      switch (item) {
+        case 'NEW':
+          setShowNewProjectModal(true);
+          console.log('New project');
+          break;
+        case 'IMPORT':
+          importExistingProject();
+          break;
+        default:
+          break;
+      }
     }
-    // }
   };
 
   let startStopLabButton;

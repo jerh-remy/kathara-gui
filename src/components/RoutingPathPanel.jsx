@@ -5,6 +5,8 @@ import {
   useStoreActions,
   useUpdateNodeInternals,
 } from 'react-flow-renderer';
+import { Switch } from '@headlessui/react';
+
 import { useKatharaConfig } from '../contexts/katharaConfigContext';
 import { useKatharaLabStatus } from '../contexts/katharaLabStatusContext';
 import { Heading2 } from './Heading2';
@@ -12,9 +14,11 @@ import { getNetworkFromIpNet } from '../utilities/ipAddressing';
 import { ipcRenderer, remote, shell } from 'electron';
 
 export const RoutingPathPanel = () => {
-  const [routingType, setRoutingType] = useState('bgp');
   const [katharaConfig, setKatharaConfig] = useKatharaConfig();
   const [katharaLabStatus, setKatharaLabStatus] = useKatharaLabStatus();
+
+  const [routingType, setRoutingType] = useState('bgp');
+  const [showRoutePaths, setShowRoutePaths] = useState(false);
 
   const nodes = useStoreState((store) => store.nodes);
   const edges = useStoreState((store) => store.edges);
@@ -85,6 +89,8 @@ export const RoutingPathPanel = () => {
       setDestinationIPAddress(() => {
         return destinationNetworkInterfaces[0].eth.ip;
       });
+    } else {
+      setDestinationIPAddress(() => '');
     }
   }, [destinationNetworkInterfaces]);
 
@@ -97,6 +103,7 @@ export const RoutingPathPanel = () => {
     }
   }, [destinationIPAddress]);
 
+  // registering a listener for the kathara output from ipcMain
   useEffect(() => {
     ipcRenderer.on('script:stdout-reply', (_, stdout) => {
       console.log({ stdout });
@@ -124,122 +131,128 @@ export const RoutingPathPanel = () => {
 
   // this effect runs after the bgp routing information has been obtained from kathara
   useEffect(() => {
-    if (bgpRouterArr.length === sortedRouters.length) {
-      console.log('FINISHED GETTING BGP ROUTING INFO FROM KATHARA!', {
-        bgpRouterArr,
-      });
-
-      let isFinalDestinationFound = false;
-      let currentNode = sourceNode;
-      let routePathsArr = [];
-      while (isFinalDestinationFound === false) {
-        const router = bgpRouterArr.find((elem) => {
-          return elem.router === currentNode.name;
+    try {
+      if (bgpRouterArr.length === sortedRouters.length) {
+        console.log('FINISHED GETTING BGP ROUTING INFO FROM KATHARA!', {
+          bgpRouterArr,
         });
 
-        const nextHopToDestinationNetwork = router.bgpRoutes.find((el) => {
-          return el.networks.includes(convertedIPtoNetworkAddress);
-        }).nextHop;
+        let isFinalDestinationFound = false;
+        let currentNode = sourceNode;
+        let routePathsArr = [];
+        while (isFinalDestinationFound === false) {
+          const router = bgpRouterArr.find((elem) => {
+            return elem.router === currentNode.name;
+          });
 
-        console.log({ nextHopToDestinationNetwork });
+          const nextHopToDestinationNetwork = router.bgpRoutes.find((el) => {
+            return el.networks.includes(convertedIPtoNetworkAddress);
+          }).nextHop;
 
-        if (nextHopToDestinationNetwork !== '0.0.0.0') {
-          const nextHopRouter = machines.find((el) => {
-            return el.interfaces.if.some((elem) => {
-              return elem.eth.ip.split('/')[0] === nextHopToDestinationNetwork;
+          console.log({ nextHopToDestinationNetwork });
+
+          if (nextHopToDestinationNetwork !== '0.0.0.0') {
+            const nextHopRouter = machines.find((el) => {
+              return el.interfaces.if.some((elem) => {
+                return (
+                  elem.eth.ip.split('/')[0] === nextHopToDestinationNetwork
+                );
+              });
             });
-          });
 
-          console.log({ nextHopRouter });
+            console.log({ nextHopRouter });
 
-          const nextHopRouterInterfaceInfo = nextHopRouter.interfaces.if.find(
-            (el) => {
-              return el.eth.ip.split('/')[0] === nextHopToDestinationNetwork;
+            const nextHopRouterInterfaceInfo = nextHopRouter.interfaces.if.find(
+              (el) => {
+                return el.eth.ip.split('/')[0] === nextHopToDestinationNetwork;
+              }
+            );
+            console.log({ nextHopRouterInterfaceInfo });
+
+            const currentRouterCorrespondingInterfaceInfo = currentNode.interfaces.if.find(
+              (el) => {
+                return el.eth.domain === nextHopRouterInterfaceInfo.eth.domain;
+              }
+            );
+
+            console.log({ currentRouterCorrespondingInterfaceInfo });
+
+            routePathsArr.push({
+              source: {
+                id: currentNode.id,
+                name: currentNode.name,
+                interface: currentRouterCorrespondingInterfaceInfo,
+              },
+              destination: {
+                id: nextHopRouter.id,
+                name: nextHopRouter.name,
+                interface: nextHopRouterInterfaceInfo,
+              },
+            });
+
+            setRoutePaths(() => {
+              return [...routePathsArr];
+            });
+
+            if (nextHopRouterInterfaceInfo.eth.ip === destinationIPAddress) {
+              // break out of the loop since the complete routing path has now been obtained
+              isFinalDestinationFound = true;
+            } else {
+              // make the next hop router the current node
+              currentNode = nextHopRouter;
             }
-          );
-          console.log({ nextHopRouterInterfaceInfo });
+          } else {
+            // once the destination network is reached, use the actual destination ip address
+            // to find the final route path to the destination node
+            const finalNodeInRoutePath = machines.find((el) => {
+              return el.interfaces.if.some((elem) => {
+                return elem.eth.ip === destinationIPAddress;
+              });
+            });
 
-          const currentRouterCorrespondingInterfaceInfo = currentNode.interfaces.if.find(
-            (el) => {
-              return el.eth.domain === nextHopRouterInterfaceInfo.eth.domain;
-            }
-          );
+            console.log({ finalNodeInRoutePath });
 
-          console.log({ currentRouterCorrespondingInterfaceInfo });
+            const finalNodeInterfaceInfo = finalNodeInRoutePath.interfaces.if.find(
+              (el) => {
+                return el.eth.ip === destinationIPAddress;
+              }
+            );
+            console.log({ finalNodeInterfaceInfo });
 
-          routePathsArr.push({
-            source: {
-              id: currentNode.id,
-              name: currentNode.name,
-              interface: currentRouterCorrespondingInterfaceInfo,
-            },
-            destination: {
-              id: nextHopRouter.id,
-              name: nextHopRouter.name,
-              interface: nextHopRouterInterfaceInfo,
-            },
-          });
+            const currentRouterCorrespondingInterfaceInfo = currentNode.interfaces.if.find(
+              (el) => {
+                return el.eth.domain === finalNodeInterfaceInfo.eth.domain;
+              }
+            );
 
-          setRoutePaths(() => {
-            return [...routePathsArr];
-          });
+            console.log({ currentRouterCorrespondingInterfaceInfo });
 
-          if (nextHopRouterInterfaceInfo.eth.ip === destinationIPAddress) {
+            routePathsArr.push({
+              source: {
+                id: currentNode.id,
+                name: currentNode.name,
+                interface: currentRouterCorrespondingInterfaceInfo,
+              },
+              destination: {
+                id: finalNodeInRoutePath.id,
+                name: finalNodeInRoutePath.name,
+                interface: finalNodeInterfaceInfo,
+              },
+            });
+
+            setRoutePaths(() => {
+              return [...routePathsArr];
+            });
+
             // break out of the loop since the complete routing path has now been obtained
             isFinalDestinationFound = true;
-          } else {
-            // make the next hop router the current node
-            currentNode = nextHopRouter;
           }
-        } else {
-          // once the destination network is reached, use the actual destination ip address
-          // to find the final route path to the destination node
-          const finalNodeInRoutePath = machines.find((el) => {
-            return el.interfaces.if.some((elem) => {
-              return elem.eth.ip === destinationIPAddress;
-            });
-          });
-
-          console.log({ finalNodeInRoutePath });
-
-          const finalNodeInterfaceInfo = finalNodeInRoutePath.interfaces.if.find(
-            (el) => {
-              return el.eth.ip === destinationIPAddress;
-            }
-          );
-          console.log({ finalNodeInterfaceInfo });
-
-          const currentRouterCorrespondingInterfaceInfo = currentNode.interfaces.if.find(
-            (el) => {
-              return el.eth.domain === finalNodeInterfaceInfo.eth.domain;
-            }
-          );
-
-          console.log({ currentRouterCorrespondingInterfaceInfo });
-
-          routePathsArr.push({
-            source: {
-              id: currentNode.id,
-              name: currentNode.name,
-              interface: currentRouterCorrespondingInterfaceInfo,
-            },
-            destination: {
-              id: finalNodeInRoutePath.id,
-              name: finalNodeInRoutePath.name,
-              interface: finalNodeInterfaceInfo,
-            },
-          });
-
-          setRoutePaths(() => {
-            return [...routePathsArr];
-          });
-
-          // break out of the loop since the complete routing path has now been obtained
-          isFinalDestinationFound = true;
         }
+        console.timeEnd('Execution Time');
+        console.log({ routePathsArr });
       }
-      console.timeEnd('Execution Time');
-      console.log({ routePathsArr });
+    } catch (err) {
+      console.log({ err });
     }
   }, [bgpRouterArr]);
 
@@ -290,6 +303,13 @@ export const RoutingPathPanel = () => {
     //   routePaths = [];
     // };
   }, [routePaths]);
+
+  // this effect runs when the show route switch is toggled
+  useEffect(() => {
+    if (showRoutePaths === false) {
+      resetEdgesToDefault();
+    }
+  }, [showRoutePaths]);
 
   // console.log(machines);
   // console.log(sourceNode.name);
@@ -517,6 +537,29 @@ export const RoutingPathPanel = () => {
     }
   }
 
+  function resetEdgesToDefault() {
+    const originalEdgesArr = edges.filter((el) => {
+      return !el.hasOwnProperty('animated');
+    });
+    const modifiedEdgesArr = edges.filter((el) => {
+      return el.hasOwnProperty('animated');
+    });
+    console.log({ modifiedEdgesArr });
+
+    // remove the animation
+    if (modifiedEdgesArr.length > 0) {
+      modifiedEdgesArr.forEach((edge) => {
+        delete edge.animated;
+        delete edge.style;
+
+        updateNodeInternals(edge.id);
+      });
+
+      const elements = [...nodes, ...originalEdgesArr, ...modifiedEdgesArr];
+      setElements(elements);
+    }
+  }
+
   return (
     <div
       className={`${
@@ -556,158 +599,168 @@ export const RoutingPathPanel = () => {
 
       {machines.length > 1 ? (
         <>
-          <div className="flex mt-2 ">
-            <label className="flex items-center w-1/2">
-              <input
-                className="mr-[5px] rounded-full"
-                type="radio"
-                id="routing-type"
-                value="bgp"
-                onChange={(e) => {
-                  setRoutingType(e.target.value);
-                }}
-                checked={routingType === 'bgp'}
-                name="routing-type"
-              />
-              <span className="text-sm text-gray-800 mr-4">BGP</span>
-            </label>
-            <label className="flex items-center w-1/2">
-              <input
-                className="mr-[5px] rounded-full"
-                type="radio"
-                id="routing-type"
-                value="isis"
-                onChange={(e) => {
-                  setRoutingType(e.target.value);
-                }}
-                checked={routingType === 'isis'}
-                name="routing-type"
-              />
-              <span className="text-sm text-gray-800">IS-IS</span>
-            </label>
-          </div>
-          <div className="mt-3 border-2 border-dashed rounded-md -mx-2 px-2 py-2">
-            <label htmlFor="interface" className="block text-sm text-gray-800">
-              Source node
-            </label>
-            <div className="mt-1 mb-2">
-              <select
-                name="interface"
-                onChange={(e) => {
-                  setSourceNode(() => {
-                    const source = machines.find((el) => {
-                      return el.name === e.target.value;
-                    });
-                    return source;
-                  });
-                }}
-                value={sourceNode.name}
+          <Switch.Group>
+            <div className="flex items-center justify-between mt-3">
+              <Switch.Label className="mr-4 text-sm text-gray-600">
+                Show route paths
+              </Switch.Label>
+              <Switch
+                checked={showRoutePaths}
+                onChange={setShowRoutePaths}
+                className={`${
+                  showRoutePaths ? 'bg-teal-100' : 'bg-gray-200'
+                } relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500`}
               >
-                {machines
-                  .filter((machine) => {
-                    return machine.name !== destinationNode.name;
-                  })
-                  .map((machine) => {
-                    return (
-                      <option key={machine.name} value={machine.name}>
-                        {machine.name}
-                      </option>
-                    );
-                  })}
-              </select>
+                <span
+                  className={`${
+                    showRoutePaths ? 'translate-x-6' : 'translate-x-1'
+                  } inline-block w-4 h-4 transform bg-teal-600 rounded-full transition-transform`}
+                />
+              </Switch>
             </div>
-            <label htmlFor="interface" className="block text-sm text-gray-800">
-              Destination node
-            </label>
-            <div className="mt-1 mb-2">
-              <select
-                name="interface"
-                onChange={(e) => {
-                  setDestinationNode(() => {
-                    const dest = machines.find((el) => {
-                      return el.name === e.target.value;
-                    });
-                    return dest;
-                  });
-                }}
-                value={destinationNode.name}
-              >
-                {machines
-                  .filter((machine) => {
-                    return machine.name !== sourceNode.name;
-                  })
-                  .map((machine) => {
-                    return (
-                      <option key={machine.name} value={machine.name}>
-                        {machine.name}
-                      </option>
-                    );
-                  })}
-              </select>
-            </div>
+          </Switch.Group>
+          {showRoutePaths && (
+            <>
+              <div className="flex mt-3">
+                <label className="flex items-center w-1/2">
+                  <input
+                    className="mr-[5px] rounded-full"
+                    type="radio"
+                    id="routing-type"
+                    value="bgp"
+                    onChange={(e) => {
+                      setRoutingType(e.target.value);
+                    }}
+                    checked={routingType === 'bgp'}
+                    name="routing-type"
+                  />
+                  <span className="text-sm text-gray-800 mr-4">BGP</span>
+                </label>
+                <label className="flex items-center w-1/2">
+                  <input
+                    className="mr-[5px] rounded-full"
+                    type="radio"
+                    id="routing-type"
+                    value="isis"
+                    onChange={(e) => {
+                      setRoutingType(e.target.value);
+                    }}
+                    checked={routingType === 'isis'}
+                    name="routing-type"
+                  />
+                  <span className="text-sm text-gray-800">IS-IS</span>
+                </label>
+              </div>
+              <div className="mt-3 border-2 border-dashed rounded-md -mx-2 px-2 py-2">
+                <label htmlFor="source" className="block text-sm text-gray-800">
+                  Source node
+                </label>
+                <div className="mt-1 mb-2">
+                  <select
+                    name="source"
+                    onChange={(e) => {
+                      setSourceNode(() => {
+                        const source = machines.find((el) => {
+                          return el.name === e.target.value;
+                        });
+                        return source;
+                      });
+                    }}
+                    value={sourceNode.name}
+                  >
+                    {machines
+                      .filter((machine) => {
+                        return machine.name !== destinationNode.name;
+                      })
+                      .map((machine) => {
+                        return (
+                          <option key={machine.name} value={machine.name}>
+                            {machine.name}
+                          </option>
+                        );
+                      })}
+                  </select>
+                </div>
+                <label
+                  htmlFor="destination"
+                  className="block text-sm text-gray-800"
+                >
+                  Destination node
+                </label>
+                <div className="mt-1 mb-2">
+                  <select
+                    name="destination"
+                    onChange={(e) => {
+                      setDestinationNode(() => {
+                        const dest = machines.find((el) => {
+                          return el.name === e.target.value;
+                        });
+                        return dest;
+                      });
+                    }}
+                    value={destinationNode.name}
+                  >
+                    {machines
+                      .filter((machine) => {
+                        return machine.name !== sourceNode.name;
+                      })
+                      .map((machine) => {
+                        return (
+                          <option key={machine.name} value={machine.name}>
+                            {machine.name}
+                          </option>
+                        );
+                      })}
+                  </select>
+                </div>
 
-            <label htmlFor="interface" className="block text-sm text-gray-800">
-              Destination IP address
-            </label>
-            <div className="mt-1 mb-2">
-              <select
-                name="interface"
-                onChange={(e) => {
-                  console.log(e.target.value);
-                  setDestinationIPAddress(e.target.value);
-                }}
-              >
-                {destinationNetworkInterfaces.map((intf) => {
-                  return (
-                    <option key={intf.eth.number} value={intf.eth.ip}>
-                      {`${intf.eth.ip} - eth${intf.eth.number}`}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-          </div>
+                <label
+                  htmlFor="interface"
+                  className="block text-sm text-gray-800"
+                >
+                  Destination IP address
+                </label>
+                <div className="mt-1 mb-2">
+                  <select
+                    name="interface"
+                    onChange={(e) => {
+                      console.log(e.target.value);
+                      setDestinationIPAddress(e.target.value);
+                    }}
+                  >
+                    {destinationNetworkInterfaces.map((intf) => {
+                      return (
+                        <option key={intf.eth.number} value={intf.eth.ip}>
+                          {`${intf.eth.ip} - eth${intf.eth.number}`}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+              </div>
 
-          <div className="mt-2 -mx-2 block text-right">
-            <button
-              className="rounded-md bg-teal-600 hover:bg-teal-700 px-4 py-[6px] text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
-              onClick={(e) => {
-                e.preventDefault();
-                console.log({ routingType });
+              <div className="mt-2 -mx-2 block text-right">
+                <button
+                  className="rounded-md bg-teal-600 hover:bg-teal-700 px-4 py-[6px] text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    console.log({ routingType });
+                    resetEdgesToDefault();
 
-                const originalEdgesArr = edges.filter((el) => {
-                  return !el.hasOwnProperty('animated');
-                });
-                const modifiedEdgesArr = edges.filter((el) => {
-                  return el.hasOwnProperty('animated');
-                });
-                console.log({ modifiedEdgesArr });
-
-                if (modifiedEdgesArr.length > 0) {
-                  modifiedEdgesArr.forEach((edge) => {
-                    delete edge.animated;
-                    delete edge.style;
-                  });
-
-                  setElements([
-                    ...nodes,
-                    ...originalEdgesArr,
-                    ...modifiedEdgesArr,
-                  ]);
-                }
-
-                if (routingType === 'bgp' && destinationIPAddress !== '') {
-                  console.time('Execution Time');
-                  executeShowIpBgp();
-                }
-                // if (routingType === 'isis' && destinationIPAddress) {
-                //   executeShowIpISIS();
-                // }
-              }}
-            >
-              Start
-            </button>
-          </div>
+                    if (routingType === 'bgp' && destinationIPAddress !== '') {
+                      console.time('Execution Time');
+                      executeShowIpBgp();
+                    }
+                    if (routingType === 'isis' && destinationIPAddress) {
+                      executeShowIpISIS();
+                    }
+                  }}
+                >
+                  Start
+                </button>
+              </div>
+            </>
+          )}
         </>
       ) : (
         <div className="block text-center mt-2">

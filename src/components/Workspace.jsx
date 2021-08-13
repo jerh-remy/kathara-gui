@@ -67,7 +67,7 @@ export const Workspace = ({
 }) => {
   const [katharaLabStatus, setKatharaLabStatus] = useKatharaLabStatus();
   const [katharaConfig, setKatharaConfig] = useKatharaConfig();
-  const [elements, setElements] = useState(katharaConfig.elements);
+  const [elements, setElements] = useState([]);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const reactFlowWrapper = useRef(null);
   const [activeDevice, setActiveDevice] = useState();
@@ -96,7 +96,7 @@ export const Workspace = ({
     // reactFlowInstance.toObject().position,
   ]);
 
-  console.log({ katharaConfig });
+  console.log({ katharaConfig }, { elements });
 
   useEffect(() => {
     console.log(`RUNNING THIS SHID!!`);
@@ -109,7 +109,7 @@ export const Workspace = ({
         transform({ x, y, zoom: katharaConfig.zoom || 0 });
       }
     }
-  }, [katharaConfig.elements, reactFlowInstance]);
+  }, [elements, katharaConfig.elements, reactFlowInstance]);
 
   console.log(`##### isLabRunning? ${katharaLabStatus.isLabRunning}`);
 
