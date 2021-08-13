@@ -81,7 +81,7 @@ export const Workspace = ({
 
       const rfInstance = reactFlowInstance.toObject();
       console.log({ rfInstance });
-      // anytime I call setKatharaConfig it autosaves
+      // anytime I call setKatharaConfig it autosaves given 'autosaveEnabled' == true
       setKatharaConfig((config) => {
         return {
           ...config,
@@ -89,18 +89,33 @@ export const Workspace = ({
         };
       });
     }
-  }, [
-    reactFlowInstance,
-    elements.length,
-    // rfInstance.zoom,
-    // reactFlowInstance.toObject().position,
-  ]);
+  }, [reactFlowInstance, elements.length]);
 
-  console.log({ katharaConfig }, { elements });
+  console.log({ katharaConfig }, { reactFlowInstance });
 
+  // this is a hack to save the zoom and position of the
+  // reactflow object to kathara config every 5 secs
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (reactFlowInstance) {
+        const rfInstance = reactFlowInstance.toObject();
+        // console.log('This will run every 5 seconds!', { rfInstance });
+        if (katharaConfig.labInfo.autosaveEnabled) {
+          setKatharaConfig((config) => {
+            return {
+              ...config,
+              ...rfInstance,
+            };
+          });
+        }
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // this effect runs when a lab is imported
   useEffect(() => {
     console.log(`RUNNING THIS SHID!!`);
-    console.table({ elements });
 
     if (reactFlowInstance) {
       setElements(katharaConfig.elements || []);
@@ -111,7 +126,7 @@ export const Workspace = ({
     }
   }, [elements, katharaConfig.elements, reactFlowInstance]);
 
-  console.log(`##### isLabRunning? ${katharaLabStatus.isLabRunning}`);
+  console.log(`isLabRunning? ${katharaLabStatus.isLabRunning}`);
 
   const onConnectStart = useCallback((event, { nodeId, handleType }) => {
     console.log({ nodeId, handleType });

@@ -306,10 +306,10 @@ export const RoutingPathPanel = () => {
 
   // this effect runs when the show route switch is toggled
   useEffect(() => {
-    if (showRoutePaths === false) {
+    if (showRoutePaths === false || katharaLabStatus.isLabRunning === false) {
       resetEdgesToDefault();
     }
-  }, [showRoutePaths]);
+  }, [showRoutePaths, katharaLabStatus.isLabRunning]);
 
   // console.log(machines);
   // console.log(sourceNode.name);

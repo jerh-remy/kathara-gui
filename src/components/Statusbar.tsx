@@ -57,37 +57,37 @@ export const Statusbar = () => {
             ? 'Close console panel'
             : ' Open console panel'}
         </button>
-        {/* {katharaLabStatus.isLabRunning && ( */}
-        <button
-          type="button"
-          aria-label="Toggle Routing Path Overlay"
-          onClick={(e) => {
-            e.preventDefault();
-            if (!katharaLabStatus.isRoutingPathPanelOpen) {
-              setKatharaLabStatus((status: any) => {
-                const newStatus = {
-                  ...status,
-                  isRoutingPathPanelOpen: true,
-                };
-                return newStatus;
-              });
-            } else {
-              setKatharaLabStatus((status: any) => {
-                const newStatus = {
-                  ...status,
-                  isRoutingPathPanelOpen: false,
-                };
-                return newStatus;
-              });
-            }
-          }}
-          className="m-0 w-full flex whitespace-nowrap items-center px-2 py-1 text-xs font-normal tracking-normal rounded-sm text-gray-300 border hover:border-transparent hover:bg-gray-600 hover:text-gray-300 focus:outline-none focus:ring-1  focus:ring-gray-200"
-        >
-          {katharaLabStatus.isRoutingPathPanelOpen
-            ? 'Close routing path panel'
-            : ' Open routing path panel'}
-        </button>
-        {/* )} */}
+        {katharaLabStatus.isLabRunning && (
+          <button
+            type="button"
+            aria-label="Toggle Routing Path Overlay"
+            onClick={(e) => {
+              e.preventDefault();
+              if (!katharaLabStatus.isRoutingPathPanelOpen) {
+                setKatharaLabStatus((status: any) => {
+                  const newStatus = {
+                    ...status,
+                    isRoutingPathPanelOpen: true,
+                  };
+                  return newStatus;
+                });
+              } else {
+                setKatharaLabStatus((status: any) => {
+                  const newStatus = {
+                    ...status,
+                    isRoutingPathPanelOpen: false,
+                  };
+                  return newStatus;
+                });
+              }
+            }}
+            className="m-0 w-full flex whitespace-nowrap items-center px-2 py-1 text-xs font-normal tracking-normal rounded-sm text-gray-300 border hover:border-transparent hover:bg-gray-600 hover:text-gray-300 focus:outline-none focus:ring-1  focus:ring-gray-200"
+          >
+            {katharaLabStatus.isRoutingPathPanelOpen
+              ? 'Close routing path panel'
+              : ' Open routing path panel'}
+          </button>
+        )}
         <div className="flex whitespace-nowrap items-center">
           <div className="rounded-full w-3 h-3 bg-red-600 mr-1"></div>
           <span className="text-gray-300 text-xs">Kathara Status</span>

@@ -115,6 +115,7 @@ export const Navbar: FC<NavbarProps> = ({
         const newStatus = {
           ...status,
           isLabRunning: false,
+          isRoutingPathPanelOpen: false,
           terminals: [],
         };
         return newStatus;
@@ -296,7 +297,9 @@ export const Navbar: FC<NavbarProps> = ({
         onClick={(e) => {
           e.preventDefault();
           console.log('stop lab');
-          executeClean();
+          if (confirm('Are you sure you want to stop the running lab?')) {
+            executeClean();
+          }
           // executeCheckDocker();
         }}
         className="relative inline-flex items-center px-4 py-1 mr-3 text-sm font-bold tracking-wide text-white border border-transparent rounded-md shadow-sm bg-red-500 hover:bg-red-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-red-500"
