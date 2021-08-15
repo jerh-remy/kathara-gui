@@ -110,7 +110,7 @@ export const RoutingPathPanel = () => {
       if (stdout.action.includes('IS-IS')) {
         createISISRoutingPath(stdout);
       } else if (stdout.action.includes('BGP')) {
-        createBGPRoutingPath(stdout.output);
+        createBGPRoutingPath(stdout);
       } else {
         console.log({ stdout });
       }
@@ -330,41 +330,11 @@ export const RoutingPathPanel = () => {
   console.log({ destinationIPAddress });
   console.log({ convertedIPtoNetworkAddress });
 
-  function createBGPRoutingPath(output) {
+  function createBGPRoutingPath(stdout) {
     try {
+      const output = stdout.output;
+      const routerName = stdout.action.split('|')[1];
       const outputArr = output.split('\n');
-      const routerIDArr = outputArr[0].split(',')[1].split(' ');
-      const routerID = routerIDArr[routerIDArr.length - 1];
-      // console.log({
-      //   routerID,
-      // });
-
-      let routerName;
-      try {
-        routerName = sortedRouters.find((router) => {
-          return router.interfaces.if.some((intf) => {
-            if (!intf.eth.ip) {
-              return;
-            }
-            return intf.eth.ip.split('/')[0].trim() === routerID.trim();
-          });
-        }).name;
-      } catch (error) {
-        console.log({ error });
-        routerName = sortedRouters.find((router) => {
-          if (!router.routing.isis && router.routing.isis.en) {
-            return false;
-          }
-          return (
-            router.routing.isis.loopback.split('/')[0].trim() ===
-            routerID.trim()
-          );
-        }).name;
-      }
-
-      // console.log({
-      //   routerName,
-      // });
 
       let bestPathNetwork;
       let bgpRoutes = [];
@@ -446,14 +416,6 @@ export const RoutingPathPanel = () => {
           let network = arr[1];
           let nextHop = arr[4];
           nextHop = nextHop.substring(0, nextHop.length - 1);
-          // console.log(
-          //   {
-          //     network,
-          //   },
-          //   {
-          //     nextHop,
-          //   }
-          // );
 
           const existingNextHop = isisRoutes.find((elem) => {
             return elem.nextHop === nextHop;
@@ -479,9 +441,10 @@ export const RoutingPathPanel = () => {
         }
       });
 
-      console.log({
-        isisRoutes,
-      });
+      // console.log({
+      //   isisRoutes,
+      // });
+
       isisRouterArr.push({
         router: routerName,
         isisRoutes: isisRoutes,
@@ -505,8 +468,6 @@ export const RoutingPathPanel = () => {
     setBgpRouterArr(() => []);
     setRoutePaths(() => []);
 
-    // const dirPath = katharaConfig.labInfo.labDirPath;
-    // ipcRenderer.send('script:bgp', dirPath, 'r2');
     for (let router of sortedRouters) {
       const dirPath = katharaConfig.labInfo.labDirPath;
       ipcRenderer.send('script:bgp', dirPath, router.name);
@@ -518,8 +479,7 @@ export const RoutingPathPanel = () => {
     // clear the array
     setIsisRouterArr(() => []);
     setRoutePaths(() => []);
-    // const dirPath = katharaConfig.labInfo.labDirPath;
-    // ipcRenderer.send('script:isis', dirPath, 'r2');
+
     for (let router of sortedRouters) {
       const dirPath = katharaConfig.labInfo.labDirPath;
       ipcRenderer.send('script:isis', dirPath, router.name);
