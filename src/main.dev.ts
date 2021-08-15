@@ -241,7 +241,7 @@ ipcMain.on('script:bgp', (event, dirPath, deviceName) => {
   console.log(`Running "show ip bgp" on ${deviceName}`);
   runKatharaCommand(
     `exec -d "${pathTemp}" ${deviceName} -- vtysh -c "show ip bgp"`,
-    'BGP',
+    `BGP|${deviceName}`,
     event
   );
 });
@@ -251,7 +251,7 @@ ipcMain.on('script:isis', (event, dirPath, deviceName) => {
   console.log(`Running "show ip route isis" on ${deviceName}`);
   runKatharaCommand(
     `exec -d "${pathTemp}" ${deviceName} -- vtysh -c "show ip route isis"`,
-    'IS-IS',
+    `IS-IS|${deviceName}`,
     event
   );
 });

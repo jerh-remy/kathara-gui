@@ -105,6 +105,7 @@ export const Workspace = ({
         // );
         if (katharaConfig.labInfo.autosaveEnabled) {
           // console.log('This will run every 5 seconds!', { rfInstance });
+          console.log('Saving after every 5 seconds!');
           setKatharaConfig((config) => {
             return {
               ...config,

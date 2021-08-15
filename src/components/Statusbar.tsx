@@ -6,25 +6,35 @@ export const Statusbar = () => {
   const [katharaConfig] = useKatharaConfig();
   const [katharaLabStatus, setKatharaLabStatus] = useKatharaLabStatus();
 
+  let message;
+
+  if (katharaLabStatus.isLabRunning) {
+    message = '';
+  } else {
+    message = (
+      <p className="text-gray-300 text-xs mr-1">{`${
+        katharaConfig.labInfo.autosaveEnabled
+          ? 'Autosave enabled.'
+          : 'To enable the autosave feature, create a new Kathara lab project. '
+      }`}</p>
+    );
+    {
+      katharaConfig.labInfo.autosaveEnabled ? (
+        <p className="text-gray-300 text-xs">
+          Current project directory: {` `}
+          <span className="text-teal-500 text-xs">
+            {katharaConfig.labInfo.labDirPath}
+          </span>
+        </p>
+      ) : (
+        ''
+      );
+    }
+  }
+
   return (
     <footer className="z-20 flex justify-between px-4 py-2 bg-[#2b2933] shadow-lg align-center">
-      <div className="flex-1 flex items-center">
-        <p className="text-gray-300 text-xs mr-1">{`${
-          katharaConfig.labInfo.autosaveEnabled
-            ? 'Autosave enabled.'
-            : 'To enable the autosave feature, create a new Kathara lab project. '
-        }`}</p>
-        {katharaConfig.labInfo.autosaveEnabled ? (
-          <p className="text-gray-300 text-xs">
-            Current project directory: {` `}
-            <span className="text-teal-500 text-xs">
-              {katharaConfig.labInfo.labDirPath}
-            </span>
-          </p>
-        ) : (
-          ''
-        )}
-      </div>
+      <div className="flex-1 flex items-center">{message}</div>
       <div className="flex justify-between items-center space-x-4">
         <button
           type="button"

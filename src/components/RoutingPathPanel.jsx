@@ -44,6 +44,7 @@ export const RoutingPathPanel = () => {
   ] = useState();
 
   const [bgpRouterArr, setBgpRouterArr] = useState([]);
+  const [isisRouterArr, setIsisRouterArr] = useState([]);
   const [routePaths, setRoutePaths] = useState([]);
 
   const sortedRouters = katharaConfig.machines
@@ -58,8 +59,8 @@ export const RoutingPathPanel = () => {
     setMachines(() => katharaConfig.machines);
     setSourceNode(() => katharaConfig.machines[0]);
     setDestinationNode(() => katharaConfig.machines[1]);
-    setDestinationIPAddress(() => '');
-    setconvertedIPtoNetworkAddress(() => '');
+    // setDestinationIPAddress(() => '');
+    // setconvertedIPtoNetworkAddress(() => '');
 
     return () => {
       console.log('CLEANING UP!!');
@@ -106,16 +107,12 @@ export const RoutingPathPanel = () => {
     ipcRenderer.on('script:stdout-reply', (_, stdout) => {
       console.log({ stdout });
 
-      switch (stdout.action) {
-        case 'IS-IS':
-          createISISRoutingPath(stdout.output);
-          break;
-        case 'BGP':
-          createBGPRoutingPath(stdout.output);
-          break;
-        default:
-          console.log({ stdout });
-          break;
+      if (stdout.action.includes('IS-IS')) {
+        createISISRoutingPath(stdout);
+      } else if (stdout.action.includes('BGP')) {
+        createBGPRoutingPath(stdout.output);
+      } else {
+        console.log({ stdout });
       }
     });
 
@@ -434,37 +431,22 @@ export const RoutingPathPanel = () => {
     }
   }
 
-  function createISISRoutingPath(output) {
+  function createISISRoutingPath(stdout) {
     try {
+      const output = stdout.output;
+      const routerName = stdout.action.split('|')[1];
       const outputArr = output.split('\n');
-      const routerIDArr = outputArr[0].split(',')[1].split(' ');
-      const routerID = routerIDArr[routerIDArr.length - 1];
-      // console.log({
-      //   routerID,
-      // });
 
-      const routerName = sortedRouters.find((router) => {
-        return router.interfaces.if.some((intf) => {
-          if (!intf.eth.ip) {
-            return;
-          }
-          return intf.eth.ip.split('/')[0].trim() === routerID.trim();
-        });
-      }).name;
-
-      // console.log({
-      //   routerName,
-      // });
-
-      let bestPathNetwork;
-      outputArr.forEach((line) => {
-        if (line.startsWith('*') || line.startsWith('*>')) {
+      let isisRoutes = [];
+      outputArr.forEach((line, index) => {
+        // console.log({ line });
+        if (line.includes('I>*')) {
           line.trim();
-          let [status, network, nextHop] = line.split(/\s+/);
+          let arr = line.split(/\s+/);
+          let network = arr[1];
+          let nextHop = arr[4];
+          nextHop = nextHop.substring(0, nextHop.length - 1);
           // console.log(
-          //   {
-          //     status,
-          //   },
           //   {
           //     network,
           //   },
@@ -472,55 +454,45 @@ export const RoutingPathPanel = () => {
           //     nextHop,
           //   }
           // );
-          if (status === '*>') {
-            if (nextHop === '0') {
-              nextHop = network;
-              network = bestPathNetwork;
-            }
 
-            const existingNextHop = bgpRoutes.find((elem) => {
-              return elem.nextHop === nextHop;
+          const existingNextHop = isisRoutes.find((elem) => {
+            return elem.nextHop === nextHop;
+          });
+
+          if (!existingNextHop) {
+            isisRoutes.push({
+              nextHop: nextHop,
+              networks: [network],
             });
-            // console.log({
-            //   existingNextHop,
-            // });
-            if (!existingNextHop) {
-              bgpRoutes.push({
-                nextHop: nextHop,
-                networks: [network],
-              });
-            } else {
-              const filteredArr = bgpRoutes.filter((elem) => {
-                return elem.nextHop !== nextHop;
-              });
-              bgpRoutes = [
-                ...filteredArr,
-                {
-                  ...existingNextHop,
-                  networks: [...existingNextHop.networks, network],
-                },
-              ];
-            }
-          } else if (status === '*') {
-            bestPathNetwork = network;
-            return;
+          } else {
+            const filteredArr = isisRoutes.filter((elem) => {
+              return elem.nextHop !== nextHop;
+            });
+            isisRoutes = [
+              ...filteredArr,
+              {
+                ...existingNextHop,
+                networks: [...existingNextHop.networks, network],
+              },
+            ];
           }
         }
       });
+
       console.log({
-        bgpRoutes,
+        isisRoutes,
       });
-      bgpRouterArr.push({
+      isisRouterArr.push({
         router: routerName,
-        bgpRoutes: bgpRoutes,
+        isisRoutes: isisRoutes,
       });
-      bgpRouterArr.sort((a, b) => a.router.localeCompare(b.router));
+      isisRouterArr.sort((a, b) => a.router.localeCompare(b.router));
 
       // clear the array
-      bgpRoutes = [];
+      isisRoutes = [];
 
       console.log({
-        bgpRouterArr,
+        isisRouterArr,
       });
     } catch (e) {
       console.log({ e });
@@ -544,7 +516,8 @@ export const RoutingPathPanel = () => {
   function executeShowIpISIS() {
     console.log({ sortedRouters });
     // clear the array
-    bgpRouterArr = [];
+    setIsisRouterArr(() => []);
+    setRoutePaths(() => []);
     // const dirPath = katharaConfig.labInfo.labDirPath;
     // ipcRenderer.send('script:isis', dirPath, 'r2');
     for (let router of sortedRouters) {
@@ -767,7 +740,7 @@ export const RoutingPathPanel = () => {
                       console.time('Execution Time');
                       executeShowIpBgp();
                     }
-                    if (routingType === 'isis' && destinationIPAddress) {
+                    if (routingType === 'isis' && destinationIPAddress !== '') {
                       executeShowIpISIS();
                     }
                   }}
