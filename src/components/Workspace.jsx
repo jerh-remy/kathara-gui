@@ -103,7 +103,7 @@ export const Workspace = ({
         //   'Autosave enabled? ',
         //   katharaConfig.labInfo.autosaveEnabled
         // );
-        if (katharaConfig.labInfo.autosaveEnabled) {
+        if (katharaConfig.labInfo.autosaveEnabled === true) {
           // console.log('This will run every 5 seconds!', { rfInstance });
           console.log('Saving after every 5 seconds!');
           setKatharaConfig((config) => {
@@ -112,6 +112,8 @@ export const Workspace = ({
               ...rfInstance,
             };
           });
+        } else {
+          console.log('AUTOSAVE HACK NOT WORKING');
         }
       }
     }, 5000);

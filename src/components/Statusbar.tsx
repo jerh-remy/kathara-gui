@@ -12,24 +12,24 @@ export const Statusbar = () => {
     message = '';
   } else {
     message = (
-      <p className="text-gray-300 text-xs mr-1">{`${
-        katharaConfig.labInfo.autosaveEnabled
-          ? 'Autosave enabled.'
-          : 'To enable the autosave feature, create a new Kathara lab project. '
-      }`}</p>
+      <>
+        <p className="text-gray-300 text-xs mr-1">{`${
+          katharaConfig.labInfo.autosaveEnabled
+            ? 'Autosave enabled.'
+            : 'To enable the autosave feature, create a new Kathara lab project. '
+        }`}</p>
+        {katharaConfig.labInfo.autosaveEnabled ? (
+          <p className="text-gray-300 text-xs">
+            Current project directory: {` `}
+            <span className="text-teal-500 text-xs">
+              {katharaConfig.labInfo.labDirPath}
+            </span>
+          </p>
+        ) : (
+          ''
+        )}
+      </>
     );
-    {
-      katharaConfig.labInfo.autosaveEnabled ? (
-        <p className="text-gray-300 text-xs">
-          Current project directory: {` `}
-          <span className="text-teal-500 text-xs">
-            {katharaConfig.labInfo.labDirPath}
-          </span>
-        </p>
-      ) : (
-        ''
-      );
-    }
   }
 
   return (

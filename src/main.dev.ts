@@ -248,9 +248,9 @@ ipcMain.on('script:bgp', (event, dirPath, deviceName) => {
 
 ipcMain.on('script:isis', (event, dirPath, deviceName) => {
   let pathTemp = path.join(dirPath, 'lab');
-  console.log(`Running "show ip route isis" on ${deviceName}`);
+  console.log(`Running "show ip route" on ${deviceName}`);
   runKatharaCommand(
-    `exec -d "${pathTemp}" ${deviceName} -- vtysh -c "show ip route isis"`,
+    `exec -d "${pathTemp}" ${deviceName} -- vtysh -c "show ip route"`,
     `IS-IS|${deviceName}`,
     event
   );
