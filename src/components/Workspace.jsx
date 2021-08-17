@@ -32,6 +32,7 @@ import ReactFlow, {
 } from 'react-flow-renderer';
 
 import { nodeTypes } from '../custom_nodes';
+import { edgeTypes } from '../custom_edges';
 import { ConfigurationPanel } from './ConfigurationPanel';
 import { useKatharaLabStatus } from '../contexts/katharaLabStatusContext';
 import { useKatharaConfig } from '../contexts/katharaConfigContext';
@@ -181,9 +182,9 @@ export const Workspace = ({
             ...params,
             // label: 'styled label',
             // labelStyle: { fill: 'red', fontWeight: 700 },
-            // animated: true,
-            // type: 'step',
             type: 'default',
+            // data: { text: 'custom edge' },
+            // arrowHeadType: 'arrowclosed',
           },
           els
         )
@@ -488,6 +489,7 @@ export const Workspace = ({
         onDrop={onDrop}
         onDragOver={onDragOver}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         nodesDraggable={true}
         onNodeDragStop={onNodeDragStop}
         connectionMode={ConnectionMode.Loose}

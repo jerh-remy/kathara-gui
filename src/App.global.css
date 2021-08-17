@@ -54,6 +54,11 @@ path.react-flow__edge-path {
   stroke: rgba(209, 213, 219, 1);
 }
 
+#react-flow__arrowclosed polyline {
+  fill: red;
+  stroke: red;
+}
+
 .dndflow {
   flex-direction: column;
   display: flex;

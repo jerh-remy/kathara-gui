@@ -97,7 +97,7 @@ const CustomNode: FC<NodeProps> = ({ data, id, ...rest }) => {
             style={{ top: 35, background: '#555' }}
             onConnect={onConnect}
             children={
-              <div className="inline-flex whitespace-nowrap bg-gray-200 rounded-lg px-1 py-[2px] text-[8px] text-gray-500 absolute right-2 -top-2">
+              <div className="inline-flex whitespace-nowrap bg-gray-200 rounded-lg px-1 py-[2px] text-[8px] text-gray-500 absolute right-1 -top-5">
                 eth3
               </div>
             }
@@ -109,7 +109,7 @@ const CustomNode: FC<NodeProps> = ({ data, id, ...rest }) => {
             style={{ top: 35, background: '#555' }}
             onConnect={onConnect}
             children={
-              <div className="inline-flex whitespace-nowrap bg-gray-200 rounded-lg px-1 py-[2px] text-[8px] text-gray-500 absolute left-2 -top-2">
+              <div className="inline-flex whitespace-nowrap bg-gray-200 rounded-lg px-1 py-[2px] text-[8px] text-gray-500 absolute left-1 -bottom-5">
                 eth1
               </div>
             }
@@ -121,7 +121,7 @@ const CustomNode: FC<NodeProps> = ({ data, id, ...rest }) => {
             style={{ top: 0, background: '#555' }}
             onConnect={onConnect}
             children={
-              <div className="inline-flex whitespace-nowrap bg-gray-200 rounded-lg px-1 py-[2px] text-[8px] text-gray-500 absolute -left-2 bottom-2">
+              <div className="inline-flex whitespace-nowrap bg-gray-200 rounded-lg px-1 py-[2px] text-[8px] text-gray-500 absolute left-2 bottom-1">
                 eth2
               </div>
             }
@@ -133,7 +133,7 @@ const CustomNode: FC<NodeProps> = ({ data, id, ...rest }) => {
             style={{ bottom: -2, background: '#555' }}
             onConnect={onConnect}
             children={
-              <div className="inline-flex whitespace-nowrap bg-gray-200 rounded-lg px-1 py-[2px] text-[8px] text-gray-500 absolute -left-2 top-2">
+              <div className="inline-flex whitespace-nowrap bg-gray-200 rounded-lg px-1 py-[2px] text-[8px] text-gray-500 absolute right-2 top-1">
                 eth0
               </div>
             }

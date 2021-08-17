@@ -225,8 +225,8 @@ export const RoutingPathPanel = () => {
         }
       }
     } catch (err) {
-      console.log({ err });
-      alert('An error occured while trying to plot BGP route path.');
+      console.log('An error occured while trying to plot route path.', { err });
+      // alert('An error occured while trying to plot route path.');
     }
 
     return () => {
@@ -287,6 +287,8 @@ export const RoutingPathPanel = () => {
             // just animate the edge
             modifiedEdge = {
               ...edgeToModify,
+              type: 'custom',
+              arrowHeadType: 'arrowclosed',
               animated: true,
               style: {
                 stroke: 'red',
@@ -299,7 +301,8 @@ export const RoutingPathPanel = () => {
               sourceHandle: `eth${path.source.interface.eth.number}`,
               target: path.destination.id,
               targetHandle: `eth${path.destination.interface.eth.number}`,
-              type: 'default',
+              type: 'custom',
+              arrowHeadType: 'arrowclosed',
               animated: true,
               style: { stroke: 'red' },
             };
@@ -411,6 +414,8 @@ export const RoutingPathPanel = () => {
       modifiedEdgesArr.forEach((edge) => {
         delete edge.animated;
         delete edge.style;
+        delete edge.arrowHeadType;
+        edge.type = 'default';
 
         updateNodeInternals(edge.id);
       });
