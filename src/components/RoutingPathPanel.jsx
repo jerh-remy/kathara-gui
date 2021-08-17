@@ -517,18 +517,29 @@ export const RoutingPathPanel = () => {
         for (let i = 0; i < routePaths.length; i++) {
           const path = routePaths[i];
           console.log({ path });
+          let isEdgeDirectionCorrectlyConfigured = (el) => {
+            return (
+              el.source === path.source.id &&
+              el.sourceHandle === `eth${path.source.interface.eth.number}` &&
+              el.target === path.destination.id &&
+              el.targetHandle === `eth${path.destination.interface.eth.number}`
+            );
+          };
+
+          let isEdgeDirectionWronglyConfigured = (el) => {
+            return (
+              el.source === path.destination.id &&
+              el.sourceHandle ===
+                `eth${path.destination.interface.eth.number}` &&
+              el.target === path.source.id &&
+              el.targetHandle === `eth${path.source.interface.eth.number}`
+            );
+          };
+
           const edgeToModify = edges.find((el) => {
             return (
-              (el.source === path.source.id &&
-                el.sourceHandle === `eth${path.source.interface.eth.number}` &&
-                el.target === path.destination.id &&
-                el.targetHandle ===
-                  `eth${path.destination.interface.eth.number}`) ||
-              (el.source === path.destination.id &&
-                el.sourceHandle ===
-                  `eth${path.destination.interface.eth.number}` &&
-                el.target === path.source.id &&
-                el.targetHandle === `eth${path.source.interface.eth.number}`)
+              isEdgeDirectionCorrectlyConfigured(el) ||
+              isEdgeDirectionWronglyConfigured(el)
             );
           });
           console.log({ edgeToModify });
@@ -537,12 +548,34 @@ export const RoutingPathPanel = () => {
             // remove this edge from the internal edges array
             const newEdges = edges.filter((el) => el.id !== edgeToModify.id);
 
-            // animate the edge
-            const modifiedEdge = {
-              ...edgeToModify,
-              animated: true,
-              style: { stroke: routingType === 'bgp' ? 'red' : 'blue' },
-            };
+            let modifiedEdge;
+            // I need to reverse the source and target in the edge configuration
+            console.log(
+              `correctly configured edge? ${isEdgeDirectionCorrectlyConfigured(
+                edgeToModify
+              )}`
+            );
+            if (isEdgeDirectionCorrectlyConfigured(edgeToModify) === true) {
+              // just animate the edge
+              modifiedEdge = {
+                ...edgeToModify,
+                animated: true,
+                style: {
+                  stroke: routingType === 'bgp' ? 'red' : 'blue',
+                },
+              };
+            } else {
+              modifiedEdge = {
+                id: edgeToModify.id,
+                source: path.source.id,
+                sourceHandle: `eth${path.source.interface.eth.number}`,
+                target: path.destination.id,
+                targetHandle: `eth${path.destination.interface.eth.number}`,
+                type: 'default',
+                animated: true,
+                style: { stroke: routingType === 'bgp' ? 'red' : 'blue' },
+              };
+            }
 
             updateNodeInternals(modifiedEdge.id);
 

@@ -1,5 +1,6 @@
 // import * as JSZip from 'jszip';
 import { saveAs } from 'file-saver';
+import { createNetmaskAddr } from './ipAddressing';
 import dayjs from 'dayjs';
 
 function createMachineFolders(kathara, lab) {
@@ -306,7 +307,6 @@ function createRouter(kathara, lab) {
 /* --------------------------------------------------- */
 
 function createStaticRouting(kathara, lab) {
-  // generazione networking e routing statico
   let switchCounter = 2;
   for (let machine of kathara) {
     if (machine.name && machine.name != '') {
@@ -331,8 +331,12 @@ function createStaticRouting(kathara, lab) {
 
       // if machine is router, create loopback interface for IS-IS
       if (machine.type === 'router') {
-        lab.file[machine.name + '.startup'] +=
-          'ifconfig lo' + ' ' + machine.routing.isis.loopback + ' up\n';
+        let [loopbackAddress, mask] = machine.routing.isis.loopback.split('/');
+        lab.file[
+          machine.name + '.startup'
+        ] += `ifconfig lo ${loopbackAddress} netmask ${createNetmaskAddr(
+          mask
+        )} up\n`;
       }
 
       for (let gateway of machine.gateways.gw) {

@@ -61,7 +61,7 @@ export const Statusbar = () => {
               });
             }
           }}
-          className="m-0 w-full flex whitespace-nowrap items-center px-2 py-1 text-xs font-normal tracking-normal rounded-sm text-gray-300 border hover:border-transparent hover:bg-gray-600 hover:text-gray-300 focus:outline-none focus:ring-1  focus:ring-gray-200"
+          className="m-0 w-full flex whitespace-nowrap items-center px-2 py-1 text-xs font-normal tracking-normal rounded-md text-gray-300 border hover:border-transparent hover:bg-gray-600 hover:text-gray-300 focus:outline-none focus:ring-1  focus:ring-gray-200"
         >
           {katharaLabStatus.isConsoleOpen
             ? 'Close console panel'
@@ -91,7 +91,7 @@ export const Statusbar = () => {
                 });
               }
             }}
-            className="m-0 w-full flex whitespace-nowrap items-center px-2 py-1 text-xs font-normal tracking-normal rounded-sm text-gray-300 border hover:border-transparent hover:bg-gray-600 hover:text-gray-300 focus:outline-none focus:ring-1  focus:ring-gray-200"
+            className="m-0 w-full flex whitespace-nowrap items-center px-2 py-1 text-xs font-normal tracking-normal rounded-md text-gray-300 border hover:border-transparent hover:bg-gray-600 hover:text-gray-300 focus:outline-none focus:ring-1  focus:ring-gray-200"
           >
             {katharaLabStatus.isRoutingPathPanelOpen
               ? 'Close routing path panel'
