@@ -277,7 +277,7 @@ export const Navbar: FC<NavbarProps> = ({
             createFilesStructure(katharaConfig.machines, katharaConfig.labInfo)
           );
           console.log({ script });
-          // executeStart(script);
+          executeStart(script);
 
           // executeCheck();
         }}

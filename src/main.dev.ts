@@ -236,25 +236,35 @@ ipcMain.on('script:clean', (event, dirPath) => {
   runKatharaCommand(`lclean -d "${pathTemp}"`, 'STOP_LAB', event);
 });
 
-ipcMain.on('script:bgp', (event, dirPath, deviceName) => {
-  let pathTemp = path.join(dirPath, 'lab');
-  console.log(`Running "show ip bgp" on ${deviceName}`);
-  runKatharaCommand(
-    `exec -d "${pathTemp}" ${deviceName} -- vtysh -c "show ip bgp"`,
-    `BGP|${deviceName}`,
-    event
-  );
-});
-
-ipcMain.on('script:isis', (event, dirPath, deviceName) => {
+ipcMain.on('script:route', (event, dirPath, deviceName) => {
   let pathTemp = path.join(dirPath, 'lab');
   console.log(`Running "show ip route" on ${deviceName}`);
   runKatharaCommand(
     `exec -d "${pathTemp}" ${deviceName} -- vtysh -c "show ip route"`,
-    `IS-IS|${deviceName}`,
+    `route|${deviceName}`,
     event
   );
 });
+
+// ipcMain.on('script:bgp', (event, dirPath, deviceName) => {
+//   let pathTemp = path.join(dirPath, 'lab');
+//   console.log(`Running "show ip bgp" on ${deviceName}`);
+//   runKatharaCommand(
+//     `exec -d "${pathTemp}" ${deviceName} -- vtysh -c "show ip bgp"`,
+//     `BGP|${deviceName}`,
+//     event
+//   );
+// });
+
+// ipcMain.on('script:isis', (event, dirPath, deviceName) => {
+//   let pathTemp = path.join(dirPath, 'lab');
+//   console.log(`Running "show ip route" on ${deviceName}`);
+//   runKatharaCommand(
+//     `exec -d "${pathTemp}" ${deviceName} -- vtysh -c "show ip route"`,
+//     `IS-IS|${deviceName}`,
+//     event
+//   );
+// });
 
 ipcMain.on('script:check', (event) => {
   console.log(`Checking if Kathara is installed`);

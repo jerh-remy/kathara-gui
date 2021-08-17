@@ -605,10 +605,9 @@ export const Workspace = ({
           </button>
         </div>
       </ContextMenu>
-      {katharaConfig.machines.length > 1 && (
-        // <RoutingPathPanel setElements={setElements} />
-        <RoutingPathPanel />
-      )}
+      {/* {katharaConfig.machines.length > 1 && ( */}
+      <RoutingPathPanel />
+      {/* )} */}
     </div>
   );
 };

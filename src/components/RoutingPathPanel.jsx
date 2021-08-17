@@ -17,7 +17,6 @@ export const RoutingPathPanel = () => {
   const [katharaConfig, setKatharaConfig] = useKatharaConfig();
   const [katharaLabStatus, setKatharaLabStatus] = useKatharaLabStatus();
 
-  const [routingType, setRoutingType] = useState('bgp');
   const [showRoutePaths, setShowRoutePaths] = useState(false);
 
   const nodes = useStoreState((store) => store.nodes);
@@ -28,9 +27,8 @@ export const RoutingPathPanel = () => {
   const [machines, setMachines] = useState(
     katharaConfig.machines.sort((a, b) => a.name.localeCompare(b.name))
   );
-  const [sourceNode, setSourceNode] = useState(katharaConfig.machines[0]);
   const [destinationNode, setDestinationNode] = useState(
-    katharaConfig.machines[1]
+    katharaConfig.machines[0]
   );
 
   const [
@@ -43,29 +41,24 @@ export const RoutingPathPanel = () => {
     setconvertedIPtoNetworkAddress,
   ] = useState();
 
-  const [bgpRouterArr, setBgpRouterArr] = useState([]);
-  const [isisRouterArr, setIsisRouterArr] = useState([]);
+  const [routerArr, setRouterArr] = useState([]);
   const [routePaths, setRoutePaths] = useState([]);
 
-  const sortedRouters = katharaConfig.machines
-    .filter((element) => {
-      return element.type === 'router';
-    })
-    .sort((a, b) => a.name.localeCompare(b.name));
+  const sortedRouters = machines.filter((element) => {
+    return element.type === 'router';
+  });
 
   // this runs whenever the machines array in kathara config changes
   // will occur normally when an existing lab is imported
   useEffect(() => {
     setMachines(() => katharaConfig.machines);
-    setSourceNode(() => katharaConfig.machines[0]);
-    setDestinationNode(() => katharaConfig.machines[1]);
+    setDestinationNode(() => katharaConfig.machines[0]);
     // setDestinationIPAddress(() => '');
     // setconvertedIPtoNetworkAddress(() => '');
 
     return () => {
       console.log('CLEANING UP!!');
       setMachines(() => []);
-      setSourceNode(() => null);
       setDestinationNode(() => null);
       setDestinationIPAddress(() => '');
       setconvertedIPtoNetworkAddress(() => '');
@@ -107,10 +100,8 @@ export const RoutingPathPanel = () => {
     ipcRenderer.on('script:stdout-reply', (_, stdout) => {
       console.log({ stdout });
 
-      if (stdout.action.includes('IS-IS')) {
-        createISISRoutingPath(stdout);
-      } else if (stdout.action.includes('BGP')) {
-        createBGPRoutingPath(stdout);
+      if (stdout.action.includes('route')) {
+        createRoutingPath(stdout, getNetworkFromIpNet(destinationIPAddress));
       } else {
         console.log({ stdout });
       }
@@ -120,308 +111,64 @@ export const RoutingPathPanel = () => {
       ipcRenderer.removeAllListeners('script:stdout-reply');
       console.log('FINISH');
     };
-  }, []);
+  }, [destinationIPAddress]);
 
   console.log({ routePaths });
 
-  // this effect runs after the bgp routing information has been obtained from kathara
+  // This effect runs after the routing information has been obtained from kathara
   useEffect(() => {
     try {
-      if (bgpRouterArr.length === sortedRouters.length) {
-        console.log('FINISHED GETTING BGP ROUTING INFO FROM KATHARA!', {
-          bgpRouterArr,
+      if (routerArr.length > 0) {
+        console.log('OBTAINED ROUTING INFO FROM KATHARA!', {
+          routerArr,
         });
 
-        let isFinalDestinationFound = false;
-        let currentNode = sourceNode;
-        let routePathsArr = [];
-        while (isFinalDestinationFound === false) {
-          console.log(
-            `Current node is: ${currentNode.name}`,
-            `Current node type is: ${currentNode.type}`
-          );
-
-          let device;
-          if (currentNode.type === 'router') {
-            device = bgpRouterArr.find((elem) => {
-              return elem.router === currentNode.name;
-            });
-          }
-
-          let nextHopToDestinationNetwork;
-          // use the gateway if the source node is not a router
-          if (currentNode.type !== 'router') {
-            const gateway = currentNode.gateways.gw[0];
-            const gatewayIp = gateway.gw;
-
-            nextHopToDestinationNetwork = gatewayIp;
-          } else {
-            nextHopToDestinationNetwork = device.bgpRoutes.find((el) => {
-              return el.networks.includes(convertedIPtoNetworkAddress);
-            }).nextHop;
-          }
-
-          console.log({
-            nextHopToDestinationNetwork,
-          });
-
-          if (nextHopToDestinationNetwork !== '0.0.0.0') {
-            const nextHopRouter = machines.find((el) => {
-              return el.interfaces.if.some((elem) => {
-                return (
-                  elem.eth.ip.split('/')[0] === nextHopToDestinationNetwork
-                );
-              });
-            });
-
-            console.log({
-              nextHopRouter,
-            });
-
-            const nextHopRouterInterfaceInfo = nextHopRouter.interfaces.if.find(
-              (el) => {
-                return el.eth.ip.split('/')[0] === nextHopToDestinationNetwork;
-              }
-            );
-            console.log({
-              nextHopRouterInterfaceInfo,
-            });
-
-            const currentRouterCorrespondingInterfaceInfo = currentNode.interfaces.if.find(
-              (el) => {
-                return el.eth.domain === nextHopRouterInterfaceInfo.eth.domain;
-              }
-            );
-
-            console.log({
-              currentRouterCorrespondingInterfaceInfo,
-            });
-
-            routePathsArr.push({
-              source: {
-                id: currentNode.id,
-                name: currentNode.name,
-                interface: currentRouterCorrespondingInterfaceInfo,
-              },
-              destination: {
-                id: nextHopRouter.id,
-                name: nextHopRouter.name,
-                interface: nextHopRouterInterfaceInfo,
-              },
-            });
-
-            setRoutePaths(() => {
-              return [...routePathsArr];
-            });
-
-            if (nextHopRouterInterfaceInfo.eth.ip === destinationIPAddress) {
-              // break out of the loop since the complete routing path has now been obtained
-              isFinalDestinationFound = true;
-            } else {
-              // make the next hop router the current node
-              currentNode = nextHopRouter;
-            }
-          } else {
-            // once the destination network is reached, use the actual destination ip address
-            // to find the final route path to the destination node
-            const finalNodeInRoutePath = machines.find((el) => {
-              return el.interfaces.if.some((elem) => {
-                return elem.eth.ip === destinationIPAddress;
-              });
-            });
-
-            console.log({
-              finalNodeInRoutePath,
-            });
-
-            const finalNodeInterfaceInfo = finalNodeInRoutePath.interfaces.if.find(
-              (el) => {
-                return el.eth.ip === destinationIPAddress;
-              }
-            );
-            console.log({
-              finalNodeInterfaceInfo,
-            });
-
-            const currentRouterCorrespondingInterfaceInfo = currentNode.interfaces.if.find(
-              (el) => {
-                return el.eth.domain === finalNodeInterfaceInfo.eth.domain;
-              }
-            );
-
-            console.log({
-              currentRouterCorrespondingInterfaceInfo,
-            });
-
-            routePathsArr.push({
-              source: {
-                id: currentNode.id,
-                name: currentNode.name,
-                interface: currentRouterCorrespondingInterfaceInfo,
-              },
-              destination: {
-                id: finalNodeInRoutePath.id,
-                name: finalNodeInRoutePath.name,
-                interface: finalNodeInterfaceInfo,
-              },
-            });
-
-            setRoutePaths(() => {
-              return [...routePathsArr];
-            });
-
-            // break out of the loop since the complete routing path has now been obtained
-            isFinalDestinationFound = true;
-          }
-        }
-        console.timeEnd('Execution Time');
-        console.log({ routePathsArr });
-      }
-    } catch (err) {
-      console.log({ err });
-      alert('An error occured while trying to plot BGP route path.');
-    }
-  }, [bgpRouterArr]);
-
-  // this effect runs after the isis routing information has been obtained from kathara
-  useEffect(() => {
-    try {
-      if (isisRouterArr.length === sortedRouters.length) {
-        console.log('FINISHED GETTING ISIS ROUTING INFO FROM KATHARA!', {
-          isisRouterArr,
+        // get the most recently added router
+        let router = routerArr[routerArr.length - 1];
+        let currentNode = machines.find((el) => {
+          return el.name === router.routerName;
         });
+        console.log(
+          `Current node is: ${currentNode.name}`,
+          `Current node type is: ${currentNode.type}`
+        );
+        let nextHopToDestinationNetwork = router.nextHop;
+        console.log({ nextHopToDestinationNetwork });
 
-        let isFinalDestinationFound = false;
-        let currentNode = sourceNode;
-        let routePathsArr = [];
-        while (isFinalDestinationFound === false) {
-          console.log(
-            `Current node is: ${currentNode.name}`,
-            `Current node type is: ${currentNode.type}`
-          );
-
-          let device;
-          if (currentNode.type === 'router') {
-            device = isisRouterArr.find((elem) => {
-              return elem.router === currentNode.name;
+        if (nextHopToDestinationNetwork !== '0.0.0.0') {
+          const nextHopRouter = machines.find((el) => {
+            return el.interfaces.if.some((elem) => {
+              return elem.eth.ip.split('/')[0] === nextHopToDestinationNetwork;
             });
-          }
-
-          let nextHopToDestinationNetwork;
-          // use the gateway if the original source node is not a router
-          if (currentNode.type !== 'router') {
-            const gateway = currentNode.gateways.gw[0];
-            const gatewayIp = gateway.gw;
-
-            nextHopToDestinationNetwork = gatewayIp;
-          } else {
-            console.log({ device });
-            nextHopToDestinationNetwork = device.isisRoutes.find((el) => {
-              return el.networks.includes(convertedIPtoNetworkAddress);
-            })?.nextHop;
-          }
-
-          console.log({
-            nextHopToDestinationNetwork,
           });
 
-          if (!nextHopToDestinationNetwork) {
-            // if nextHopDevice is undefined, we are potentially at the destination network.
-            // once the destination network is reached, use the actual destination ip address
-            // to find the final route path to the destination node.
-            const finalNodeInRoutePath = machines.find((el) => {
-              return el.interfaces.if.some((elem) => {
-                return elem.eth.ip === destinationIPAddress;
-              });
-            });
+          console.log({
+            nextHopRouter,
+          });
 
-            console.log({
-              finalNodeInRoutePath,
-            });
-
-            const finalNodeInterfaceInfo = finalNodeInRoutePath.interfaces.if.find(
-              (el) => {
-                return el.eth.ip === destinationIPAddress;
-              }
-            );
-            console.log({
-              finalNodeInterfaceInfo,
-            });
-
-            // if the device is a router and this is the destination ip address, exit the while loop
-            if (
-              currentNode.name === finalNodeInRoutePath.name &&
-              finalNodeInRoutePath.type === 'router'
-            ) {
-              isFinalDestinationFound = true;
-            } else {
-              const currentRouterCorrespondingInterfaceInfo = currentNode.interfaces.if.find(
-                (el) => {
-                  return el.eth.domain === finalNodeInterfaceInfo.eth.domain;
-                }
-              );
-
-              console.log({
-                currentRouterCorrespondingInterfaceInfo,
-              });
-
-              routePathsArr.push({
-                source: {
-                  id: currentNode.id,
-                  name: currentNode.name,
-                  interface: currentRouterCorrespondingInterfaceInfo,
-                },
-                destination: {
-                  id: finalNodeInRoutePath.id,
-                  name: finalNodeInRoutePath.name,
-                  interface: finalNodeInterfaceInfo,
-                },
-              });
-
-              setRoutePaths(() => {
-                return [...routePathsArr];
-              });
-              // break out of the loop since the complete routing path has now been obtained
-              isFinalDestinationFound = true;
+          const nextHopRouterInterfaceInfo = nextHopRouter.interfaces.if.find(
+            (el) => {
+              return el.eth.ip.split('/')[0] === nextHopToDestinationNetwork;
             }
-          } else {
-            if (nextHopToDestinationNetwork !== '0.0.0.0') {
-              const nextHopRouter = machines.find((el) => {
-                return el.interfaces.if.some((elem) => {
-                  return (
-                    elem.eth.ip.split('/')[0] === nextHopToDestinationNetwork
-                  );
-                });
-              });
+          );
+          console.log({
+            nextHopRouterInterfaceInfo,
+          });
 
-              console.log({
-                nextHopRouter,
-              });
+          const currentRouterCorrespondingInterfaceInfo = currentNode.interfaces.if.find(
+            (el) => {
+              return el.eth.domain === nextHopRouterInterfaceInfo.eth.domain;
+            }
+          );
 
-              const nextHopRouterInterfaceInfo = nextHopRouter.interfaces.if.find(
-                (el) => {
-                  return (
-                    el.eth.ip.split('/')[0] === nextHopToDestinationNetwork
-                  );
-                }
-              );
-              console.log({
-                nextHopRouterInterfaceInfo,
-              });
+          console.log({
+            currentRouterCorrespondingInterfaceInfo,
+          });
 
-              const currentRouterCorrespondingInterfaceInfo = currentNode.interfaces.if.find(
-                (el) => {
-                  return (
-                    el.eth.domain === nextHopRouterInterfaceInfo.eth.domain
-                  );
-                }
-              );
-
-              console.log({
-                currentRouterCorrespondingInterfaceInfo,
-              });
-
-              routePathsArr.push({
+          setRoutePaths((paths) => {
+            return [
+              ...paths,
+              {
                 source: {
                   id: currentNode.id,
                   name: currentNode.name,
@@ -432,52 +179,36 @@ export const RoutingPathPanel = () => {
                   name: nextHopRouter.name,
                   interface: nextHopRouterInterfaceInfo,
                 },
-              });
+              },
+            ];
+          });
+        } else {
+          // directly connected edge
+          const finalNodeInRoutePath = machines.find((el) => {
+            return el.interfaces.if.some((elem) => {
+              return elem.eth.ip === destinationIPAddress;
+            });
+          });
 
-              setRoutePaths(() => {
-                return [...routePathsArr];
-              });
+          const finalNodeInterfaceInfo = finalNodeInRoutePath.interfaces.if.find(
+            (el) => {
+              return el.eth.ip === destinationIPAddress;
+            }
+          );
+          console.log({
+            finalNodeInterfaceInfo,
+          });
 
-              if (nextHopRouterInterfaceInfo.eth.ip === destinationIPAddress) {
-                // break out of the loop since the complete routing path has now been obtained
-                isFinalDestinationFound = true;
-              } else {
-                // make the next hop router the current node
-                currentNode = nextHopRouter;
-              }
-            } else {
-              // once the destination network is reached, use the actual destination ip address
-              // to find the final route path to the destination node
-              const finalNodeInRoutePath = machines.find((el) => {
-                return el.interfaces.if.some((elem) => {
-                  return elem.eth.ip === destinationIPAddress;
-                });
-              });
+          const currentRouterCorrespondingInterfaceInfo = currentNode.interfaces.if.find(
+            (el) => {
+              return el.eth.domain === finalNodeInterfaceInfo.eth.domain;
+            }
+          );
 
-              console.log({
-                finalNodeInRoutePath,
-              });
-
-              const finalNodeInterfaceInfo = finalNodeInRoutePath.interfaces.if.find(
-                (el) => {
-                  return el.eth.ip === destinationIPAddress;
-                }
-              );
-              console.log({
-                finalNodeInterfaceInfo,
-              });
-
-              const currentRouterCorrespondingInterfaceInfo = currentNode.interfaces.if.find(
-                (el) => {
-                  return el.eth.domain === finalNodeInterfaceInfo.eth.domain;
-                }
-              );
-
-              console.log({
-                currentRouterCorrespondingInterfaceInfo,
-              });
-
-              routePathsArr.push({
+          setRoutePaths((paths) => {
+            return [
+              ...paths,
+              {
                 source: {
                   id: currentNode.id,
                   name: currentNode.name,
@@ -488,103 +219,100 @@ export const RoutingPathPanel = () => {
                   name: finalNodeInRoutePath.name,
                   interface: finalNodeInterfaceInfo,
                 },
-              });
-
-              setRoutePaths(() => {
-                return [...routePathsArr];
-              });
-
-              // break out of the loop since the complete routing path has now been obtained
-              isFinalDestinationFound = true;
-            }
-          }
+              },
+            ];
+          });
         }
-        console.timeEnd('Execution Time');
-        console.log({ routePathsArr });
       }
     } catch (err) {
       console.log({ err });
-      alert('An error occured while trying to plot ISIS route path.');
+      alert('An error occured while trying to plot BGP route path.');
     }
-  }, [isisRouterArr]);
 
-  // this effect runs after an element is added to the routing path array.
-  // it is meant to modify the UI with the new edges representing the paths
+    return () => {
+      if (routerArr.length === sortedRouters.length) {
+        console.timeEnd('Execution Time');
+      }
+    };
+  }, [routerArr.length]);
+
+  // This effect runs after an element is added to the routing path array.
+  // it is meant to modify the UI with the new edges representing
+  // the paths of the next hops to the destination network from each router
   useEffect(() => {
     try {
       if (routePaths && routePaths.length > 0) {
         console.log(`THIS EDGE MODIFICATION EFFECT JUST RAN`);
-        for (let i = 0; i < routePaths.length; i++) {
-          const path = routePaths[i];
-          console.log({ path });
-          let isEdgeDirectionCorrectlyConfigured = (el) => {
-            return (
-              el.source === path.source.id &&
-              el.sourceHandle === `eth${path.source.interface.eth.number}` &&
-              el.target === path.destination.id &&
-              el.targetHandle === `eth${path.destination.interface.eth.number}`
-            );
-          };
+        // for (let i = 0; i < routePaths.length; i++) {
+        const path = routePaths[routePaths.length - 1];
+        console.log({ path });
+        let isEdgeDirectionCorrectlyConfigured = (el) => {
+          return (
+            el.source === path.source.id &&
+            el.sourceHandle === `eth${path.source.interface.eth.number}` &&
+            el.target === path.destination.id &&
+            el.targetHandle === `eth${path.destination.interface.eth.number}`
+          );
+        };
 
-          let isEdgeDirectionWronglyConfigured = (el) => {
-            return (
-              el.source === path.destination.id &&
-              el.sourceHandle ===
-                `eth${path.destination.interface.eth.number}` &&
-              el.target === path.source.id &&
-              el.targetHandle === `eth${path.source.interface.eth.number}`
-            );
-          };
+        let isEdgeDirectionWronglyConfigured = (el) => {
+          return (
+            el.source === path.destination.id &&
+            el.sourceHandle === `eth${path.destination.interface.eth.number}` &&
+            el.target === path.source.id &&
+            el.targetHandle === `eth${path.source.interface.eth.number}`
+          );
+        };
 
-          const edgeToModify = edges.find((el) => {
-            return (
-              isEdgeDirectionCorrectlyConfigured(el) ||
-              isEdgeDirectionWronglyConfigured(el)
-            );
-          });
-          console.log({ edgeToModify });
+        const edgeToModify = edges.find((el) => {
+          return (
+            isEdgeDirectionCorrectlyConfigured(el) ||
+            isEdgeDirectionWronglyConfigured(el)
+          );
+        });
+        console.log({ edgeToModify });
 
-          if (edgeToModify) {
-            // remove this edge from the internal edges array
-            const newEdges = edges.filter((el) => el.id !== edgeToModify.id);
+        if (edgeToModify) {
+          // remove this edge from the internal edges array
+          const newEdges = edges.filter((el) => el.id !== edgeToModify.id);
 
-            let modifiedEdge;
-            // I need to reverse the source and target in the edge configuration
-            console.log(
-              `correctly configured edge? ${isEdgeDirectionCorrectlyConfigured(
-                edgeToModify
-              )}`
-            );
-            if (isEdgeDirectionCorrectlyConfigured(edgeToModify) === true) {
-              // just animate the edge
-              modifiedEdge = {
-                ...edgeToModify,
-                animated: true,
-                style: {
-                  stroke: routingType === 'bgp' ? 'red' : 'blue',
-                },
-              };
-            } else {
-              modifiedEdge = {
-                id: edgeToModify.id,
-                source: path.source.id,
-                sourceHandle: `eth${path.source.interface.eth.number}`,
-                target: path.destination.id,
-                targetHandle: `eth${path.destination.interface.eth.number}`,
-                type: 'default',
-                animated: true,
-                style: { stroke: routingType === 'bgp' ? 'red' : 'blue' },
-              };
-            }
-
-            updateNodeInternals(modifiedEdge.id);
-
-            console.log({ modifiedEdge });
-
-            setElements([...nodes, ...newEdges, modifiedEdge]);
+          let modifiedEdge;
+          // I need to reverse the source and target in the edge configuration
+          console.log(
+            `correctly configured edge? ${isEdgeDirectionCorrectlyConfigured(
+              edgeToModify
+            )}`
+          );
+          if (isEdgeDirectionCorrectlyConfigured(edgeToModify) === true) {
+            // just animate the edge
+            modifiedEdge = {
+              ...edgeToModify,
+              animated: true,
+              style: {
+                stroke: 'red',
+              },
+            };
+          } else {
+            modifiedEdge = {
+              id: edgeToModify.id,
+              source: path.source.id,
+              sourceHandle: `eth${path.source.interface.eth.number}`,
+              target: path.destination.id,
+              targetHandle: `eth${path.destination.interface.eth.number}`,
+              type: 'default',
+              animated: true,
+              style: { stroke: 'red' },
+            };
           }
+
+          updateNodeInternals(modifiedEdge.id);
+
+          console.log({ modifiedEdge });
+
+          setElements([...nodes, ...newEdges, modifiedEdge]);
         }
       }
+      // }
     } catch (e) {
       console.log(e);
     }
@@ -592,7 +320,7 @@ export const RoutingPathPanel = () => {
     // return () => {
     //   routePaths = [];
     // };
-  }, [routePaths]);
+  }, [routePaths.length]);
 
   // this effect runs when the show route switch is toggled
   useEffect(() => {
@@ -601,183 +329,71 @@ export const RoutingPathPanel = () => {
     }
   }, [showRoutePaths, katharaLabStatus.isLabRunning]);
 
-  // console.log(machines);
-  // console.log(sourceNode.name);
-  // console.log(destinationNode.name);
   console.log({ destinationIPAddress });
   console.log({
     convertedIPtoNetworkAddress,
   });
 
-  function createBGPRoutingPath(stdout) {
+  function createRoutingPath(stdout, destination) {
     try {
       const output = stdout.output;
       const routerName = stdout.action.split('|')[1];
       const outputArr = output.split('\n');
 
-      let bestPathNetwork;
-      let bgpRoutes = [];
+      let nextHopToDestinationNetwork = '';
+
+      console.log(
+        `${routerName}:`,
+        { destination }
+        // { convertedIPtoNetworkAddress },
+        // getNetworkFromIpNet(destinationIPAddress)
+      );
 
       outputArr.forEach((line) => {
-        if (line.startsWith('*') || line.startsWith('*>')) {
+        if (line.includes('>*')) {
           line.trim();
-          let [status, network, nextHop] = line.split(/\s+/);
-          console.log(status, network, nextHop);
-          if (status === '*>') {
-            if (nextHop === '0') {
-              nextHop = network;
-              network = bestPathNetwork;
-            }
-
-            const existingNextHop = bgpRoutes.find((elem) => {
-              return elem.nextHop === nextHop;
-            });
-            // console.log({
-            //   existingNextHop,
-            // });
-            if (!existingNextHop) {
-              bgpRoutes.push({
-                nextHop: nextHop,
-                networks: [network],
-              });
+          let [status, network, ...rest] = line.split(/\s+/);
+          console.log(status, network, { rest });
+          if (network === destination) {
+            if (status.includes('C')) {
+              // this router has a direct connection to that network, destination is reached
+              nextHopToDestinationNetwork = '0.0.0.0';
+              return;
             } else {
-              const filteredArr = bgpRoutes.filter((elem) => {
-                return elem.nextHop !== nextHop;
-              });
-              bgpRoutes = [
-                ...filteredArr,
-                {
-                  ...existingNextHop,
-                  networks: [...existingNextHop.networks, network],
-                },
-              ];
+              // not directly connected, route could be BGP or IS-IS or static, find next hop router
+              nextHopToDestinationNetwork = rest[2].replace(/[^0-9a-z.]/gi, '');
+              return;
             }
-          } else if (status === '*') {
-            bestPathNetwork = network;
-            return;
           }
         }
       });
-      // console.log({
-      //   bgpRoutes,
-      // });
 
-      setBgpRouterArr((arr) => {
+      setRouterArr((arr) => {
         const newArr = [
           ...arr,
           {
-            router: routerName,
-            bgpRoutes: bgpRoutes,
+            routerName: routerName,
+            nextHop: nextHopToDestinationNetwork,
           },
         ];
-        return newArr.sort((a, b) => a.router.localeCompare(b.router));
+        return newArr;
       });
 
-      // clear the internal array
-      bgpRoutes = [];
+      // nextHopToDestinationNetwork = null;
     } catch (e) {
       console.log({ e });
     }
   }
 
-  function createISISRoutingPath(stdout) {
-    try {
-      const output = stdout.output;
-      const routerName = stdout.action.split('|')[1];
-      const outputArr = output.split('\n');
-
-      let isisRoutes = [];
-      outputArr.forEach((line, index) => {
-        let arr, network, nextHop;
-        if (!line.includes('I>*') && !line.includes('C>*')) {
-          return;
-        } else {
-          // line.trim();
-          if (line.includes('I>*')) {
-            arr = line.split(/\s+/);
-            network = arr[1];
-            nextHop = arr[4];
-            nextHop = nextHop.substring(0, nextHop.length - 1);
-          } else if (line.includes('C>*')) {
-            arr = line.split(/\s+/);
-            network = arr[1];
-            nextHop = '0.0.0.0';
-          }
-          console.log({ network }, { nextHop });
-
-          const existingNextHop = isisRoutes.find((elem) => {
-            return elem.nextHop === nextHop;
-          });
-
-          if (!existingNextHop) {
-            isisRoutes.push({
-              nextHop: nextHop,
-              networks: [network],
-            });
-          } else {
-            const filteredArr = isisRoutes.filter((elem) => {
-              return elem.nextHop !== nextHop;
-            });
-            isisRoutes = [
-              ...filteredArr,
-              {
-                ...existingNextHop,
-                networks: [...existingNextHop.networks, network],
-              },
-            ];
-          }
-        }
-      });
-
-      // console.log({
-      //   isisRoutes,
-      // });
-
-      setIsisRouterArr((arr) => {
-        const newArr = [
-          ...arr,
-          {
-            router: routerName,
-            isisRoutes: isisRoutes,
-          },
-        ];
-        return newArr.sort((a, b) => a.router.localeCompare(b.router));
-      });
-
-      // clear the array
-      isisRoutes = [];
-
-      console.log({
-        isisRouterArr,
-      });
-    } catch (e) {
-      console.log({ e });
-    }
-  }
-
-  function executeShowIpBgp() {
+  function executeShowIpRoute() {
     console.log({ sortedRouters });
     // clear the array
-    setBgpRouterArr(() => []);
+    setRouterArr(() => []);
     setRoutePaths(() => []);
 
     for (let router of sortedRouters) {
       const dirPath = katharaConfig.labInfo.labDirPath;
-      ipcRenderer.send('script:bgp', dirPath, router.name);
-    }
-  }
-
-  function executeShowIpISIS() {
-    console.log({ sortedRouters });
-    // clear the array
-    setIsisRouterArr(() => []);
-    setRoutePaths(() => []);
-
-    console.log({ isisRouterArr });
-
-    for (let router of sortedRouters) {
-      const dirPath = katharaConfig.labInfo.labDirPath;
-      ipcRenderer.send('script:isis', dirPath, router.name);
+      ipcRenderer.send('script:route', dirPath, router.name);
     }
   }
 
@@ -865,66 +481,7 @@ export const RoutingPathPanel = () => {
           </Switch.Group>
           {showRoutePaths && (
             <>
-              <div className="flex mt-3">
-                <label className="flex items-center w-1/2">
-                  <input
-                    className="mr-[5px] rounded-full"
-                    type="radio"
-                    id="routing-type"
-                    value="bgp"
-                    onChange={(e) => {
-                      setRoutingType(e.target.value);
-                    }}
-                    checked={routingType === 'bgp'}
-                    name="routing-type"
-                  />
-                  <span className="text-sm text-gray-800 mr-4">BGP</span>
-                </label>
-                <label className="flex items-center w-1/2">
-                  <input
-                    className="mr-[5px] rounded-full"
-                    type="radio"
-                    id="routing-type"
-                    value="isis"
-                    onChange={(e) => {
-                      setRoutingType(e.target.value);
-                    }}
-                    checked={routingType === 'isis'}
-                    name="routing-type"
-                  />
-                  <span className="text-sm text-gray-800">IS-IS</span>
-                </label>
-              </div>
               <div className="mt-3 border-2 border-dashed rounded-md -mx-2 px-2 py-2">
-                <label htmlFor="source" className="block text-sm text-gray-800">
-                  Source node
-                </label>
-                <div className="mt-1 mb-2">
-                  <select
-                    name="source"
-                    onChange={(e) => {
-                      setSourceNode(() => {
-                        const source = machines.find((el) => {
-                          return el.name === e.target.value;
-                        });
-                        return source;
-                      });
-                    }}
-                    value={sourceNode.name}
-                  >
-                    {machines
-                      .filter((machine) => {
-                        return machine.name !== destinationNode.name;
-                      })
-                      .map((machine) => {
-                        return (
-                          <option key={machine.name} value={machine.name}>
-                            {machine.name}
-                          </option>
-                        );
-                      })}
-                  </select>
-                </div>
                 <label
                   htmlFor="destination"
                   className="block text-sm text-gray-800"
@@ -944,17 +501,13 @@ export const RoutingPathPanel = () => {
                     }}
                     value={destinationNode.name}
                   >
-                    {machines
-                      .filter((machine) => {
-                        return machine.name !== sourceNode.name;
-                      })
-                      .map((machine) => {
-                        return (
-                          <option key={machine.name} value={machine.name}>
-                            {machine.name}
-                          </option>
-                        );
-                      })}
+                    {machines.map((machine) => {
+                      return (
+                        <option key={machine.name} value={machine.name}>
+                          {machine.name}
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
 
@@ -988,17 +541,15 @@ export const RoutingPathPanel = () => {
                   className="rounded-md bg-teal-600 hover:bg-teal-700 px-4 py-[6px] text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
                   onClick={(e) => {
                     e.preventDefault();
-                    console.log({
-                      routingType,
-                    });
                     resetEdgesToDefault();
-
-                    console.time('Execution Time');
-                    if (routingType === 'bgp' && destinationIPAddress !== '') {
-                      executeShowIpBgp();
-                    }
-                    if (routingType === 'isis' && destinationIPAddress !== '') {
-                      executeShowIpISIS();
+                    if (destinationIPAddress !== '') {
+                      console.time('Execution Time');
+                      console.log(
+                        `Button clicked`,
+                        { destinationIPAddress },
+                        { convertedIPtoNetworkAddress }
+                      );
+                      executeShowIpRoute();
                     }
                   }}
                 >
