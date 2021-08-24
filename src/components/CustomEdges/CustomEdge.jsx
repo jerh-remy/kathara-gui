@@ -29,7 +29,7 @@ export default function CustomEdge({
       <path
         id={id}
         style={style}
-        className="react-flow__edge-path arrow-head"
+        className="react-flow__edge-path"
         d={edgePath}
         markerEnd={markerEnd}
       />

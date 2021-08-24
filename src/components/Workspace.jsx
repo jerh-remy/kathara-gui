@@ -124,12 +124,30 @@ export const Workspace = ({
     // console.log(`RUNNING THIS SHID!!`);
 
     if (reactFlowInstance) {
+      // setElements(
+      //   katharaConfig.elements.map((el) => {
+      //     if (isEdge(el) && el.type === 'default') {
+      //       return {
+      //         ...el,
+      //         type: 'custom',
+      //         arrowHeadType: 'arrowclosed',
+      //       };
+      //     } else {
+      //       return el;
+      //     }
+      //   }) || []
+      // );
       setElements(katharaConfig.elements || []);
       if (katharaConfig.position) {
         const [x = 0, y = 0] = katharaConfig.position;
         transform({ x, y, zoom: katharaConfig.zoom || 0 });
       }
     }
+
+    return () => {
+      console.log('CLEANING UP WORKSPACE!!');
+      setElements(() => []);
+    };
   }, [katharaConfig.elements, reactFlowInstance]);
 
   console.log(`isLabRunning? ${katharaLabStatus.isLabRunning}`);

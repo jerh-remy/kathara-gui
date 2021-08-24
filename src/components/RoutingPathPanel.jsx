@@ -41,24 +41,40 @@ export const RoutingPathPanel = () => {
     setconvertedIPtoNetworkAddress,
   ] = useState();
 
-  const [routerArr, setRouterArr] = useState([]);
-  const [routePaths, setRoutePaths] = useState([]);
-
-  const sortedRouters = machines.filter((element) => {
+  const routers = machines.filter((element) => {
     return element.type === 'router';
   });
+
+  const [routerAndNextHop, setRouterAndNextHop] = useState([]);
+
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  console.log({ routerAndNextHop });
 
   // this runs whenever the machines array in kathara config changes
   // will occur normally when an existing lab is imported
   useEffect(() => {
     setMachines(() => katharaConfig.machines);
     setDestinationNode(() => katharaConfig.machines[0]);
+    setRouterAndNextHop(() => {
+      return katharaConfig.machines
+        .filter((element) => {
+          return element.type === 'router';
+        })
+        .map((router) => {
+          return {
+            routerName: router.name,
+            nextHop: '',
+          };
+        });
+    });
     // setDestinationIPAddress(() => '');
     // setconvertedIPtoNetworkAddress(() => '');
 
     return () => {
       console.log('CLEANING UP!!');
       setMachines(() => []);
+      setRouterAndNextHop(() => []);
       setDestinationNode(() => null);
       setDestinationIPAddress(() => '');
       setconvertedIPtoNetworkAddress(() => '');
@@ -93,15 +109,22 @@ export const RoutingPathPanel = () => {
         return getNetworkFromIpNet(destinationIPAddress);
       });
     }
-  }, [destinationIPAddress]);
+
+    // if the routing path overlay is refreshing reset the edges to default
+    if (isRefreshing) {
+      resetEdgesToDefault();
+    }
+  }, [destinationIPAddress, isRefreshing]);
 
   // registering a listener for the kathara output from ipcMain
   useEffect(() => {
     ipcRenderer.on('script:stdout-reply', (_, stdout) => {
-      console.log({ stdout });
-
       if (stdout.action.includes('route')) {
-        createRoutingPath(stdout, getNetworkFromIpNet(destinationIPAddress));
+        // parse the routing table information to obtain the routing paths
+        createRoutingPathFromRoutingTableInfo(
+          stdout,
+          getNetworkFromIpNet(destinationIPAddress)
+        );
       } else {
         console.log({ stdout });
       }
@@ -113,217 +136,22 @@ export const RoutingPathPanel = () => {
     };
   }, [destinationIPAddress]);
 
-  console.log({ routePaths });
-
-  // This effect runs after the routing information has been obtained from kathara
+  // this is a hack to emulate real-time updates in the routing paths
+  // by sending the 'show ip route' command every 10 secs
   useEffect(() => {
-    try {
-      if (routerArr.length > 0) {
-        console.log('OBTAINED ROUTING INFO FROM KATHARA!', {
-          routerArr,
-        });
-
-        // get the most recently added router
-        let router = routerArr[routerArr.length - 1];
-        let currentNode = machines.find((el) => {
-          return el.name === router.routerName;
-        });
-        console.log(
-          `Current node is: ${currentNode.name}`,
-          `Current node type is: ${currentNode.type}`
-        );
-        let nextHopToDestinationNetwork = router.nextHop;
-        console.log({ nextHopToDestinationNetwork });
-
-        if (nextHopToDestinationNetwork !== '0.0.0.0') {
-          const nextHopRouter = machines.find((el) => {
-            return el.interfaces.if.some((elem) => {
-              return elem.eth.ip.split('/')[0] === nextHopToDestinationNetwork;
-            });
-          });
-
-          console.log({
-            nextHopRouter,
-          });
-
-          const nextHopRouterInterfaceInfo = nextHopRouter.interfaces.if.find(
-            (el) => {
-              return el.eth.ip.split('/')[0] === nextHopToDestinationNetwork;
-            }
-          );
-          console.log({
-            nextHopRouterInterfaceInfo,
-          });
-
-          const currentRouterCorrespondingInterfaceInfo = currentNode.interfaces.if.find(
-            (el) => {
-              return el.eth.domain === nextHopRouterInterfaceInfo.eth.domain;
-            }
-          );
-
-          console.log({
-            currentRouterCorrespondingInterfaceInfo,
-          });
-
-          setRoutePaths((paths) => {
-            return [
-              ...paths,
-              {
-                source: {
-                  id: currentNode.id,
-                  name: currentNode.name,
-                  interface: currentRouterCorrespondingInterfaceInfo,
-                },
-                destination: {
-                  id: nextHopRouter.id,
-                  name: nextHopRouter.name,
-                  interface: nextHopRouterInterfaceInfo,
-                },
-              },
-            ];
-          });
-        } else {
-          // directly connected edge
-          const finalNodeInRoutePath = machines.find((el) => {
-            return el.interfaces.if.some((elem) => {
-              return elem.eth.ip === destinationIPAddress;
-            });
-          });
-
-          const finalNodeInterfaceInfo = finalNodeInRoutePath.interfaces.if.find(
-            (el) => {
-              return el.eth.ip === destinationIPAddress;
-            }
-          );
-          console.log({
-            finalNodeInterfaceInfo,
-          });
-
-          const currentRouterCorrespondingInterfaceInfo = currentNode.interfaces.if.find(
-            (el) => {
-              return el.eth.domain === finalNodeInterfaceInfo.eth.domain;
-            }
-          );
-
-          setRoutePaths((paths) => {
-            return [
-              ...paths,
-              {
-                source: {
-                  id: currentNode.id,
-                  name: currentNode.name,
-                  interface: currentRouterCorrespondingInterfaceInfo,
-                },
-                destination: {
-                  id: finalNodeInRoutePath.id,
-                  name: finalNodeInRoutePath.name,
-                  interface: finalNodeInterfaceInfo,
-                },
-              },
-            ];
-          });
+    const interval = setInterval(
+      (function intervalFunc() {
+        if (isRefreshing && destinationIPAddress !== '') {
+          console.log(`TIMER USE EFFECT CALLED`);
+          executeShowIpRoute();
         }
-      }
-    } catch (err) {
-      console.log('An error occured while trying to plot route path.', { err });
-      // alert('An error occured while trying to plot route path.');
-    }
 
-    return () => {
-      if (routerArr.length === sortedRouters.length) {
-        console.timeEnd('Execution Time');
-      }
-    };
-  }, [routerArr.length]);
-
-  // This effect runs after an element is added to the routing path array.
-  // it is meant to modify the UI with the new edges representing
-  // the paths of the next hops to the destination network from each router
-  useEffect(() => {
-    try {
-      if (routePaths && routePaths.length > 0) {
-        console.log(`THIS EDGE MODIFICATION EFFECT JUST RAN`);
-        // for (let i = 0; i < routePaths.length; i++) {
-        const path = routePaths[routePaths.length - 1];
-        console.log({ path });
-        let isEdgeDirectionCorrectlyConfigured = (el) => {
-          return (
-            el.source === path.source.id &&
-            el.sourceHandle === `eth${path.source.interface.eth.number}` &&
-            el.target === path.destination.id &&
-            el.targetHandle === `eth${path.destination.interface.eth.number}`
-          );
-        };
-
-        let isEdgeDirectionWronglyConfigured = (el) => {
-          return (
-            el.source === path.destination.id &&
-            el.sourceHandle === `eth${path.destination.interface.eth.number}` &&
-            el.target === path.source.id &&
-            el.targetHandle === `eth${path.source.interface.eth.number}`
-          );
-        };
-
-        const edgeToModify = edges.find((el) => {
-          return (
-            isEdgeDirectionCorrectlyConfigured(el) ||
-            isEdgeDirectionWronglyConfigured(el)
-          );
-        });
-        console.log({ edgeToModify });
-
-        if (edgeToModify) {
-          // remove this edge from the internal edges array
-          const newEdges = edges.filter((el) => el.id !== edgeToModify.id);
-
-          let modifiedEdge;
-          // I need to reverse the source and target in the edge configuration
-          console.log(
-            `correctly configured edge? ${isEdgeDirectionCorrectlyConfigured(
-              edgeToModify
-            )}`
-          );
-          if (isEdgeDirectionCorrectlyConfigured(edgeToModify) === true) {
-            // just animate the edge
-            modifiedEdge = {
-              ...edgeToModify,
-              type: 'custom',
-              arrowHeadType: 'arrowclosed',
-              animated: true,
-              style: {
-                stroke: 'red',
-              },
-            };
-          } else {
-            modifiedEdge = {
-              id: edgeToModify.id,
-              source: path.source.id,
-              sourceHandle: `eth${path.source.interface.eth.number}`,
-              target: path.destination.id,
-              targetHandle: `eth${path.destination.interface.eth.number}`,
-              type: 'custom',
-              arrowHeadType: 'arrowclosed',
-              animated: true,
-              style: { stroke: 'red' },
-            };
-          }
-
-          updateNodeInternals(modifiedEdge.id);
-
-          console.log({ modifiedEdge });
-
-          setElements([...nodes, ...newEdges, modifiedEdge]);
-        }
-      }
-      // }
-    } catch (e) {
-      console.log(e);
-    }
-
-    // return () => {
-    //   routePaths = [];
-    // };
-  }, [routePaths.length]);
+        return intervalFunc;
+      })(),
+      20000
+    );
+    return () => clearInterval(interval);
+  }, [isRefreshing, destinationIPAddress]);
 
   // this effect runs when the show route switch is toggled
   useEffect(() => {
@@ -332,12 +160,14 @@ export const RoutingPathPanel = () => {
     }
   }, [showRoutePaths, katharaLabStatus.isLabRunning]);
 
-  console.log({ destinationIPAddress });
-  console.log({
-    convertedIPtoNetworkAddress,
-  });
+  console.log(
+    { destinationIPAddress },
+    {
+      convertedIPtoNetworkAddress,
+    }
+  );
 
-  function createRoutingPath(stdout, destination) {
+  const createRoutingPathFromRoutingTableInfo = (stdout, destination) => {
     try {
       const output = stdout.output;
       const routerName = stdout.action.split('|')[1];
@@ -345,25 +175,24 @@ export const RoutingPathPanel = () => {
 
       let nextHopToDestinationNetwork = '';
 
-      console.log(
-        `${routerName}:`,
-        { destination }
-        // { convertedIPtoNetworkAddress },
-        // getNetworkFromIpNet(destinationIPAddress)
-      );
+      console.log(`${routerName}:`, {
+        destination,
+      });
 
       outputArr.forEach((line) => {
         if (line.includes('>*')) {
           line.trim();
           let [status, network, ...rest] = line.split(/\s+/);
-          console.log(status, network, { rest });
+          // console.log(status, network, {
+          //   rest,
+          // });
           if (network === destination) {
             if (status.includes('C')) {
               // this router has a direct connection to that network, destination is reached
               nextHopToDestinationNetwork = '0.0.0.0';
               return;
             } else {
-              // not directly connected, route could be BGP or IS-IS or static, find next hop router
+              // not directly connected, route could be BGP, RIP or IS-IS or static, find next hop router
               nextHopToDestinationNetwork = rest[2].replace(/[^0-9a-z.]/gi, '');
               return;
             }
@@ -371,30 +200,220 @@ export const RoutingPathPanel = () => {
         }
       });
 
-      setRouterArr((arr) => {
-        const newArr = [
-          ...arr,
-          {
-            routerName: routerName,
-            nextHop: nextHopToDestinationNetwork,
-          },
-        ];
-        return newArr;
+      // check if next hop to the destination for that specific router has changed
+      let routerWithSavedNextHop = routerAndNextHop.find((router) => {
+        return router.routerName === routerName;
       });
 
-      // nextHopToDestinationNetwork = null;
+      console.log(
+        { routerAndNextHop },
+        { routerName },
+        `Same? ${
+          routerWithSavedNextHop.nextHop === nextHopToDestinationNetwork
+        }`
+      );
+
+      if (isRefreshing) {
+        if (routerWithSavedNextHop.nextHop !== nextHopToDestinationNetwork) {
+          setRouterAndNextHop((oldArr) => {
+            console.log({ oldValue: oldArr });
+            const filteredArr = oldArr.filter((el) => {
+              return el.routerName !== routerName;
+            });
+
+            const newRouter = oldArr.find((el) => {
+              return el.routerName === routerName;
+            });
+
+            newRouter.nextHop = nextHopToDestinationNetwork;
+            return [...filteredArr, newRouter];
+          });
+        } else {
+          console.log(`ROUTING INFO HAS NOT CHANGED FOR ROUTER: ${routerName}`);
+        }
+        createRoutePath(routerName, nextHopToDestinationNetwork);
+      }
     } catch (e) {
       console.log({ e });
+    }
+  };
+
+  // This function runs after the routing information has been obtained from kathara
+  function createRoutePath(routerName, nextHop) {
+    try {
+      console.log('OBTAINED ROUTING INFO FROM KATHARA!', {
+        routerName,
+      });
+
+      let currentNode = machines.find((el) => {
+        return el.name === routerName;
+      });
+      console.log(
+        `Current node is: ${currentNode.name}`,
+        `Current node type is: ${currentNode.type}`
+      );
+      let nextHopToDestinationNetwork = nextHop;
+
+      if (nextHopToDestinationNetwork !== '0.0.0.0') {
+        const nextHopRouter = machines.find((el) => {
+          return el.interfaces.if.some((elem) => {
+            return elem.eth.ip.split('/')[0] === nextHopToDestinationNetwork;
+          });
+        });
+
+        const nextHopRouterInterfaceInfo = nextHopRouter.interfaces.if.find(
+          (el) => {
+            return el.eth.ip.split('/')[0] === nextHopToDestinationNetwork;
+          }
+        );
+
+        const currentRouterCorrespondingInterfaceInfo = currentNode.interfaces.if.find(
+          (el) => {
+            return el.eth.domain === nextHopRouterInterfaceInfo.eth.domain;
+          }
+        );
+
+        const path = {
+          source: {
+            id: currentNode.id,
+            name: currentNode.name,
+            interface: currentRouterCorrespondingInterfaceInfo,
+          },
+          destination: {
+            id: nextHopRouter.id,
+            name: nextHopRouter.name,
+            interface: nextHopRouterInterfaceInfo,
+          },
+        };
+        modifyEdgeForRoutePath(path);
+      } else {
+        // directly connected edge
+        const finalNodeInRoutePath = machines.find((el) => {
+          return el.interfaces.if.some((elem) => {
+            return elem.eth.ip === destinationIPAddress;
+          });
+        });
+
+        const finalNodeInterfaceInfo = finalNodeInRoutePath.interfaces.if.find(
+          (el) => {
+            return el.eth.ip === destinationIPAddress;
+          }
+        );
+
+        const currentRouterCorrespondingInterfaceInfo = currentNode.interfaces.if.find(
+          (el) => {
+            return el.eth.domain === finalNodeInterfaceInfo.eth.domain;
+          }
+        );
+
+        const path = {
+          source: {
+            id: currentNode.id,
+            name: currentNode.name,
+            interface: currentRouterCorrespondingInterfaceInfo,
+          },
+          destination: {
+            id: finalNodeInRoutePath.id,
+            name: finalNodeInRoutePath.name,
+            interface: finalNodeInterfaceInfo,
+          },
+        };
+
+        modifyEdgeForRoutePath(path);
+      }
+    } catch (err) {
+      console.log('An error occured while trying to plot route path.', { err });
+      // alert('An error occured while trying to plot route path.');
+    }
+  }
+
+  // This function runs after a routing path is found from a source to the destination.
+  // Tt is meant to modify the UI with the new edge.
+  function modifyEdgeForRoutePath(path) {
+    try {
+      console.log({ path });
+      let isEdgeDirectionCorrectlyConfigured = (el) => {
+        return (
+          el.source === path.source.id &&
+          el.sourceHandle === `eth${path.source.interface.eth.number}` &&
+          el.target === path.destination.id &&
+          el.targetHandle === `eth${path.destination.interface.eth.number}`
+        );
+      };
+
+      let isEdgeDirectionWronglyConfigured = (el) => {
+        return (
+          el.source === path.destination.id &&
+          el.sourceHandle === `eth${path.destination.interface.eth.number}` &&
+          el.target === path.source.id &&
+          el.targetHandle === `eth${path.source.interface.eth.number}`
+        );
+      };
+
+      const edgeToModify = edges.find((el) => {
+        return (
+          isEdgeDirectionCorrectlyConfigured(el) ||
+          isEdgeDirectionWronglyConfigured(el)
+        );
+      });
+      console.log(path.source.name, { edgeToModify });
+
+      if (edgeToModify) {
+        // remove this edge from the internal edges array
+        const newEdges = edges.filter((el) => el.id !== edgeToModify.id);
+
+        let modifiedEdge;
+        // I need to reverse the source and target in the edge configuration
+        console.log(
+          `correctly configured edge? ${isEdgeDirectionCorrectlyConfigured(
+            edgeToModify
+          )}`
+        );
+        if (isEdgeDirectionCorrectlyConfigured(edgeToModify) === true) {
+          // just animate the edge
+          modifiedEdge = {
+            ...edgeToModify,
+            type: 'custom',
+            arrowHeadType: 'arrowclosed',
+            animated: true,
+            style: {
+              stroke: 'red',
+            },
+          };
+        } else {
+          modifiedEdge = {
+            id: edgeToModify.id,
+            source: path.source.id,
+            sourceHandle: `eth${path.source.interface.eth.number}`,
+            target: path.destination.id,
+            targetHandle: `eth${path.destination.interface.eth.number}`,
+            type: 'custom',
+            arrowHeadType: 'arrowclosed',
+            animated: true,
+            style: { stroke: 'red' },
+          };
+        }
+
+        updateNodeInternals(modifiedEdge.id);
+
+        // setTimeout(() => {
+        //   updateNodeInternals(modifiedEdge.id);
+        //   console.log({ modifiedEdge });
+        // }, 500);
+
+        setElements([...nodes, ...newEdges, modifiedEdge]);
+        // console.timeEnd(`Execution Time`);
+      }
+    } catch (e) {
+      console.log(e);
     }
   }
 
   function executeShowIpRoute() {
-    console.log({ sortedRouters });
-    // clear the array
-    setRouterArr(() => []);
-    setRoutePaths(() => []);
+    console.log({ sortedRouters: routers });
 
-    for (let router of sortedRouters) {
+    console.log(`Executing show ip route`);
+    for (let router of routers) {
       const dirPath = katharaConfig.labInfo.labDirPath;
       ipcRenderer.send('script:route', dirPath, router.name);
     }
@@ -541,24 +560,30 @@ export const RoutingPathPanel = () => {
                 </div>
               </div>
 
-              <div className="mt-2 -mx-2 block text-right">
+              <div className="mt-2 -mx-2 flex items-center justify-between">
+                <span
+                  className={`${
+                    !isRefreshing ? 'opacity-0' : 'opacity-100'
+                  } ml-2 text-sm text-gray-500`}
+                >
+                  Refreshing route paths...
+                </span>
+
                 <button
                   className="rounded-md bg-teal-600 hover:bg-teal-700 px-4 py-[6px] text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
                   onClick={(e) => {
                     e.preventDefault();
-                    resetEdgesToDefault();
-                    if (destinationIPAddress !== '') {
-                      console.time('Execution Time');
-                      console.log(
-                        `Button clicked`,
-                        { destinationIPAddress },
-                        { convertedIPtoNetworkAddress }
-                      );
-                      executeShowIpRoute();
+                    if (isRefreshing) {
+                      setIsRefreshing(() => false);
+                      resetEdgesToDefault();
+                    } else {
+                      if (destinationIPAddress !== '') {
+                        setIsRefreshing(() => true);
+                      }
                     }
                   }}
                 >
-                  Start
+                  {isRefreshing ? 'Stop' : 'Start'}
                 </button>
               </div>
             </>

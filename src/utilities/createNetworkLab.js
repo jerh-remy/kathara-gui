@@ -297,27 +297,17 @@ function createRouter(kathara, lab) {
 
         if (machine.routing.isis.en) createIsisConf(machine, lab);
         if (machine.routing.bgp.en) createBgpConf(machine, lab);
+        if (machine.routing.rip.en) createRipConf(machine, lab);
       }
     }
   }
 }
-
-/* --------------------------------------------------- */
-/* ------------------ AUX FUNCTIONS ------------------ */
-/* --------------------------------------------------- */
 
 function createStaticRouting(kathara, lab) {
   let switchCounter = 2;
   for (let machine of kathara) {
     if (machine.name && machine.name != '') {
       for (let intf of machine.interfaces.if) {
-        // if (intf.eth.number == 0) {
-        //   if (machine.type == 'switch') {
-        //     intf.ip = '192.168.100.' + switchCounter++ + '/24'; // TODO: E se non bastassero 200+ switch?
-        //   } else if (machine.type == 'controller') {
-        //     intf.ip = '192.168.100.1/24';
-        //   }
-        // }
         if (
           intf.eth.domain &&
           intf.eth.domain != '' &&
@@ -401,6 +391,36 @@ function createNSAP(router) {
   } catch (error) {
     return '';
   }
+}
+
+function createRipConf(router, lab) {
+  lab.file[router.name + '/etc/quagga/daemons'] += 'ripd=yes\n';
+
+  lab.file[router.name + '/etc/quagga/ripd.conf'] =
+    'hostname ripd\n' +
+    'password zebra\n' +
+    'enable password zebra\n' +
+    '\n' +
+    'router rip\n';
+
+  for (let network of router.routing.rip.network)
+    lab.file[router.name + '/etc/quagga/ripd.conf'] +=
+      'network ' + network + '\n';
+
+  for (let route of router.routing.rip.route) {
+    if (route && route != '')
+      lab.file[router.name + '/etc/quagga/ripd.conf'] +=
+        'route ' + route + '\n';
+  }
+  lab.file[router.name + '/etc/quagga/ripd.conf'] += '\n';
+
+  if (router.routing.rip.free && router.routing.rip.free != '') {
+    lab.file[router.name + '/etc/quagga/ripd.conf'] +=
+      '\n' + router.routing.rip.free + '\n';
+  }
+
+  lab.file[machine.name + '/etc/quagga/ripd.conf'] +=
+    '\nlog file /var/log/quagga/ripd.log\n';
 }
 
 function createIsisConf(router, lab) {
@@ -494,7 +514,7 @@ function createBgpConf(router, lab) {
 export function createFilesStructure(kathara, labInfo) {
   let isAllValidNames = kathara
     .map((machine) => machine.name && /[A-z0-9]+/i.test(machine.name))
-    .reduce((prev, curr, ind) => (ind == 0 ? curr : prev && curr)); // Tutti i nomi devono aver soddisfatto la regex
+    .reduce((prev, curr, ind) => (ind == 0 ? curr : prev && curr));
   if (!isAllValidNames) return { folders: [], file: [] };
 
   const lab = {};

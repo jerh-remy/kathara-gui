@@ -99,11 +99,11 @@ export const Statusbar = () => {
         </button>
         {/* )} */}
         <div className="flex whitespace-nowrap items-center">
-          <div className="rounded-full w-3 h-3 bg-red-600 mr-1"></div>
+          <div className="rounded-full w-3 h-3 bg-green-600 mr-1"></div>
           <span className="text-gray-300 text-xs">Kathara Status</span>
         </div>
         <div className="flex whitespace-nowrap items-center">
-          <div className="rounded-full w-3 h-3 bg-red-600 mr-1"></div>
+          <div className="rounded-full w-3 h-3 bg-green-600 mr-1"></div>
           <span className="text-gray-300 text-xs">Docker Status</span>
         </div>
       </div>

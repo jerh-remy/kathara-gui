@@ -50,26 +50,13 @@ var device = {
     files: [],
   },
   routing: {
-    // rip: {
-    //   en: false,
-    //   connected: false,
-    //   ospf: false,
-    //   bgp: false,
-    //   network: [''],
-    //   route: [''],
-    //   free: '',
-    // },
-    // ospf: {
-    //   en: false,
-    //   connected: false,
-    //   rip: false,
-    //   bgp: false,
-    //   if: [],
-    //   network: [''],
-    //   area: ['0.0.0.0'],
-    //   stub: [false],
-    //   free: '',
-    // },
+    rip: {
+      en: false,
+      connected: false,
+      network: [],
+      route: [],
+      free: '',
+    },
     isis: {
       en: false,
       loopback: '',
