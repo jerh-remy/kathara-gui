@@ -278,8 +278,6 @@ export const Navbar: FC<NavbarProps> = ({
           );
           console.log({ script });
           executeStart(script);
-
-          // executeCheck();
         }}
         className="relative inline-flex items-center px-4 py-1 mr-3 text-sm font-bold tracking-wide text-white border border-transparent rounded-md shadow-sm bg-emerald-500 hover:bg-emerald-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-emerald-500"
       >

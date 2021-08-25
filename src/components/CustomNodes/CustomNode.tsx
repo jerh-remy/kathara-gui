@@ -146,7 +146,7 @@ const CustomNode: FC<NodeProps> = ({ data, id, ...rest }) => {
             alt="The type of network device"
           />
         </div>
-        <div className="absolute flex justify-center items-center whitespace-nowrap -bottom-12 left-0 right-0 text-sm text-center text-gray-500 font-medium tracking-wide">
+        <div className="absolute flex justify-center items-center whitespace-nowrap -bottom-12 left-0 right-0 text-base text-center text-gray-500 font-medium tracking-wide">
           {deviceLabel}
         </div>
       </div>

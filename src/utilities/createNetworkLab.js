@@ -284,7 +284,11 @@ function createRouter(kathara, lab) {
   // routing dinamico RIP e OSPF
   for (let machine of kathara) {
     if (machine.name && machine.name != '' && machine.type == 'router') {
-      if (machine.routing.isis.en || machine.routing.bgp.en) {
+      if (
+        machine.routing.isis.en ||
+        machine.routing.bgp.en ||
+        machine.routing.rip.en
+      ) {
         lab.file[machine.name + '.startup'] += '/etc/init.d/zebra start\n';
         lab.folders.push(machine.name + '/etc/quagga');
         lab.file[machine.name + '/etc/quagga/daemons'] = 'zebra=yes\n';
@@ -320,7 +324,7 @@ function createStaticRouting(kathara, lab) {
       }
 
       // if machine is router, create loopback interface for IS-IS
-      if (machine.type === 'router') {
+      if (machine.type === 'router' && machine.routing.isis.loopback) {
         let [loopbackAddress, mask] = machine.routing.isis.loopback.split('/');
         lab.file[
           machine.name + '.startup'
@@ -405,7 +409,7 @@ function createRipConf(router, lab) {
 
   for (let network of router.routing.rip.network)
     lab.file[router.name + '/etc/quagga/ripd.conf'] +=
-      'network ' + network + '\n';
+      'network ' + network.ip + '\n';
 
   for (let route of router.routing.rip.route) {
     if (route && route != '')
@@ -419,7 +423,7 @@ function createRipConf(router, lab) {
       '\n' + router.routing.rip.free + '\n';
   }
 
-  lab.file[machine.name + '/etc/quagga/ripd.conf'] +=
+  lab.file[router.name + '/etc/quagga/ripd.conf'] +=
     '\nlog file /var/log/quagga/ripd.log\n';
 }
 

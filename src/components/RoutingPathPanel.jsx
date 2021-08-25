@@ -434,6 +434,12 @@ export const RoutingPathPanel = () => {
         delete edge.animated;
         delete edge.style;
         delete edge.arrowHeadType;
+
+        [edge.source, edge.target] = [edge.target, edge.source];
+        [edge.sourceHandle, edge.targetHandle] = [
+          edge.targetHandle,
+          edge.sourceHandle,
+        ];
         edge.type = 'default';
 
         updateNodeInternals(edge.id);
@@ -578,6 +584,7 @@ export const RoutingPathPanel = () => {
                       resetEdgesToDefault();
                     } else {
                       if (destinationIPAddress !== '') {
+                        executeShowIpRoute();
                         setIsRefreshing(() => true);
                       }
                     }

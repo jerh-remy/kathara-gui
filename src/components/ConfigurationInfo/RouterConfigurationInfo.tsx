@@ -1288,8 +1288,12 @@ export const BGPNeighbor: FC<BGPNeighborProps> = ({
   activeDevice,
   setActiveDevice,
 }) => {
+  const [bgpNeighbor, setBgpNeighbor] = useState(
+    activeDevice.routing.bgp.remote.find((elem: any) => elem.id === id)
+  );
+
   const handleChange = (event: any) => {
-    console.log(event.target.name);
+    // console.log({ event });
 
     const value =
       event.target.type === 'checkbox'
@@ -1298,98 +1302,49 @@ export const BGPNeighbor: FC<BGPNeighborProps> = ({
 
     const propertyName = event.target.name;
 
+    console.log({ value });
+
     switch (propertyName) {
       case 'neighbor':
-        setActiveDevice((device: any) => {
-          let filteredNeighborsArr = device.routing.bgp.remote.filter(
-            (elem: any) => {
-              return elem.id !== id;
-            }
-          );
-
-          let updatedNeighbor = device.routing.bgp.remote.find((elem: any) => {
-            return elem.id === id;
-          });
-
-          updatedNeighbor.neighbor = value;
-
-          const newDevice = {
-            ...device,
-            routing: {
-              ...device.routing,
-              bgp: {
-                ...device.routing.bgp,
-                remote: [...filteredNeighborsArr, updatedNeighbor],
-              },
-            },
-          };
-          return newDevice;
-        });
+        setBgpNeighbor({ ...bgpNeighbor, neighbor: value });
         break;
       case 'remote-as':
-        setActiveDevice((device: any) => {
-          let filteredNeighborsArr = device.routing.bgp.remote.filter(
-            (elem: any) => {
-              return elem.id !== id;
-            }
-          );
-
-          let updatedNeighbor = device.routing.bgp.remote.find((elem: any) => {
-            return elem.id === id;
-          });
-
-          updatedNeighbor.as = value;
-
-          const newDevice = {
-            ...device,
-            routing: {
-              ...device.routing,
-              bgp: {
-                ...device.routing.bgp,
-                remote: [...filteredNeighborsArr, updatedNeighbor],
-              },
-            },
-          };
-          return newDevice;
-        });
+        setBgpNeighbor({ ...bgpNeighbor, as: value });
         break;
       case 'desc':
-        setActiveDevice((device: any) => {
-          let filteredNeighborsArr = device.routing.bgp.remote.filter(
-            (elem: any) => {
-              return elem.id !== id;
-            }
-          );
-
-          let updatedNeighbor = device.routing.bgp.remote.find((elem: any) => {
-            return elem.id === id;
-          });
-
-          updatedNeighbor.description = value;
-
-          const newDevice = {
-            ...device,
-            routing: {
-              ...device.routing,
-              bgp: {
-                ...device.routing.bgp,
-                remote: [...filteredNeighborsArr, updatedNeighbor],
-              },
-            },
-          };
-          return newDevice;
-        });
+        setBgpNeighbor({ ...bgpNeighbor, description: value });
         break;
-
       default:
         break;
     }
   };
 
-  let bgpNeighbor = activeDevice.routing.bgp.remote.find(
-    (elem: any) => elem.id === id
-  );
-  console.log({ activeDevice });
+  useEffect(() => {
+    setActiveDevice((device: any) => {
+      let filteredNeighborsArr = device.routing.bgp.remote.filter(
+        (elem: any) => {
+          return elem.id !== id;
+        }
+      );
+
+      const newDevice = {
+        ...device,
+        routing: {
+          ...device.routing,
+          bgp: {
+            ...device.routing.bgp,
+            remote: [...filteredNeighborsArr, bgpNeighbor],
+          },
+        },
+      };
+      return newDevice;
+    });
+  }, [bgpNeighbor]);
+
+  // let bgpNeighbor = activeDevice.routing.bgp.remote.find(
+  //   (elem: any) => elem.id === id
+  // );
+  console.log({ bgpNeighbor });
 
   return (
     <div className="mt-3 mb-4 mx-4 px-2 border-2 border-dashed rounded-md py-2">
