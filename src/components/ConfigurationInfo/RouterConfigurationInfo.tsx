@@ -1158,6 +1158,9 @@ export const BGPNetwork: FC<BGPNetworkProps> = ({
   activeDevice,
   setActiveDevice,
 }) => {
+  const [bgpNetwork, setBgpNetwork] = useState(
+    activeDevice.routing.bgp.network.find((elem: any) => elem.id === id)
+  );
   const handleChange = (event: any) => {
     console.log(event.target.name);
 
@@ -1170,31 +1173,8 @@ export const BGPNetwork: FC<BGPNetworkProps> = ({
 
     switch (propertyName) {
       case 'network':
-        setActiveDevice((device: any) => {
-          let filteredNetworksArr = device.routing.bgp.network.filter(
-            (elem: any) => {
-              return elem.id !== id;
-            }
-          );
+        setBgpNetwork({ ...bgpNetwork, ip: value });
 
-          let updatedNetwork = device.routing.bgp.network.find((elem: any) => {
-            return elem.id === id;
-          });
-
-          updatedNetwork.ip = value;
-
-          const newDevice = {
-            ...device,
-            routing: {
-              ...device.routing,
-              bgp: {
-                ...device.routing.bgp,
-                network: [...filteredNetworksArr, updatedNetwork],
-              },
-            },
-          };
-          return newDevice;
-        });
         break;
 
       default:
@@ -1202,9 +1182,27 @@ export const BGPNetwork: FC<BGPNetworkProps> = ({
     }
   };
 
-  const bgpNetwork = activeDevice.routing.bgp.network.find(
-    (elem: any) => elem.id === id
-  );
+  useEffect(() => {
+    setActiveDevice((device: any) => {
+      let filteredNetworksArr = device.routing.bgp.network.filter(
+        (elem: any) => {
+          return elem.id !== id;
+        }
+      );
+
+      const newDevice = {
+        ...device,
+        routing: {
+          ...device.routing,
+          bgp: {
+            ...device.routing.bgp,
+            network: [...filteredNetworksArr, bgpNetwork],
+          },
+        },
+      };
+      return newDevice;
+    });
+  }, [bgpNetwork]);
 
   return (
     <div className="mt-3 border-2 border-dashed rounded-md mx-4 px-2 py-2">
@@ -1293,8 +1291,6 @@ export const BGPNeighbor: FC<BGPNeighborProps> = ({
   );
 
   const handleChange = (event: any) => {
-    // console.log({ event });
-
     const value =
       event.target.type === 'checkbox'
         ? event.target.checked
@@ -1341,9 +1337,6 @@ export const BGPNeighbor: FC<BGPNeighborProps> = ({
     });
   }, [bgpNeighbor]);
 
-  // let bgpNeighbor = activeDevice.routing.bgp.remote.find(
-  //   (elem: any) => elem.id === id
-  // );
   console.log({ bgpNeighbor });
 
   return (
