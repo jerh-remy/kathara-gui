@@ -44,24 +44,64 @@ export default merge(baseConfig, {
 
   module: {
     rules: [
+      // {
+      //   test: /.s?css$/,
+      //   use: [
+      //     {
+      //       loader: MiniCssExtractPlugin.loader,
+      //       options: {
+      //         // `./dist` can't be inerhited for publicPath for styles. Otherwise generated paths will be ./dist/dist
+      //         publicPath: './',
+      //       },
+      //     },
+      //     'css-loader',
+      //     'sass-loader',
+      //     {
+      //       loader: 'postcss-loader',
+      //       options: {
+      //         postcssOptions: {
+      //           plugins: [require('tailwindcss'), require('autoprefixer')],
+      //         },
+      //       },
+      //     },
+      //   ],
+      // },
       {
-        test: /.s?css$/,
+        test: /\.global\.css$/,
         use: [
           {
-            loader: MiniCssExtractPlugin.loader,
+            loader: 'style-loader',
+          },
+          {
+            loader: 'css-loader',
             options: {
-              // `./dist` can't be inerhited for publicPath for styles. Otherwise generated paths will be ./dist/dist
-              publicPath: './',
+              sourceMap: true,
             },
           },
-          'css-loader',
-          'sass-loader',
           {
             loader: 'postcss-loader',
             options: {
               postcssOptions: {
                 plugins: [require('tailwindcss'), require('autoprefixer')],
               },
+            },
+          },
+        ],
+      },
+      {
+        test: /^((?!\.global).)*\.css$/,
+        use: [
+          {
+            loader: 'style-loader',
+          },
+          {
+            loader: 'css-loader',
+            options: {
+              modules: {
+                localIdentName: '[name]__[local]__[hash:base64:5]',
+              },
+              sourceMap: true,
+              importLoaders: 1,
             },
           },
         ],

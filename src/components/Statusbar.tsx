@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useKatharaConfig } from '../contexts/katharaConfigContext';
 import { useKatharaLabStatus } from '../contexts/katharaLabStatusContext';
+import { shell } from 'electron';
 
 export const Statusbar = () => {
   const [katharaConfig] = useKatharaConfig();
@@ -21,7 +22,13 @@ export const Statusbar = () => {
         {katharaConfig.labInfo.autosaveEnabled ? (
           <p className="text-gray-300 text-xs">
             Current project directory: {` `}
-            <span className="text-teal-500 text-xs">
+            <span
+              onClick={(e) => {
+                e.preventDefault();
+                shell.showItemInFolder(katharaConfig.labInfo.labDirPath);
+              }}
+              className="text-teal-500 text-xs hover:cursor-pointer"
+            >
               {katharaConfig.labInfo.labDirPath}
             </span>
           </p>

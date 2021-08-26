@@ -123,7 +123,8 @@ export const RoutingPathPanel = () => {
         // parse the routing table information to obtain the routing paths
         createRoutingPathFromRoutingTableInfo(
           stdout,
-          getNetworkFromIpNet(destinationIPAddress)
+          getNetworkFromIpNet(destinationIPAddress),
+          isRefreshing
         );
       } else {
         console.log({ stdout });
@@ -134,7 +135,7 @@ export const RoutingPathPanel = () => {
       ipcRenderer.removeAllListeners('script:stdout-reply');
       console.log('FINISH');
     };
-  }, [destinationIPAddress]);
+  }, [destinationIPAddress, isRefreshing]);
 
   // this is a hack to emulate real-time updates in the routing paths
   // by sending the 'show ip route' command every 10 secs
@@ -155,10 +156,14 @@ export const RoutingPathPanel = () => {
 
   // this effect runs when the show route switch is toggled
   useEffect(() => {
-    if (showRoutePaths === false || katharaLabStatus.isLabRunning === false) {
+    if (
+      showRoutePaths === false ||
+      katharaLabStatus.isLabRunning === false ||
+      isRefreshing === false
+    ) {
       resetEdgesToDefault();
     }
-  }, [showRoutePaths, katharaLabStatus.isLabRunning]);
+  }, [showRoutePaths, katharaLabStatus.isLabRunning, isRefreshing]);
 
   console.log(
     { destinationIPAddress },
@@ -167,7 +172,11 @@ export const RoutingPathPanel = () => {
     }
   );
 
-  const createRoutingPathFromRoutingTableInfo = (stdout, destination) => {
+  const createRoutingPathFromRoutingTableInfo = (
+    stdout,
+    destination,
+    isRefreshing
+  ) => {
     try {
       const output = stdout.output;
       const routerName = stdout.action.split('|')[1];
@@ -206,6 +215,7 @@ export const RoutingPathPanel = () => {
       });
 
       console.log(
+        { isRefreshing },
         { routerAndNextHop },
         { routerName },
         `Same? ${
@@ -435,11 +445,11 @@ export const RoutingPathPanel = () => {
         delete edge.style;
         delete edge.arrowHeadType;
 
-        [edge.source, edge.target] = [edge.target, edge.source];
-        [edge.sourceHandle, edge.targetHandle] = [
-          edge.targetHandle,
-          edge.sourceHandle,
-        ];
+        // [edge.source, edge.target] = [edge.target, edge.source];
+        // [edge.sourceHandle, edge.targetHandle] = [
+        //   edge.targetHandle,
+        //   edge.sourceHandle,
+        // ];
         edge.type = 'default';
 
         updateNodeInternals(edge.id);
@@ -449,6 +459,8 @@ export const RoutingPathPanel = () => {
       setElements(elements);
     }
   }
+
+  console.log({ isRefreshing });
 
   return (
     <div
@@ -581,10 +593,10 @@ export const RoutingPathPanel = () => {
                     e.preventDefault();
                     if (isRefreshing) {
                       setIsRefreshing(() => false);
-                      resetEdgesToDefault();
+                      // resetEdgesToDefault();
                     } else {
                       if (destinationIPAddress !== '') {
-                        executeShowIpRoute();
+                        // executeShowIpRoute();
                         setIsRefreshing(() => true);
                       }
                     }
