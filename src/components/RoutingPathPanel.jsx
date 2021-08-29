@@ -49,6 +49,8 @@ export const RoutingPathPanel = () => {
 
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  const [routePaths, setRoutePaths] = useState([]);
+
   console.log({ routerAndNextHop });
 
   // this runs whenever the machines array in kathara config changes
@@ -226,7 +228,9 @@ export const RoutingPathPanel = () => {
       if (isRefreshing) {
         if (routerWithSavedNextHop.nextHop !== nextHopToDestinationNetwork) {
           setRouterAndNextHop((oldArr) => {
-            console.log({ oldValue: oldArr });
+            console.log({
+              oldValue: oldArr,
+            });
             const filteredArr = oldArr.filter((el) => {
               return el.routerName !== routerName;
             });
@@ -295,7 +299,11 @@ export const RoutingPathPanel = () => {
             interface: nextHopRouterInterfaceInfo,
           },
         };
-        modifyEdgeForRoutePath(path);
+
+        setRoutePaths((routePaths) => {
+          return [...routePaths, path];
+        });
+        // modifyEdgeForRoutePath(path);
       } else {
         // directly connected edge
         const finalNodeInRoutePath = machines.find((el) => {
@@ -329,13 +337,38 @@ export const RoutingPathPanel = () => {
           },
         };
 
-        modifyEdgeForRoutePath(path);
+        setRoutePaths((routePaths) => {
+          return [...routePaths, path];
+        });
+
+        // modifyEdgeForRoutePath(path);
       }
     } catch (err) {
       console.log('An error occured while trying to plot route path.', { err });
       // alert('An error occured while trying to plot route path.');
     }
   }
+
+  // this effect runs after an element is added to the routing path array.
+  // it is meant to modify the UI with the new edges representing the paths
+  useEffect(() => {
+    try {
+      if (routePaths && routePaths.length > 0) {
+        console.log(`THIS EDGE MODIFICATION EFFECT JUST RAN`);
+        for (let i = 0; i < routePaths.length; i++) {
+          const path = routePaths[i];
+          console.log({ path });
+          modifyEdgeForRoutePath(path);
+        }
+      }
+    } catch (e) {
+      console.log(e);
+    }
+
+    // return () => {
+    //   routePaths = [];
+    // };
+  }, [routePaths]);
 
   // This function runs after a routing path is found from a source to the destination.
   // Tt is meant to modify the UI with the new edge.
@@ -366,7 +399,9 @@ export const RoutingPathPanel = () => {
           isEdgeDirectionWronglyConfigured(el)
         );
       });
-      console.log(path.source.name, { edgeToModify });
+      console.log(path.source.name, {
+        edgeToModify,
+      });
 
       if (edgeToModify) {
         // remove this edge from the internal edges array
@@ -420,7 +455,9 @@ export const RoutingPathPanel = () => {
   }
 
   function executeShowIpRoute() {
-    console.log({ sortedRouters: routers });
+    console.log({
+      sortedRouters: routers,
+    });
 
     console.log(`Executing show ip route`);
     for (let router of routers) {
@@ -430,6 +467,10 @@ export const RoutingPathPanel = () => {
   }
 
   function resetEdgesToDefault() {
+    setRoutePaths((routePaths) => {
+      return [];
+    });
+
     const originalEdgesArr = edges.filter((el) => {
       return !el.hasOwnProperty('animated');
     });
